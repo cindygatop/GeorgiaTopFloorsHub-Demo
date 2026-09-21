@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8"><meta name="theme-color" content="#332e20">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Georgia Top Floors — Crew Demo</title>
 <style>
 :root{--bg:#F7F4EC;--card:#fff;--text:#1F2937;--muted:#6B7280;--gold:#C9A646;--nav:#18212B;--line:#E8E2D4;--green:#2E7D5B;--blue:#3568B8;--red:#B83A3A}
@@ -19,10 +20,11 @@
 .modalBg{display:none;position:fixed;inset:0;background:rgba(10,15,20,.45);z-index:30}.modalBg.show{display:block}.modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,94vw);max-height:88vh;overflow:auto;background:#fff;border-radius:18px;padding:20px}.modal h3{margin-top:0}
 .scope{padding-left:20px}.scope li{margin:7px 0;font-size:13px}.woNote{padding:11px;background:#FFF8E5;border:1px solid #EFE0A8;border-radius:10px;font-size:13px;line-height:1.5}
 
-</style></head>
-<body>
+</style>
+<link rel="stylesheet" href="theme.css?v=2"></head>
+<body class="crew-page">
 <div class="phone">
-  <div class="top"><div><div class="brand">Georgia Top Floors</div><div class="sub">Crew App · Today's Jobs</div></div><span class="pill">DEMO</span></div>
+  <div class="top"><div><div class="brand"><img class="crew-logo" src="assets/gtf-logo.png?v=2" alt="Georgia Top Floors"></div><div class="sub">Crew App · Today's Jobs</div></div><span class="pill">DEMO</span></div>
   <div class="card"><strong>Released Work Orders</strong><div class="sub" style="margin:5px 0 10px">Only Work Orders released by the office appear here.</div><select id="assignmentSelect" onchange="selectAssignment(this.value)" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px"></select></div>
   <div class="card">
     <div class="jobHead"><div><h2 id="jobCustomer">Released Work Order</h2><div class="sub" id="jobAddress">Select an assignment</div></div><span class="badge" id="badge">Scheduled</span></div>
@@ -79,13 +81,20 @@
 let currentWorkOrderId=null;
 function renderAssignments(){const list=GTFWorkflow.getReleasedWorkOrders();assignmentSelect.innerHTML=list.length?list.map(w=>`<option value="${w.id}">${w.number} · ${w.customer} · ${w.service}</option>`).join(''):'<option value="">No released Work Orders</option>';if(list.length){const keep=list.find(x=>x.id===currentWorkOrderId)||list[0];currentWorkOrderId=keep.id;assignmentSelect.value=keep.id;renderSelectedWorkOrder();}else{currentWorkOrderId=null;renderEmptyWorkOrder();}}
 function selectAssignment(id){currentWorkOrderId=id;renderSelectedWorkOrder();}
-function renderEmptyWorkOrder(){jobCustomer.textContent='No released Work Orders';jobAddress.textContent='Office must release a Work Order first.';jobArrival.textContent='—';jobService.textContent='—';jobArea.textContent='—';jobManager.textContent='—';woNumber.textContent='No Work Order';woStatus.textContent='Waiting';stain.value='';notes.value='';}
-function renderSelectedWorkOrder(){const s=GTFWorkflow.load(),w=s.workOrders.find(x=>x.id===currentWorkOrderId);if(!w){renderEmptyWorkOrder();return;}jobCustomer.textContent=w.customer;jobAddress.textContent=w.address;jobArrival.textContent=w.arrival;jobService.textContent=w.service;jobArea.textContent=w.area;jobManager.textContent=w.manager;woNumber.textContent=`${w.number} · ${w.service}`;woStatus.textContent=w.status;stain.value=w.stain||'To confirm';notes.value=w.notes||'';}
+function crewStatusClass(status){
+ if(["Arrived","Completed","Released"].includes(status))return "status-success";
+ if(["OTW","In Progress"].includes(status))return "status-info";
+ if(["Waiting","Ready"].includes(status))return "status-warning";
+ if(["Problem","Cancelled"].includes(status))return "status-danger";
+ return "status-neutral";
+}
+function renderEmptyWorkOrder(){jobCustomer.textContent='No released Work Orders';jobAddress.textContent='Office must release a Work Order first.';jobArrival.textContent='—';jobService.textContent='—';jobArea.textContent='—';jobManager.textContent='—';woNumber.textContent='No Work Order';woStatus.textContent='Waiting';woStatus.className='woStatus '+crewStatusClass('Waiting');stain.value='';notes.value='';}
+function renderSelectedWorkOrder(){const s=GTFWorkflow.load(),w=s.workOrders.find(x=>x.id===currentWorkOrderId);if(!w){renderEmptyWorkOrder();return;}jobCustomer.textContent=w.customer;jobAddress.textContent=w.address;jobArrival.textContent=w.arrival;jobService.textContent=w.service;jobArea.textContent=w.area;jobManager.textContent=w.manager;woNumber.textContent=`${w.number} · ${w.service}`;woStatus.textContent=w.status;woStatus.className='woStatus '+crewStatusClass(w.status);stain.value=w.stain||'To confirm';notes.value=w.notes||'';}
 function renderWorkOrderSummary(){renderAssignments();}
 function openWorkOrder(){const s=GTFWorkflow.load(),w=s.workOrders.find(x=>x.id===currentWorkOrderId);if(!w){toast('No released Work Order available.');return;}woTitle.textContent=`Work Order ${w.number}`;woContent.innerHTML=`<div class="grid"><div class="info"><span>Customer</span><strong>${w.customer}</strong></div><div class="info"><span>Arrival</span><strong>${w.arrival}</strong></div><div class="info"><span>Service</span><strong>${w.service}</strong></div><div class="info"><span>Area</span><strong>${w.area}</strong></div><div class="info"><span>Manager</span><strong>${w.manager}</strong></div><div class="info"><span>Crew</span><strong>${w.crew}</strong></div><div class="info"><span>Stain / Color</span><strong>${w.stain}</strong></div><div class="info"><span>Finish</span><strong>${w.finish}</strong></div></div><div class="field"><label>PROPERTY</label><div class="sub">${w.address}</div></div><strong>Scope of Work</strong><ul class="scope">${w.scope.map(x=>`<li>${x}</li>`).join('')}</ul><strong>Materials</strong><ul class="scope">${w.materials.map(x=>`<li>${x}</li>`).join('')}</ul><div class="woNote"><strong>Field Notes</strong><br>${w.notes||''}</div><div class="woNote" style="margin-top:10px"><strong>Privacy:</strong> Work Orders do not include Estimate prices, Invoice totals, payments or margin.</div><div style="margin-top:12px"><button class="btn dark" onclick="closeWorkOrder();toast('Work Order acknowledged by crew — demo only.')">Acknowledge Work Order</button></div>`;workOrderModal.classList.add('show');}
 function closeWorkOrder(){workOrderModal.classList.remove('show')}
 function ackWorkOrder(){closeWorkOrder();toast('Work Order acknowledged. No pricing is exposed to the crew.');}
-function setStatus(btn){document.querySelectorAll("[data-status]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");badge.textContent=btn.dataset.status;if(btn.dataset.status==="OTW")toast("OTW: future version starts trip location + customer notification.");else if(btn.dataset.status==="Arrived")toast("Arrived: future version stops customer location tracking.");else toast("Status changed to "+btn.dataset.status+".")}
+function setStatus(btn){document.querySelectorAll("[data-status]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");badge.textContent=btn.dataset.status;badge.className="badge "+crewStatusClass(btn.dataset.status);if(btn.dataset.status==="OTW")toast("OTW: future version starts trip location + customer notification.");else if(btn.dataset.status==="Arrived")toast("Arrived: future version stops customer location tracking.");else toast("Status changed to "+btn.dataset.status+".")}
 function saveStain(){if(currentWorkOrderId)GTFWorkflow.updateWorkOrder(currentWorkOrderId,{stain:stain.value,notes:notes.value});toast("Work Order field details saved in demo.");}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove("show"),2600)}
 window.addEventListener("focus",renderWorkOrderSummary);window.addEventListener("storage",renderWorkOrderSummary);window.addEventListener("gtf-workflow-changed",renderWorkOrderSummary);

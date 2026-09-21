@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="theme-color" content="#332e20">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Georgia Top Floors Hub — Demo</title>
 <style>
@@ -162,12 +163,13 @@ tr:hover td{background:#FFFDF8}
 @media(max-width:760px){.doc-strip{grid-template-columns:1fr}}
 
 </style>
+<link rel="stylesheet" href="theme.css?v=2">
 </head>
-<body>
+<body class="office-page">
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
-      <h1>Georgia Top Floors</h1>
+      <img class="brand-logo" src="assets/gtf-logo-gold.png?v=2" alt="Georgia Top Floors">
       <small>Operations Hub</small>
       <span class="demo-pill">PRESENTATION DEMO</span>
     </div>
@@ -175,7 +177,7 @@ tr:hover td{background:#FFFDF8}
       <button class="active" data-page="dashboard"><span class="icon">⌂</span><span data-i18n="dashboard">Dashboard</span></button>
       <button data-page="jobs"><span class="icon">▣</span><span data-i18n="jobs">Jobs</span></button>
       <button data-page="calendar"><span class="icon">▦</span><span data-i18n="calendar">Calendar</span></button>
-      <button onclick="window.location.href='documents.html'"><span class="icon">▤</span><span>Estimates & Billing</span></button>
+      <button data-href="documents.html"><span class="icon">▤</span><span>Estimates & Billing</span></button>
       <button data-href="database.html"><span class="icon">◫</span><span>Database</span></button>
       <button data-page="customers"><span class="icon">◎</span><span data-i18n="customers">Customers</span></button>
       <button data-page="crews"><span class="icon">👥</span><span data-i18n="crews">Crews</span></button>

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="theme-color" content="#332e20">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Georgia Top Floors Hub — Database Demo</title>
 <style>
@@ -45,17 +46,18 @@ button,input,select,textarea{font:inherit}
 @media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.alert-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.side-foot{display:none}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.main{padding:20px}.topbar{flex-direction:column;align-items:flex-start}.stats{grid-template-columns:1fr 1fr}.profile-grid,.folder-grid,.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.search{min-width:100%;flex-direction:column}}
 </style>
+<link rel="stylesheet" href="theme.css?v=2">
 </head>
-<body>
+<body class="office-page">
 <div class="app">
  <aside class="sidebar">
-  <div class="brand"><h1>Georgia Top Floors</h1><small>Operations Hub</small><span class="demo-pill">DATABASE DEMO</span></div>
+  <div class="brand"><img class="brand-logo" src="assets/gtf-logo-gold.png?v=2" alt="Georgia Top Floors"><small>Operations Hub</small><span class="demo-pill">DATABASE DEMO</span></div>
   <nav class="nav">
    <button onclick="location.href='index.html'"><span class="icon">⌂</span>Dashboard</button>
-   <button onclick="location.href='index.html'"><span class="icon">▣</span>Jobs</button>
-   <button onclick="location.href='index.html'"><span class="icon">▦</span>Calendar</button>
    <button class="active"><span class="icon">◫</span>Database</button>
-   <button onclick="location.href='index.html'"><span class="icon">👥</span>Crews</button>
+   <button onclick="location.href='documents.html'"><span class="icon">▤</span>Estimates & Billing</button>
+   <button onclick="location.href='crew.html'"><span class="icon">◉</span>Crew View</button>
+   <button onclick="location.href='customer.html'"><span class="icon">◎</span>Customer View</button>
   </nav>
   <div class="side-foot">Presentation prototype.<br>All contact details are fictional/sample data.</div>
  </aside>

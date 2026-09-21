@@ -1,0 +1,20 @@
+Georgia Top Floors UI v2.0 — QA REPORT
+
+RESULT: PASS
+
+CHECKS
+- index.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
+- database.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
+- documents.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
+- customer.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
+- crew.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
+- project-docs.js: syntax OK
+- theme.css: braces balanced
+- index.html: Estimates & Billing nav uses data-href and will not be overwritten
+- logo assets: dark-sidebar and light-surface variants assigned
+- GitHub Pages cache-bust: theme.css?v=2 present on all pages
+
+ISSUES
+None found in static/logic QA.
+
+Workflow logic test: Estimate approval -> Work Order -> Release -> Invoice -> Payment was executed separately and passed.

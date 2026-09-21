@@ -1,0 +1,182 @@
+/* Georgia Top Floors UI System — v2.0 */
+:root{
+  --gtf-gold:#ad8400;
+  --gtf-gold-hover:#987300;
+  --gtf-gold-soft:#f7efd8;
+  --gtf-gold-pale:#fcf8ed;
+  --gtf-charcoal:#332e20;
+  --gtf-ink:#2e2a22;
+  --gtf-muted:#716a5e;
+  --gtf-bg:#f6f2e9;
+  --gtf-surface:#ffffff;
+  --gtf-surface-soft:#fcfaf5;
+  --gtf-border:#e8dfd0;
+  --gtf-border-strong:#ddd1bd;
+  --status-success:#267a4a;
+  --status-success-bg:#e8f6ee;
+  --status-info:#2869d8;
+  --status-info-bg:#eaf1ff;
+  --status-warning:#9a5b12;
+  --status-warning-bg:#fff1df;
+  --status-danger:#bc3934;
+  --status-danger-bg:#fdeceb;
+  --status-neutral:#5f6976;
+  --status-neutral-bg:#eef1f4;
+  --shadow-card:0 8px 28px rgba(51,46,32,.055);
+  --shadow-popover:0 24px 70px rgba(37,31,23,.16);
+  --radius-sm:12px;
+  --radius-md:16px;
+  --radius-lg:20px;
+  --radius-xl:26px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{color:var(--gtf-ink);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font:inherit;transition:border-color .16s ease,box-shadow .16s ease,background .16s ease,transform .16s ease}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(173,132,0,.17);outline-offset:2px;border-color:var(--gtf-gold)!important}
+::selection{background:#f1dfa4;color:#2d2617}
+
+/* ---------- Office / admin surfaces ---------- */
+body.office-page{
+  background:radial-gradient(circle at 92% 0%,rgba(173,132,0,.10),transparent 26%),linear-gradient(180deg,#fbfaf6 0%,var(--gtf-bg) 100%)!important;
+  color:var(--gtf-ink)!important;
+}
+body.office-page .app{grid-template-columns:268px minmax(0,1fr)!important}
+body.office-page .sidebar{
+  background:linear-gradient(180deg,#30291d 0%,#18130d 100%)!important;
+  padding:24px 18px!important;
+  box-shadow:inset -1px 0 rgba(255,255,255,.05)!important;
+}
+body.office-page .brand{padding:7px 10px 20px!important;border-bottom:1px solid rgba(255,255,255,.09)!important;margin-bottom:15px!important}
+body.office-page .brand-logo{display:block;width:min(194px,100%);height:auto;margin:0 0 14px}
+body.office-page .brand small{display:block!important;color:#d5cdbf!important;font-size:11px!important;letter-spacing:.11em;text-transform:uppercase;font-weight:800!important}
+body.office-page .demo-pill,body.office-page .pill{display:inline-flex!important;margin-top:11px!important;padding:5px 9px!important;border-radius:999px!important;background:rgba(173,132,0,.16)!important;border:1px solid rgba(229,198,102,.28)!important;color:#f2d985!important;font-size:10px!important;font-weight:800!important;letter-spacing:.055em}
+body.office-page .nav{gap:7px!important}
+body.office-page .nav button{border-radius:14px!important;padding:12px 14px!important;font-weight:700!important;color:#e2ddd4!important}
+body.office-page .nav button:hover{background:rgba(255,255,255,.07)!important;transform:translateX(2px)}
+body.office-page .nav button.active{background:linear-gradient(180deg,#c39b1b 0%,var(--gtf-gold) 100%)!important;color:#211b0f!important;box-shadow:0 10px 25px rgba(173,132,0,.24)!important}
+body.office-page .nav .icon,body.office-page .icon{opacity:.92}
+body.office-page .side-foot{color:#a49c90!important;font-size:11px!important}
+body.office-page .main{padding:30px 36px 48px!important}
+body.office-page .topbar{margin-bottom:24px!important}
+body.office-page .topbar h2{font-size:30px!important;letter-spacing:-.025em;color:#2c271f!important}
+body.office-page .topbar p{color:var(--gtf-muted)!important;max-width:820px}
+body.office-page .card,body.office-page .flowStep,body.office-page .job-card,body.office-page .attn,body.office-page .alert,body.office-page .folder,body.office-page .doc,body.office-page .documentRow,body.office-page .invoice{border:1px solid var(--gtf-border)!important;border-radius:var(--radius-lg)!important;box-shadow:var(--shadow-card)!important;background:linear-gradient(180deg,#fff 0%,#fffdfa 100%)!important}
+body.office-page .section,body.office-page .stat{background:linear-gradient(180deg,#fff 0%,#fffdfa 100%)!important}
+body.office-page .stat .label{font-size:11px!important;letter-spacing:.075em;color:var(--gtf-muted)!important}
+body.office-page .stat .value{color:#2d281f!important;letter-spacing:-.035em}
+body.office-page .stat .hint,body.office-page .sub{color:var(--gtf-muted)!important}
+body.office-page .btn{min-height:40px;border:1px solid var(--gtf-border-strong)!important;background:#fff!important;border-radius:14px!important;padding:9px 14px!important;color:#393329!important;font-weight:800!important;box-shadow:0 1px 0 rgba(255,255,255,.8) inset}
+body.office-page .btn:hover:not(:disabled){transform:translateY(-1px);border-color:#cfbea1!important;box-shadow:0 8px 20px rgba(51,46,32,.07)}
+body.office-page .btn.primary{background:linear-gradient(180deg,#c29a1b 0%,var(--gtf-gold) 100%)!important;border-color:var(--gtf-gold)!important;color:#211b10!important;box-shadow:0 9px 20px rgba(173,132,0,.16)!important}
+body.office-page .btn.primary:hover:not(:disabled){background:linear-gradient(180deg,#b78e12 0%,var(--gtf-gold-hover) 100%)!important}
+body.office-page .btn.dark{background:linear-gradient(180deg,#3a3328 0%,#211b14 100%)!important;border-color:#211b14!important;color:#fff!important}
+body.office-page .btn.danger{background:var(--status-danger-bg)!important;border-color:#efcbc8!important;color:var(--status-danger)!important}
+body.office-page .btn.small{min-height:34px!important;padding:7px 10px!important}
+body.office-page .tab{border:1px solid var(--gtf-border)!important;background:#fff!important;color:#4e473b!important;border-radius:999px!important;padding:9px 14px!important;font-weight:800!important}
+body.office-page .tab:hover{border-color:#d8c8a9!important;background:#fffdf7!important}
+body.office-page .tab.active{background:linear-gradient(180deg,#f3e3a8 0%,#e3c45e 100%)!important;border-color:#dbba50!important;color:#2b2416!important;box-shadow:0 7px 16px rgba(173,132,0,.14)!important}
+body.office-page input,body.office-page select,body.office-page textarea{border:1px solid var(--gtf-border)!important;border-radius:13px!important;background:#fff!important;color:var(--gtf-ink)!important}
+body.office-page input::placeholder,body.office-page textarea::placeholder{color:#9b9387}
+body.office-page .search input,body.office-page .search select{min-height:42px}
+body.office-page table{border-collapse:separate!important;border-spacing:0!important}
+body.office-page th{background:#fbf7ed!important;color:#746b5c!important;font-size:10px!important;letter-spacing:.07em!important}
+body.office-page td{border-color:#eee6d9!important}
+body.office-page tr:hover td{background:#fffcf5!important}
+body.office-page .detail{background:#fbf8f2!important;border:1px solid #efe6d8!important;border-radius:14px!important}
+body.office-page .drawer,body.office-page .modal{border-radius:var(--radius-xl)!important;box-shadow:var(--shadow-popover)!important;border:1px solid rgba(226,215,198,.8)!important}
+body.office-page .note{background:#fff8e7!important;border-color:#efdda7!important;border-radius:14px!important}
+body.office-page .message{background:#fbfaf7!important;border-color:var(--gtf-border)!important;border-radius:14px!important}
+body.office-page .toast{background:#221c14!important;color:#fff!important;border:1px solid rgba(255,255,255,.07);box-shadow:0 14px 35px rgba(0,0,0,.18)}
+body.office-page .flow{gap:12px!important}
+body.office-page .flowStep{position:relative;padding:17px!important;overflow:hidden}
+body.office-page .flowStep::before{content:"";position:absolute;left:16px;top:0;width:58px;height:4px;border-radius:0 0 999px 999px;background:linear-gradient(90deg,var(--gtf-gold),#e7cb6f)}
+body.office-page .flowStep strong{color:#30291f}
+body.office-page .alert.warn{border-left:4px solid var(--status-warning)!important}
+body.office-page .alert.bad{border-left:4px solid var(--status-danger)!important}
+body.office-page .attn{border-left:4px solid var(--status-danger)!important}
+
+/* ---------- Semantic statuses ---------- */
+.badge,.docBadge,.woStatus,.status-chip{display:inline-flex!important;align-items:center;justify-content:center;border-radius:999px!important;padding:5px 9px!important;font-size:11px!important;font-weight:800!important;line-height:1.15!important;white-space:nowrap}
+.status-neutral,.badge.gray,.gray,.badge.scheduled{background:var(--status-neutral-bg)!important;color:var(--status-neutral)!important}
+.status-info,.badge.blue,.blue,.badge.otw,.badge.inprogress{background:var(--status-info-bg)!important;color:var(--status-info)!important}
+.status-success,.badge.green,.green,.badge.arrived,.badge.completed{background:var(--status-success-bg)!important;color:var(--status-success)!important}
+.status-warning,.badge.amber,.amber,.badge.waiting{background:var(--status-warning-bg)!important;color:var(--status-warning)!important}
+.status-danger,.badge.red,.red,.badge.problem{background:var(--status-danger-bg)!important;color:var(--status-danger)!important}
+.badge.gold,.gold{background:var(--gtf-gold-soft)!important;color:#7d5f00!important}
+
+/* ---------- Customer portal ---------- */
+body.customer-page{background:radial-gradient(circle at 8% 0%,rgba(173,132,0,.09),transparent 24%),linear-gradient(180deg,#fbfaf6 0%,#f3eee4 100%)!important;color:var(--gtf-ink)!important}
+body.customer-page .shell{max-width:1160px!important;padding:26px!important}
+body.customer-page .top{align-items:center!important}
+body.customer-page .brand{gap:14px!important}
+body.customer-page .logo{width:auto!important;height:auto!important;background:transparent!important;border-radius:0!important;padding:0!important}
+body.customer-page .brand-logo{display:block;width:min(205px,42vw);height:auto}
+body.customer-page .brand h1{display:none!important}
+body.customer-page .brand p{font-size:11px!important;color:var(--gtf-muted)!important;margin-top:6px!important;text-transform:uppercase;letter-spacing:.11em;font-weight:800!important}
+body.customer-page .pill{background:var(--gtf-gold-soft)!important;border-color:#e6cf88!important;color:#795b00!important;border-radius:999px!important}
+body.customer-page .hero{background:radial-gradient(circle at 88% 0%,rgba(231,201,105,.18),transparent 30%),linear-gradient(135deg,#332b1e 0%,#19130c 100%)!important;border:1px solid rgba(255,255,255,.06)!important;border-radius:26px!important;box-shadow:var(--shadow-popover)!important}
+body.customer-page .hero h2{letter-spacing:-.03em!important}
+body.customer-page .status{background:rgba(70,126,219,.16)!important;border-color:rgba(128,171,239,.25)!important;color:#e8f1ff!important}
+body.customer-page .dotPulse{background:#73a6f6!important;box-shadow:0 0 0 0 rgba(115,166,246,.45)!important}
+body.customer-page .card,body.customer-page .visit,body.customer-page .info,body.customer-page .documentRow,body.customer-page .invoice,body.customer-page .notice,body.customer-page .panel,body.customer-page .modal,body.customer-page .docModal{border:1px solid var(--gtf-border)!important;border-radius:20px!important;box-shadow:var(--shadow-card)!important}
+body.customer-page .card{background:linear-gradient(180deg,#fff 0%,#fffdfa 100%)!important}
+body.customer-page .visit{background:#fffcf5!important}
+body.customer-page .info{background:#fbf8f2!important}
+body.customer-page .btn{border-radius:14px!important;border-color:var(--gtf-border-strong)!important;font-weight:800!important;color:#3c352a!important}
+body.customer-page .btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(51,46,32,.07)}
+body.customer-page .btn.primary{background:linear-gradient(180deg,#c29a1b 0%,var(--gtf-gold) 100%)!important;border-color:var(--gtf-gold)!important;color:#211b10!important}
+body.customer-page .btn.dark{background:linear-gradient(180deg,#3a3328 0%,#211b14 100%)!important;border-color:#211b14!important;color:#fff!important}
+body.customer-page .map{border-color:#dce4dc!important;background:linear-gradient(180deg,#eff4ef,#e6ede6)!important}
+body.customer-page .progress{background:#eee7da!important}
+body.customer-page .bar{background:linear-gradient(90deg,#8b6900,#be9412,#edd57c)!important}
+body.customer-page .step{border-color:var(--gtf-border)!important;border-radius:14px!important}
+body.customer-page .step.current{background:#fffbef!important;border-color:#dfc970!important}
+body.customer-page .step.done .circle{background:var(--status-success-bg)!important;color:var(--status-success)!important}
+body.customer-page .step.current .circle{background:#ead172!important;color:#2d2515!important}
+body.customer-page .notice{background:#fff8e7!important;border-color:#efdda7!important}
+body.customer-page .toast{background:#221c14!important;box-shadow:0 14px 35px rgba(0,0,0,.18)}
+body.customer-page .docBadge.status-neutral{background:var(--status-neutral-bg)!important;color:var(--status-neutral)!important}
+body.customer-page .docBadge.status-info{background:var(--status-info-bg)!important;color:var(--status-info)!important}
+body.customer-page .docBadge.status-success{background:var(--status-success-bg)!important;color:var(--status-success)!important}
+body.customer-page .docBadge.status-warning{background:var(--status-warning-bg)!important;color:var(--status-warning)!important}
+body.customer-page .docBadge.status-danger{background:var(--status-danger-bg)!important;color:var(--status-danger)!important}
+
+/* ---------- Crew mobile ---------- */
+body.crew-page{background:radial-gradient(circle at 50% 0%,rgba(173,132,0,.11),transparent 25%),linear-gradient(180deg,#fbf9f3 0%,#f2ece1 100%)!important;color:var(--gtf-ink)!important}
+body.crew-page .phone{max-width:560px!important;padding:22px 18px 28px!important}
+body.crew-page .top{margin-bottom:18px!important;align-items:center!important}
+body.crew-page .brand{font-weight:900!important;display:flex!important;align-items:center!important}
+body.crew-page .crew-logo{display:block;width:min(168px,46vw);height:auto}
+body.crew-page .pill{background:var(--gtf-gold-soft)!important;border-color:#e5cd83!important;color:#795b00!important;border-radius:999px!important}
+body.crew-page .card,body.crew-page .modal{border:1px solid var(--gtf-border)!important;border-radius:20px!important;box-shadow:var(--shadow-card)!important;background:linear-gradient(180deg,#fff 0%,#fffdfa 100%)!important}
+body.crew-page .info{background:#fbf8f2!important;border:1px solid #eee4d5!important;border-radius:13px!important}
+body.crew-page .btn{border-radius:14px!important;border-color:var(--gtf-border-strong)!important;font-weight:800!important;color:#3c352a!important}
+body.crew-page .btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(51,46,32,.07)}
+body.crew-page .primary{background:linear-gradient(180deg,#c29a1b 0%,var(--gtf-gold) 100%)!important;border-color:var(--gtf-gold)!important;color:#211b10!important}
+body.crew-page .dark{background:linear-gradient(180deg,#3a3328 0%,#211b14 100%)!important;border-color:#211b14!important;color:#fff!important}
+body.crew-page .danger{background:var(--status-danger-bg)!important;color:var(--status-danger)!important;border-color:#efcbc8!important}
+body.crew-page input,body.crew-page select,body.crew-page textarea{border-color:var(--gtf-border)!important;border-radius:13px!important;background:#fff!important}
+body.crew-page .workOrder{border-left:4px solid var(--gtf-gold)!important}
+body.crew-page .woNote{background:#fff8e7!important;border-color:#efdda7!important;border-radius:13px!important}
+body.crew-page .statusGrid .btn.active{outline:3px solid rgba(173,132,0,.18)!important;background:#fff8e9!important;border-color:#d6bc68!important}
+body.crew-page .toast{background:#221c14!important;box-shadow:0 14px 35px rgba(0,0,0,.18)}
+body.crew-page .badge.status-neutral,body.crew-page .woStatus.status-neutral{background:var(--status-neutral-bg)!important;color:var(--status-neutral)!important}
+body.crew-page .badge.status-info,body.crew-page .woStatus.status-info{background:var(--status-info-bg)!important;color:var(--status-info)!important}
+body.crew-page .badge.status-success,body.crew-page .woStatus.status-success{background:var(--status-success-bg)!important;color:var(--status-success)!important}
+body.crew-page .badge.status-warning,body.crew-page .woStatus.status-warning{background:var(--status-warning-bg)!important;color:var(--status-warning)!important}
+body.crew-page .badge.status-danger,body.crew-page .woStatus.status-danger{background:var(--status-danger-bg)!important;color:var(--status-danger)!important}
+
+@media(max-width:1050px){body.office-page .main{padding:24px!important}}
+@media(max-width:860px){
+  body.office-page .app{grid-template-columns:1fr!important}
+  body.office-page .sidebar{position:relative!important;height:auto!important}
+  body.office-page .brand-logo{width:170px}
+  body.office-page .side-foot{display:none!important}
+}
+@media(max-width:600px){
+  body.customer-page .shell{padding:14px!important}
+  body.customer-page .brand-logo{width:165px}
+  body.customer-page .hero{border-radius:22px!important}
+  body.crew-page .phone{padding:14px!important}
+}

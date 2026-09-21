@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="theme-color" content="#332e20">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Georgia Top Floors — Customer Portal Demo</title>
 <style>
@@ -36,10 +37,11 @@
 .docTable{width:100%;border-collapse:collapse;margin-top:12px}.docTable th,.docTable td{padding:9px;border-bottom:1px solid var(--line);font-size:12px;text-align:left}.docTable th{font-size:10px;color:var(--muted);text-transform:uppercase}.docMoney{font-size:24px;font-weight:900}
 
 </style>
+<link rel="stylesheet" href="theme.css?v=2">
 </head>
-<body>
+<body class="customer-page">
 <div class="shell">
-  <div class="top"><div class="brand"><div class="logo">GTF</div><div><h1>Georgia Top Floors</h1><p>Customer Project Portal</p></div></div><span class="pill">PRESENTATION DEMO</span></div>
+  <div class="top"><div class="brand"><div class="logo"><img class="brand-logo" src="assets/gtf-logo.png?v=2" alt="Georgia Top Floors"></div><div><h1>Georgia Top Floors</h1><p>Customer Project Portal</p></div></div><span class="pill">PRESENTATION DEMO</span></div>
   <section class="hero"><div class="heroRow"><div><small>WELCOME BACK</small><h2 id="name">Emily, your flooring project is underway.</h2><p id="project">Sand & Finish · Roswell, GA</p></div><div class="status" id="status"><span class="dotPulse"></span><span>Crew is on the way</span></div></div></section>
   <div class="grid two">
     <div>
@@ -59,7 +61,7 @@
     </aside>
   </div>
 </div>
-<div class="controls"><div class="panel" id="panel"><strong>Presentation Controls</strong><div class="sub">Demo different customer permissions and trip states.</div><button class="btn" onclick="setMode('direct')">Direct homeowner</button><button class="btn" onclick="setMode('contractor')">Contractor-referred homeowner</button><button class="btn" onclick="setCrew('otw')">Simulate OTW</button><button class="btn" onclick="setCrew('arrived')">Simulate Arrived</button><button class="btn" onclick="setCrew('working')">Simulate In Progress</button></div><button class="btn dark" onclick="panel.classList.toggle('show')">Demo Controls</button></div>
+<div class="controls"><div class="panel" id="panel"><strong>Presentation Controls</strong><div class="sub">Demo different customer permissions and trip states.</div><button class="btn" onclick="setMode('direct')">Direct homeowner</button><button class="btn" onclick="setMode('contractor')">Contractor-referred homeowner</button><button class="btn" onclick="setCrew('otw')">Simulate OTW</button><button class="btn" onclick="setCrew('arrived')">Simulate Arrived</button><button class="btn" onclick="setCrew('working')">Simulate In Progress</button></div><button class="btn dark" onclick="document.getElementById('panel').classList.toggle('show')">Demo Controls</button></div>
 
 <div class="docModalBg" id="customerDocModal" onclick="if(event.target===this)closeCustomerDocument()">
   <div class="docModal">
@@ -79,11 +81,18 @@ const steps=[["Inspection","done"],["Estimate approved","done"],["Furniture / pr
 document.getElementById("steps").innerHTML=steps.map(([n,s],i)=>`<div class="step ${s}"><div class="circle">${s==="done"?"✓":i+1}</div><div><strong>${n}</strong><div class="sub">${s==="done"?"Completed":s==="current"?"In progress":"Upcoming"}</div></div><div>${s==="current"?"Today":""}</div></div>`).join("");
 let timer;
 
+function portalStatusClass(status){
+ if(["Approved","Paid","Completed","Arrived"].includes(status))return "status-success";
+ if(["Sent","Open","OTW","In Progress"].includes(status))return "status-info";
+ if(["Partially Paid","Ready","Waiting"].includes(status))return "status-warning";
+ if(["Declined","Cancelled","Problem"].includes(status))return "status-danger";
+ return "status-neutral";
+}
 function renderCustomerDocuments(){
  const b=GTFWorkflow.getCustomerBundle("Emily Carter"),box=document.getElementById("customerDocuments");
  if(!b){box.innerHTML='<div class="sub">No project documents yet.</div>';return;}
  const e=b.estimate,inv=b.invoice,fin=b.invoiceFinancials;
- box.innerHTML=`${e&&e.customerVisible!==false?`<div class="documentRow"><div><strong>Estimate ${e.number}</strong><div class="sub">${GTFWorkflow.money(GTFWorkflow.totals(e).total)} · project scope & pricing</div><span class="docBadge">${e.status}</span></div><button class="btn" onclick="openCustomerDocument('estimate')">View${e.status==='Sent'?' / Approve':''}</button></div>`:''}${inv&&inv.customerVisible!==false?`<div class="documentRow"><div><strong>Invoice ${inv.number}</strong><div class="sub">${GTFWorkflow.money(fin.balance)} remaining</div><span class="docBadge">${fin.status}</span></div><button class="btn primary" onclick="openCustomerDocument('invoice')">View / Pay</button></div>`:'<div class="sub" style="padding:6px 0">Invoice will appear here after the approved estimate is converted by the office.</div>'}`;
+ box.innerHTML=`${e&&e.customerVisible!==false?`<div class="documentRow"><div><strong>Estimate ${e.number}</strong><div class="sub">${GTFWorkflow.money(GTFWorkflow.totals(e).total)} · project scope & pricing</div><span class="docBadge ${portalStatusClass(e.status)}">${e.status}</span></div><button class="btn" onclick="openCustomerDocument('estimate')">View${e.status==='Sent'?' / Approve':''}</button></div>`:''}${inv&&inv.customerVisible!==false?`<div class="documentRow"><div><strong>Invoice ${inv.number}</strong><div class="sub">${GTFWorkflow.money(fin.balance)} remaining</div><span class="docBadge ${portalStatusClass(fin.status)}">${fin.status}</span></div><button class="btn primary" onclick="openCustomerDocument('invoice')">View / Pay</button></div>`:'<div class="sub" style="padding:6px 0">Invoice will appear here after the approved estimate is converted by the office.</div>'}`;
 }
 function openCustomerDocument(type){
  const b=GTFWorkflow.getCustomerBundle("Emily Carter");if(!b)return;const title=document.getElementById("customerDocTitle"),box=document.getElementById("customerDocContent");
