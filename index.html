@@ -175,6 +175,7 @@ tr:hover td{background:#FFFDF8}
       <button class="active" data-page="dashboard"><span class="icon">⌂</span><span data-i18n="dashboard">Dashboard</span></button>
       <button data-page="jobs"><span class="icon">▣</span><span data-i18n="jobs">Jobs</span></button>
       <button data-page="calendar"><span class="icon">▦</span><span data-i18n="calendar">Calendar</span></button>
+      <button onclick="window.location.href='documents.html'"><span class="icon">▤</span><span>Estimates & Billing</span></button>
       <button data-href="database.html"><span class="icon">◫</span><span>Database</span></button>
       <button data-page="customers"><span class="icon">◎</span><span data-i18n="customers">Customers</span></button>
       <button data-page="crews"><span class="icon">👥</span><span data-i18n="crews">Crews</span></button>
@@ -220,6 +221,7 @@ tr:hover td{background:#FFFDF8}
             <div class="quick">
               <button onclick="openNewJob()">＋ New Job<small>Create and schedule a project</small></button>
               <button onclick="goPage('calendar')">▦ Calendar<small>Review upcoming visits</small></button>
+              <button onclick="window.location.href='documents.html'">▤ Estimates & Billing<small>Sales workflow, work orders & payments</small></button>
               <button onclick="goPage('customers')">◎ Customer<small>Find contact & property</small></button>
               <button onclick="window.location.href='database.html'">◫ Database<small>Contacts, staff, subs & vendors</small></button>
               <button onclick="goPage('crews')">👥 Crews<small>See assignments & skills</small></button>
@@ -321,7 +323,7 @@ tr:hover td{background:#FFFDF8}
 
 <div class="toast" id="toast"></div>
 
-<script src="project-docs.js"></script>
+<script src="project-docs.js?v=2"></script>
 <script>
 const baseJobs = [
  {id:1,customer:"John Miller",company:"Alpha",address:"2850 Windward Pkwy, Alpharetta, GA",service:"Hardwood Installation",date:"Today",window:"8:00–9:00 AM",manager:"André",crew:"Carlos + Edilson",status:"In Progress",sf:"1,240 SF",stain:"Natural",materials:"3¼\" white oak, shoe molding",notes:"Contractor-referred project. Homeowner portal must not show contractor pricing."},
@@ -478,14 +480,15 @@ function openDetail(id){
    ${["Scheduled","OTW","Arrived","In Progress","Completed"].map(s=>`<button class="${j.status===s?"current":""}" onclick="setStatus(${j.id},'${s}')">${s}</button>`).join("")}
  </div>
 
- <h4>Project Documents</h4>
- <div class="doc-strip">
-   <div class="doc-mini"><strong>Estimate · ${esc(d.estimate.number)}</strong><small>Customer-facing proposal</small><span class="doc-status ${docStatusClass(d.estimate.status)}">${esc(d.estimate.status)}</span><div style="margin-top:8px"><button class="btn small" onclick="openProjectDocument(${j.id},'estimate')">Open Estimate</button></div></div>
-   <div class="doc-mini"><strong>Invoice · ${esc(d.invoice.number)}</strong><small>Customer billing & payment</small><span class="doc-status ${docStatusClass(d.invoice.status)}">${esc(d.invoice.status)}</span><div style="margin-top:8px"><button class="btn small" onclick="openProjectDocument(${j.id},'invoice')">Open Invoice</button></div></div>
-   <div class="doc-mini"><strong>Work Order · ${esc(d.workOrder.number)}</strong><small>Crew-facing scope — no pricing</small><span class="doc-status ${docStatusClass(d.workOrder.status)}">${esc(d.workOrder.status)}</span><div style="margin-top:8px"><button class="btn small" onclick="openProjectDocument(${j.id},'workorder')">Open Work Order</button></div></div>
+ <h4>Estimate → Work Order → Invoice</h4>
+ <div class="doc-strip" id="workflowSummary-${j.id}">
+   ${(()=>{const b=GTFWorkflow.bundleForJob(j);return `
+   <div class="doc-mini"><strong>Estimate</strong><small>${b.estimate?esc(b.estimate.number):'Not created'}</small><span class="doc-status ${b.estimate?docStatusClass(b.estimate.status):'info'}">${b.estimate?esc(b.estimate.status):'Not created'}</span></div>
+   <div class="doc-mini"><strong>Work Order</strong><small>${b.workOrder?esc(b.workOrder.number):'Generate after approval'}</small><span class="doc-status ${b.workOrder?docStatusClass(b.workOrder.status):'info'}">${b.workOrder?esc(b.workOrder.status):'Not created'}</span></div>
+   <div class="doc-mini"><strong>Invoice</strong><small>${b.invoice?esc(b.invoice.number):'Generate after approval'}</small><span class="doc-status ${b.invoice?docStatusClass(GTFWorkflow.invoiceFinancials(GTFWorkflow.load(),b.invoice).status):'info'}">${b.invoice?esc(GTFWorkflow.invoiceFinancials(GTFWorkflow.load(),b.invoice).status):'Not created'}</span></div>`})()}
  </div>
- <div class="note">Permissions: direct customers can see Estimate + Invoice. Crew members see the Work Order only. Contractor-referred homeowners do not see internal pricing.</div>
-
+ <div class="note">Estimate contains pricing. Work Order is the crew version without pricing. Invoice is customer billing. Contractor-referred homeowners keep financial documents hidden.</div>
+ <div style="margin-top:10px"><button class="btn primary" onclick="window.location.href='documents.html'">Open Estimates & Billing</button></div>
  <h4>Internal Notes</h4><div class="note">${esc(j.notes)}</div>
  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
    <button class="btn" onclick="toast('Maps button would open navigation on the field device.')">Open in Maps</button>
