@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Georgia Top Floors Hub — Demo</title>
+<style>
+:root{
+  --bg:#F7F4EC;
+  --card:#FFFFFF;
+  --text:#1F2937;
+  --muted:#6B7280;
+  --gold:#C9A646;
+  --gold-dark:#A77916;
+  --gold-soft:#F6EDCF;
+  --green:#2E7D5B;
+  --green-soft:#E8F5EE;
+  --blue:#3568B8;
+  --blue-soft:#EAF1FB;
+  --amber:#B7791F;
+  --amber-soft:#FFF4D6;
+  --red:#B83A3A;
+  --red-soft:#FCEBEB;
+  --line:#E8E2D4;
+  --nav:#18212B;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:var(--nav);color:white;padding:22px 16px;position:sticky;top:0;height:100vh}
+.brand{padding:8px 10px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px}
+.brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.1px}
+.brand small{display:block;color:#C8CDD4;margin-top:4px}
+.demo-pill{display:inline-block;margin-top:10px;background:rgba(201,166,70,.18);color:#F1D77C;border:1px solid rgba(201,166,70,.45);padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav button{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:0;border-radius:10px;background:transparent;color:#DDE2E7;text-align:left;cursor:pointer}
+.nav button:hover{background:rgba(255,255,255,.06)}
+.nav button.active{background:var(--gold);color:#1B1B1B;font-weight:800}
+.nav .icon{width:22px;text-align:center}
+.side-foot{position:absolute;bottom:20px;left:16px;right:16px;color:#98A2AD;font-size:12px;line-height:1.4}
+.main{padding:28px 34px 44px;min-width:0}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:24px}
+.topbar h2{margin:0;font-size:28px}
+.topbar p{margin:5px 0 0;color:var(--muted)}
+.actions{display:flex;align-items:center;gap:10px}
+.btn{border:1px solid var(--line);background:white;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700;color:var(--text)}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:#1F2937}
+.btn.dark{background:var(--nav);border-color:var(--nav);color:white}
+.btn.small{padding:7px 10px;font-size:13px}
+.lang{display:flex;background:white;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.lang button{border:0;background:transparent;padding:9px 10px;cursor:pointer}
+.lang button.active{background:var(--gold-soft);color:var(--gold-dark);font-weight:800}
+.page{display:none}
+.page.active{display:block}
+.grid{display:grid;gap:16px}
+.grid.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 20px rgba(24,33,43,.04)}
+.stat{padding:18px}
+.stat .label{font-size:13px;color:var(--muted);font-weight:700}
+.stat .value{font-size:30px;font-weight:900;margin-top:6px}
+.stat .hint{font-size:12px;color:var(--muted);margin-top:4px}
+.section{padding:18px}
+.section h3{margin:0 0 14px;font-size:18px}
+.two{grid-template-columns:minmax(0,1.7fr) minmax(300px,.9fr)}
+.job-list{display:flex;flex-direction:column;gap:10px}
+.job-card{border:1px solid var(--line);border-radius:13px;padding:14px;display:grid;grid-template-columns:1.1fr 1fr auto;gap:12px;align-items:center;background:#fff}
+.job-title{font-weight:900}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.badge{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
+.scheduled{background:var(--gold-soft);color:#7D6418}
+.otw{background:var(--green-soft);color:var(--green)}
+.arrived{background:#E9F7F3;color:#25785A}
+.inprogress{background:var(--blue-soft);color:var(--blue)}
+.waiting{background:var(--amber-soft);color:var(--amber)}
+.problem{background:var(--red-soft);color:var(--red)}
+.completed{background:#E7F6EC;color:#247A45}
+.attn{border-left:4px solid var(--red);padding:12px 13px;background:#FFFDFD;border-radius:10px;margin-bottom:10px}
+.attn strong{display:block}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.quick button{padding:14px;border:1px solid var(--line);background:#fff;border-radius:12px;text-align:left;cursor:pointer;font-weight:800}
+.quick small{display:block;color:var(--muted);font-weight:500;margin-top:3px}
+.toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.search{display:flex;gap:8px;flex:1;min-width:280px}
+.search input,.search select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:white;color:var(--text)}
+.search input{flex:1}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:13px 12px;border-bottom:1px solid var(--line);font-size:14px}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;background:#FBFAF7}
+tr:hover td{background:#FFFDF8}
+.link-btn{border:0;background:transparent;color:var(--gold-dark);font-weight:800;cursor:pointer;padding:0}
+.calendar{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.day{background:white;border:1px solid var(--line);border-radius:14px;min-height:250px;padding:12px}
+.day h4{margin:0 0 10px;font-size:14px}
+.day small{color:var(--muted)}
+.cal-job{border-left:4px solid var(--gold);padding:9px;background:#FCFAF3;border-radius:8px;margin:9px 0;font-size:12px}
+.cal-job strong{display:block;font-size:13px;margin-bottom:3px}
+.customer-grid,.crew-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.person-card{padding:16px}
+.person-card h4{margin:0 0 4px}
+.meta{font-size:13px;color:var(--muted);line-height:1.55}
+.skills{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.skill{font-size:11px;background:#F1EFE8;padding:5px 8px;border-radius:999px}
+.modal-backdrop,.drawer-backdrop{display:none;position:fixed;inset:0;background:rgba(10,15,20,.42);z-index:20}
+.modal-backdrop.show,.drawer-backdrop.show{display:block}
+.modal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(720px,92vw);max-height:88vh;overflow:auto;background:white;border-radius:18px;padding:22px;box-shadow:0 24px 80px rgba(0,0,0,.25)}
+.drawer{position:absolute;right:0;top:0;height:100%;width:min(560px,95vw);background:white;padding:24px;overflow:auto;box-shadow:-20px 0 60px rgba(0,0,0,.2)}
+.modal h3,.drawer h3{margin-top:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;color:var(--muted);font-weight:800}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:9px;padding:10px;background:white}
+.field textarea{min-height:90px;resize:vertical}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.detail{padding:12px;background:#FAF9F5;border-radius:10px}
+.detail span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:800;margin-bottom:4px}
+.timeline{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.timeline button{border:1px solid var(--line);background:white;padding:8px 10px;border-radius:999px;cursor:pointer;font-size:12px;font-weight:800}
+.timeline button.current{background:var(--gold);border-color:var(--gold)}
+.note{padding:12px;background:#FFF9E8;border:1px solid #F2E3AD;border-radius:10px;font-size:13px}
+.toast{position:fixed;right:24px;bottom:24px;background:var(--nav);color:white;padding:12px 16px;border-radius:10px;opacity:0;transform:translateY(10px);transition:.25s;z-index:50}
+.toast.show{opacity:1;transform:none}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+@media(max-width:1050px){
+  .grid.stats{grid-template-columns:repeat(2,1fr)}
+  .two{grid-template-columns:1fr}
+  .customer-grid,.crew-grid{grid-template-columns:repeat(2,1fr)}
+  .calendar{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:relative;height:auto}
+  .side-foot{display:none}
+  .nav{display:grid;grid-template-columns:repeat(2,1fr)}
+  .main{padding:20px}
+  .topbar{align-items:flex-start;flex-direction:column}
+  .grid.stats{grid-template-columns:1fr 1fr}
+  .job-card{grid-template-columns:1fr}
+  .customer-grid,.crew-grid{grid-template-columns:1fr}
+  .calendar{grid-template-columns:1fr}
+  .form-grid,.detail-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Georgia Top Floors</h1>
+      <small>Operations Hub</small>
+      <span class="demo-pill">PRESENTATION DEMO</span>
+    </div>
+    <nav class="nav">
+      <button class="active" data-page="dashboard"><span class="icon">⌂</span><span data-i18n="dashboard">Dashboard</span></button>
+      <button data-page="jobs"><span class="icon">▣</span><span data-i18n="jobs">Jobs</span></button>
+      <button data-page="calendar"><span class="icon">▦</span><span data-i18n="calendar">Calendar</span></button>
+      <button data-page="customers"><span class="icon">◎</span><span data-i18n="customers">Customers</span></button>
+      <button data-page="crews"><span class="icon">👥</span><span data-i18n="crews">Crews</span></button>
+    </nav>
+    <div class="side-foot">Static demo with local sample data.<br>No real customer information is used.</div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">Office Dashboard</h2>
+        <p id="pageSubtitle">One place to see today’s work, crews, customers and exceptions.</p>
+      </div>
+      <div class="actions">
+        <div class="lang"><button id="enBtn" class="active">EN</button><button id="ptBtn">PT</button></div>
+        <button class="btn primary" id="newJobBtn">+ New Job</button>
+      </div>
+    </div>
+
+    <section class="page active" id="dashboard">
+      <div class="grid stats">
+        <div class="card stat"><div class="label">TODAY'S JOBS</div><div class="value" id="statToday">5</div><div class="hint">Across 4 properties</div></div>
+        <div class="card stat"><div class="label">IN PROGRESS</div><div class="value" id="statProgress">2</div><div class="hint">Live operational status</div></div>
+        <div class="card stat"><div class="label">NEEDS ATTENTION</div><div class="value" id="statAttention">2</div><div class="hint">Material / issue follow-up</div></div>
+        <div class="card stat"><div class="label">CREWS ACTIVE</div><div class="value">3</div><div class="hint">Managers + field teams</div></div>
+      </div>
+
+      <div class="grid two">
+        <div class="card section">
+          <h3>Today's Jobs</h3>
+          <div class="job-list" id="todayJobs"></div>
+        </div>
+        <div>
+          <div class="card section" style="margin-bottom:16px">
+            <h3>Needs Attention</h3>
+            <div class="attn"><strong>Material pickup</strong><span class="sub">Alpha / Johnson · Engineered hardwood</span></div>
+            <div class="attn"><strong>Customer unavailable</strong><span class="sub">Emily Carter · tomorrow 8–9 AM</span></div>
+          </div>
+          <div class="card section">
+            <h3>Quick Actions</h3>
+            <div class="quick">
+              <button onclick="openNewJob()">＋ New Job<small>Create and schedule a project</small></button>
+              <button onclick="goPage('calendar')">▦ Calendar<small>Review upcoming visits</small></button>
+              <button onclick="goPage('customers')">◎ Customer<small>Find contact & property</small></button>
+              <button onclick="goPage('crews')">👥 Crews<small>See assignments & skills</small></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="jobs">
+      <div class="card section">
+        <div class="toolbar">
+          <div>
+            <h3 style="margin-bottom:4px">Jobs & Projects</h3>
+            <div class="sub">Structured project data instead of scattered calendar titles and chat messages.</div>
+          </div>
+          <button class="btn primary" onclick="openNewJob()">+ New Job</button>
+        </div>
+        <div class="search">
+          <input id="jobSearch" placeholder="Search customer, company, service or address..." />
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option>Scheduled</option><option>OTW</option><option>Arrived</option>
+            <option>In Progress</option><option>Waiting for Material</option>
+            <option>Problem</option><option>Completed</option>
+          </select>
+        </div>
+        <div class="table-wrap" style="margin-top:12px">
+          <table>
+            <thead><tr><th>Customer / Company</th><th>Service</th><th>Schedule</th><th>Manager</th><th>Status</th><th></th></tr></thead>
+            <tbody id="jobsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="calendar">
+      <div class="card section">
+        <div class="toolbar"><div><h3 style="margin-bottom:4px">Schedule</h3><div class="sub">Customer-facing arrival windows, internal assignments and multi-day work.</div></div><button class="btn" onclick="toast('Google Calendar sync is planned for a later phase.')">↻ Google Calendar Sync</button></div>
+        <div class="calendar" id="calendarGrid"></div>
+      </div>
+    </section>
+
+    <section class="page" id="customers">
+      <div class="card section">
+        <div class="toolbar"><div><h3 style="margin-bottom:4px">Customers & Partners</h3><div class="sub">Keep company, homeowner, property and project records separate.</div></div><button class="btn" onclick="toast('Customer import will come after data cleanup.')">Import Customers</button></div>
+        <div class="customer-grid" id="customerGrid"></div>
+      </div>
+    </section>
+
+    <section class="page" id="crews">
+      <div class="card section">
+        <div class="toolbar"><div><h3 style="margin-bottom:4px">Crews & Managers</h3><div class="sub">Assignments, skills and field-ready job information.</div></div><button class="btn" onclick="toast('Availability planning is a future feature.')">Availability</button></div>
+        <div class="crew-grid" id="crewGrid"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="newJobModal">
+  <div class="modal">
+    <h3>Create Demo Job</h3>
+    <div class="form-grid">
+      <div class="field"><label>Customer</label><input id="fCustomer" value="Daniel Brooks"></div>
+      <div class="field"><label>Company / Partner</label><input id="fCompany" placeholder="Optional" value="Direct Homeowner"></div>
+      <div class="field full"><label>Property Address</label><input id="fAddress" value="1245 Oak Ridge Dr, Alpharetta, GA"></div>
+      <div class="field"><label>Service</label><select id="fService"><option>Sand & Finish</option><option>Hardwood Installation</option><option>Buff & Coat</option><option>Flooring Repair</option><option>Stairs</option></select></div>
+      <div class="field"><label>Manager</label><select id="fManager"><option>André</option><option>Isaque</option></select></div>
+      <div class="field"><label>Date</label><input id="fDate" type="date"></div>
+      <div class="field"><label>Arrival Window</label><input id="fWindow" value="8:00–9:00 AM"></div>
+      <div class="field"><label>Square Feet</label><input id="fSf" value="850 SF"></div>
+      <div class="field"><label>Stain / Color</label><input id="fStain" value="To be selected onsite"></div>
+      <div class="field full"><label>Internal Notes</label><textarea id="fNotes">Furniture will be moved before sanding. Show stain samples onsite.</textarea></div>
+    </div>
+    <div class="modal-actions"><button class="btn" onclick="closeNewJob()">Cancel</button><button class="btn primary" onclick="saveDemoJob()">Create Job</button></div>
+  </div>
+</div>
+
+<div class="drawer-backdrop" id="detailDrawer" onclick="if(event.target===this) closeDetail()">
+  <div class="drawer">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div><div class="sub">PROJECT DETAIL</div><h3 id="detailTitle">Project</h3></div>
+      <button class="btn small" onclick="closeDetail()">Close</button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const baseJobs = [
+ {id:1,customer:"John Miller",company:"Alpha",address:"2850 Windward Pkwy, Alpharetta, GA",service:"Hardwood Installation",date:"Today",window:"8:00–9:00 AM",manager:"André",crew:"Carlos + Edilson",status:"In Progress",sf:"1,240 SF",stain:"Natural",materials:"3¼\" white oak, shoe molding",notes:"Contractor-referred project. Homeowner portal must not show contractor pricing."},
+ {id:2,customer:"Emily Carter",company:"Direct Homeowner",address:"410 Lakeview Ln, Roswell, GA",service:"Sand & Finish",date:"Today",window:"8:00–9:00 AM",manager:"Isaque",crew:"Edson + team",status:"OTW",sf:"980 SF",stain:"Provincial sample requested",materials:"Water-based finish",notes:"Send OTW notification by SMS + email when tracking is enabled."},
+ {id:3,customer:"Michael Reed",company:"Direct Homeowner",address:"118 Peachtree Ct, Marietta, GA",service:"Buff & Coat",date:"Today",window:"11:30 AM–12:30 PM",manager:"André",crew:"Carlos",status:"Scheduled",sf:"720 SF",stain:"N/A",materials:"Finish coat",notes:"Furniture to be moved by customer."},
+ {id:4,customer:"Sarah Johnson",company:"Alpha",address:"772 Brookstone Dr, Cumming, GA",service:"Engineered Flooring",date:"Today",window:"1:00–2:00 PM",manager:"Isaque",crew:"Edilson + team",status:"Waiting for Material",sf:"1,560 SF",stain:"Factory finish",materials:"Engineered hardwood — pickup pending",notes:"Material pickup required before installation."},
+ {id:5,customer:"Robert Hayes",company:"Direct Homeowner",address:"9330 River Club Pkwy, Johns Creek, GA",service:"Staircase Installation & Finishing",date:"Today",window:"2:30–3:30 PM",manager:"André",crew:"Carlos + Edson",status:"Problem",sf:"14 treads / 15 risers",stain:"Jacobean",materials:"Treads, risers, handrail",notes:"Field team reported subfloor/structure issue. Manager review required."},
+ {id:6,customer:"Olivia Martin",company:"Direct Homeowner",address:"660 Pine Grove Rd, Milton, GA",service:"Flooring Repair",date:"Tomorrow",window:"8:00–9:00 AM",manager:"Isaque",crew:"Carlos",status:"Scheduled",sf:"Repair area TBD",stain:"Match existing",materials:"To inspect",notes:"Customer sent photos before visit."},
+ {id:7,customer:"Brian Wilson",company:"Builder Partner",address:"220 Summit View, Sandy Springs, GA",service:"Hardwood Installation",date:"Fri",window:"8:00–9:00 AM",manager:"André",crew:"Edilson + team",status:"Scheduled",sf:"2,100 SF",stain:"Natural",materials:"White oak",notes:"Multi-day job. Day 1 of 3."}
+];
+let jobs = JSON.parse(localStorage.getItem("gtfDemoJobs") || "null") || baseJobs;
+const customers = [
+ {name:"Alpha",type:"Contractor / Partner",contact:"John Miller + property contacts",projects:12,detail:"Recurring partner. Pricing visibility is restricted from homeowner portal."},
+ {name:"Emily Carter",type:"Direct Homeowner",contact:"Roswell, GA",projects:1,detail:"Sand & Finish project with stain selection onsite."},
+ {name:"Michael Reed",type:"Direct Homeowner",contact:"Marietta, GA",projects:2,detail:"Returning customer. Buff & Coat scheduled today."},
+ {name:"Sarah Johnson",type:"Property Contact",contact:"Cumming, GA · via Alpha",projects:1,detail:"Homeowner contact for contractor-originated project."},
+ {name:"Robert Hayes",type:"Direct Homeowner",contact:"Johns Creek, GA",projects:1,detail:"Stair project. Current issue requires manager review."},
+ {name:"Builder Partner",type:"Contractor / Partner",contact:"Multiple properties",projects:8,detail:"Recurring installation projects."}
+];
+const crews = [
+ {name:"André",role:"Manager / Project Manager",today:"3 jobs today",skills:["Estimates","Inspections","Project Mgmt","Field Work"]},
+ {name:"Isaque",role:"Manager / Project Manager",today:"2 jobs today",skills:["Estimates","Inspections","Project Mgmt","Field Work"]},
+ {name:"Carlos",role:"Field Crew",today:"Installation + stairs",skills:["Installation","Repairs","Stairs"]},
+ {name:"Edilson",role:"Field Crew",today:"Installation",skills:["Installation","Trim"]},
+ {name:"Edson",role:"Field Crew",today:"Sand & Finish + stairs",skills:["Sand & Finish","Stairs"]},
+ {name:"Subcontractor Pool",role:"Approved Subs",today:"As assigned",skills:["Painter","Installer","Electrician / Plumber"]}
+];
+
+function statusClass(status){
+ const m={"Scheduled":"scheduled","OTW":"otw","Arrived":"arrived","In Progress":"inprogress","Waiting for Material":"waiting","Problem":"problem","Completed":"completed"};
+ return m[status]||"scheduled";
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
+function renderAll(){renderToday();renderJobs();renderCalendar();renderCustomers();renderCrews();renderStats();}
+function renderStats(){
+ document.getElementById("statToday").textContent=jobs.filter(j=>j.date==="Today").length;
+ document.getElementById("statProgress").textContent=jobs.filter(j=>["OTW","Arrived","In Progress"].includes(j.status)).length;
+ document.getElementById("statAttention").textContent=jobs.filter(j=>["Problem","Waiting for Material"].includes(j.status)).length;
+}
+function renderToday(){
+ const list=document.getElementById("todayJobs");
+ const data=jobs.filter(j=>j.date==="Today").slice(0,5);
+ list.innerHTML=data.map(j=>`
+   <div class="job-card">
+    <div><div class="job-title">${esc(j.company)} | ${esc(j.customer)}</div><div class="sub">${esc(j.service)} · ${esc(j.address)}</div></div>
+    <div><strong>${esc(j.window)}</strong><div class="sub">${esc(j.manager)} · ${esc(j.crew)}</div></div>
+    <div style="display:flex;gap:8px;align-items:center"><span class="badge ${statusClass(j.status)}">${esc(j.status)}</span><button class="btn small" onclick="openDetail(${j.id})">Open</button></div>
+   </div>`).join("") || `<div class="empty">No jobs scheduled.</div>`;
+}
+function renderJobs(){
+ const q=(document.getElementById("jobSearch")?.value||"").toLowerCase();
+ const sf=document.getElementById("statusFilter")?.value||"";
+ const data=jobs.filter(j=>{
+  const hay=[j.customer,j.company,j.address,j.service,j.manager].join(" ").toLowerCase();
+  return (!q||hay.includes(q))&&(!sf||j.status===sf);
+ });
+ document.getElementById("jobsTable").innerHTML=data.map(j=>`
+ <tr>
+  <td><strong>${esc(j.customer)}</strong><div class="sub">${esc(j.company)} · ${esc(j.address)}</div></td>
+  <td>${esc(j.service)}<div class="sub">${esc(j.sf)}</div></td>
+  <td>${esc(j.date)}<div class="sub">${esc(j.window)}</div></td>
+  <td>${esc(j.manager)}<div class="sub">${esc(j.crew)}</div></td>
+  <td><span class="badge ${statusClass(j.status)}">${esc(j.status)}</span></td>
+  <td><button class="link-btn" onclick="openDetail(${j.id})">Open →</button></td>
+ </tr>`).join("") || `<tr><td colspan="6" class="empty">No matching jobs.</td></tr>`;
+}
+function renderCalendar(){
+ const days=["Today","Tomorrow","Thu","Fri","Mon"];
+ document.getElementById("calendarGrid").innerHTML=days.map(d=>{
+  const items=jobs.filter(j=>j.date===d);
+  return `<div class="day"><h4>${d}</h4><small>${items.length} scheduled</small>${items.map(j=>`
+   <div class="cal-job"><strong>${esc(j.window)} · ${esc(j.customer)}</strong>${esc(j.service)}<br><span class="sub">${esc(j.manager)}</span></div>`).join("")}</div>`;
+ }).join("");
+}
+function renderCustomers(){
+ document.getElementById("customerGrid").innerHTML=customers.map(c=>`
+ <div class="card person-card"><h4>${esc(c.name)}</h4><div class="meta"><strong>${esc(c.type)}</strong><br>${esc(c.contact)}<br>${c.projects} project(s)</div><div class="note" style="margin-top:12px">${esc(c.detail)}</div></div>`).join("");
+}
+function renderCrews(){
+ document.getElementById("crewGrid").innerHTML=crews.map(c=>`
+ <div class="card person-card"><h4>${esc(c.name)}</h4><div class="meta"><strong>${esc(c.role)}</strong><br>${esc(c.today)}</div><div class="skills">${c.skills.map(s=>`<span class="skill">${esc(s)}</span>`).join("")}</div></div>`).join("");
+}
+const pageMeta={
+ dashboard:["Office Dashboard","One place to see today’s work, crews, customers and exceptions."],
+ jobs:["Jobs & Projects","Structured projects, services, measurements, assignments and status."],
+ calendar:["Calendar","Internal schedule with customer-friendly arrival windows."],
+ customers:["Customers","Companies, homeowners, property contacts and project history."],
+ crews:["Crews","Managers, field teams, skills and assignments."]
+};
+function goPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ document.getElementById("pageTitle").textContent=pageMeta[id][0];
+ document.getElementById("pageSubtitle").textContent=pageMeta[id][1];
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>goPage(b.dataset.page));
+function openNewJob(){
+ const d=new Date(); d.setDate(d.getDate()+2);
+ document.getElementById("fDate").value=d.toISOString().slice(0,10);
+ document.getElementById("newJobModal").classList.add("show");
+}
+function closeNewJob(){document.getElementById("newJobModal").classList.remove("show");}
+function saveDemoJob(){
+ const dateVal=document.getElementById("fDate").value;
+ const j={
+  id:Date.now(),
+  customer:document.getElementById("fCustomer").value||"Demo Customer",
+  company:document.getElementById("fCompany").value||"Direct Homeowner",
+  address:document.getElementById("fAddress").value,
+  service:document.getElementById("fService").value,
+  manager:document.getElementById("fManager").value,
+  crew:"To assign",
+  date:dateVal||"Upcoming",
+  window:document.getElementById("fWindow").value,
+  status:"Scheduled",
+  sf:document.getElementById("fSf").value,
+  stain:document.getElementById("fStain").value,
+  materials:"To confirm",
+  notes:document.getElementById("fNotes").value
+ };
+ jobs.unshift(j); persist(); renderAll(); closeNewJob(); goPage("jobs"); toast("Demo job created and saved locally.");
+}
+function persist(){localStorage.setItem("gtfDemoJobs",JSON.stringify(jobs));}
+function openDetail(id){
+ const j=jobs.find(x=>x.id===id); if(!j)return;
+ document.getElementById("detailTitle").textContent=`${j.company} | ${j.customer}`;
+ document.getElementById("detailContent").innerHTML=`
+ <span class="badge ${statusClass(j.status)}">${esc(j.status)}</span>
+ <div class="detail-grid">
+   <div class="detail"><span>Service</span><strong>${esc(j.service)}</strong></div>
+   <div class="detail"><span>Measurements</span><strong>${esc(j.sf)}</strong></div>
+   <div class="detail"><span>Schedule</span><strong>${esc(j.date)} · ${esc(j.window)}</strong></div>
+   <div class="detail"><span>Manager / Crew</span><strong>${esc(j.manager)} · ${esc(j.crew)}</strong></div>
+   <div class="detail"><span>Property</span><strong>${esc(j.address)}</strong></div>
+   <div class="detail"><span>Stain / Color</span><strong>${esc(j.stain)}</strong></div>
+   <div class="detail"><span>Materials</span><strong>${esc(j.materials)}</strong></div>
+   <div class="detail"><span>Customer Type</span><strong>${j.company==="Direct Homeowner"?"Direct Homeowner":"Contractor / Partner"}</strong></div>
+ </div>
+ <h4>Operational Status</h4>
+ <div class="timeline">
+   ${["Scheduled","OTW","Arrived","In Progress","Completed"].map(s=>`<button class="${j.status===s?"current":""}" onclick="setStatus(${j.id},'${s}')">${s}</button>`).join("")}
+ </div>
+ <h4>Internal Notes</h4><div class="note">${esc(j.notes)}</div>
+ <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+   <button class="btn" onclick="toast('Maps button would open navigation on the field device.')">Open in Maps</button>
+   <button class="btn" onclick="toast('Call button would use the customer phone on the field device.')">Call Customer</button>
+   <button class="btn" onclick="toast('Problem evidence upload is planned for the crew workflow.')">Report Problem</button>
+   <button class="btn" onclick="toast('Customer portal preview: next visit, OTW, progress and care links.')">Customer Portal</button>
+ </div>`;
+ document.getElementById("detailDrawer").classList.add("show");
+}
+function closeDetail(){document.getElementById("detailDrawer").classList.remove("show");}
+function setStatus(id,status){
+ const j=jobs.find(x=>x.id===id); if(!j)return;
+ j.status=status; persist(); renderAll(); openDetail(id);
+ if(status==="OTW") toast("OTW started — future version will begin trip tracking + customer SMS/email.");
+ else if(status==="Arrived") toast("Arrived — future version will stop trip tracking.");
+ else toast(`Status changed to ${status}.`);
+}
+function toast(msg){
+ const t=document.getElementById("toast"); t.textContent=msg;t.classList.add("show");
+ clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove("show"),2600);
+}
+document.getElementById("newJobBtn").onclick=openNewJob;
+document.getElementById("jobSearch").addEventListener("input",renderJobs);
+document.getElementById("statusFilter").addEventListener("change",renderJobs);
+document.getElementById("newJobModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeNewJob()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeNewJob();closeDetail();}});
+document.getElementById("ptBtn").onclick=()=>{document.getElementById("ptBtn").classList.add("active");document.getElementById("enBtn").classList.remove("active");toast("PT demo: language switch is represented here. Full localization comes in a later phase.");};
+document.getElementById("enBtn").onclick=()=>{document.getElementById("enBtn").classList.add("active");document.getElementById("ptBtn").classList.remove("active");toast("English selected.");};
+renderAll();
+</script>
+</body>
+</html>
