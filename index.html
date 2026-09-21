@@ -144,6 +144,23 @@ tr:hover td{background:#FFFDF8}
   .calendar{grid-template-columns:1fr}
   .form-grid,.detail-grid{grid-template-columns:1fr}
 }
+
+.doc-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:10px 0 12px}
+.doc-mini{border:1px solid var(--line);border-radius:11px;padding:11px;background:#fff}
+.doc-mini strong{display:block;font-size:13px}
+.doc-mini small{display:block;color:var(--muted);margin:4px 0 8px}
+.doc-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:800;background:#F1EFE8}
+.doc-status.good{background:#E8F5EE;color:#2E7D5B}
+.doc-status.warn{background:#FFF4D6;color:#9A6818}
+.doc-status.info{background:#EAF1FB;color:#3568B8}
+.doc-sheet{border:1px solid var(--line);border-radius:13px;padding:16px;background:#fff}
+.doc-sheet-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.doc-sheet h4{margin:0}.doc-total{font-size:24px;font-weight:900}
+.doc-lines{width:100%;border-collapse:collapse;margin-top:12px}.doc-lines th,.doc-lines td{padding:9px;border-bottom:1px solid var(--line);font-size:12px;text-align:left}
+.doc-lines th{color:var(--muted);text-transform:uppercase;font-size:10px}
+.scope-list{margin:8px 0 0;padding-left:19px}.scope-list li{margin:6px 0;font-size:13px}
+@media(max-width:760px){.doc-strip{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -291,8 +308,20 @@ tr:hover td{background:#FFFDF8}
   </div>
 </div>
 
+
+<div class="modal-backdrop" id="documentModal" onclick="if(event.target===this)closeProjectDocument()">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div><div class="sub">PROJECT DOCUMENT</div><h3 id="documentTitle">Document</h3></div>
+      <button class="btn small" onclick="closeProjectDocument()">Close</button>
+    </div>
+    <div id="documentContent"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
+<script src="project-docs.js"></script>
 <script>
 const baseJobs = [
  {id:1,customer:"John Miller",company:"Alpha",address:"2850 Windward Pkwy, Alpharetta, GA",service:"Hardwood Installation",date:"Today",window:"8:00–9:00 AM",manager:"André",crew:"Carlos + Edilson",status:"In Progress",sf:"1,240 SF",stain:"Natural",materials:"3¼\" white oak, shoe molding",notes:"Contractor-referred project. Homeowner portal must not show contractor pricing."},
@@ -421,8 +450,15 @@ function saveDemoJob(){
  jobs.unshift(j); persist(); renderAll(); closeNewJob(); goPage("jobs"); toast("Demo job created and saved locally.");
 }
 function persist(){localStorage.setItem("gtfDemoJobs",JSON.stringify(jobs));}
+function docStatusClass(status){
+ if(["Approved","Paid","Ready","Released"].includes(status)) return "good";
+ if(["Partially Paid","Open","Draft"].includes(status)) return "warn";
+ return "info";
+}
 function openDetail(id){
  const j=jobs.find(x=>x.id===id); if(!j)return;
+ const pack=GTFDocs.ensureForJob(j);
+ const d=pack.docs;
  document.getElementById("detailTitle").textContent=`${j.company} | ${j.customer}`;
  document.getElementById("detailContent").innerHTML=`
  <span class="badge ${statusClass(j.status)}">${esc(j.status)}</span>
@@ -436,19 +472,70 @@ function openDetail(id){
    <div class="detail"><span>Materials</span><strong>${esc(j.materials)}</strong></div>
    <div class="detail"><span>Customer Type</span><strong>${j.company==="Direct Homeowner"?"Direct Homeowner":"Contractor / Partner"}</strong></div>
  </div>
+
  <h4>Operational Status</h4>
  <div class="timeline">
    ${["Scheduled","OTW","Arrived","In Progress","Completed"].map(s=>`<button class="${j.status===s?"current":""}" onclick="setStatus(${j.id},'${s}')">${s}</button>`).join("")}
  </div>
+
+ <h4>Project Documents</h4>
+ <div class="doc-strip">
+   <div class="doc-mini"><strong>Estimate · ${esc(d.estimate.number)}</strong><small>Customer-facing proposal</small><span class="doc-status ${docStatusClass(d.estimate.status)}">${esc(d.estimate.status)}</span><div style="margin-top:8px"><button class="btn small" onclick="openProjectDocument(${j.id},'estimate')">Open Estimate</button></div></div>
+   <div class="doc-mini"><strong>Invoice · ${esc(d.invoice.number)}</strong><small>Customer billing & payment</small><span class="doc-status ${docStatusClass(d.invoice.status)}">${esc(d.invoice.status)}</span><div style="margin-top:8px"><button class="btn small" onclick="openProjectDocument(${j.id},'invoice')">Open Invoice</button></div></div>
+   <div class="doc-mini"><strong>Work Order · ${esc(d.workOrder.number)}</strong><small>Crew-facing scope — no pricing</small><span class="doc-status ${docStatusClass(d.workOrder.status)}">${esc(d.workOrder.status)}</span><div style="margin-top:8px"><button class="btn small" onclick="openProjectDocument(${j.id},'workorder')">Open Work Order</button></div></div>
+ </div>
+ <div class="note">Permissions: direct customers can see Estimate + Invoice. Crew members see the Work Order only. Contractor-referred homeowners do not see internal pricing.</div>
+
  <h4>Internal Notes</h4><div class="note">${esc(j.notes)}</div>
  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
    <button class="btn" onclick="toast('Maps button would open navigation on the field device.')">Open in Maps</button>
    <button class="btn" onclick="toast('Call button would use the customer phone on the field device.')">Call Customer</button>
-   <button class="btn" onclick="toast('Problem evidence upload is planned for the crew workflow.')">Report Problem</button>
+   <button class="btn" onclick="window.open('crew.html','_blank')">Crew View</button>
    <button class="btn" onclick="window.open('customer.html','_blank')">Customer Portal</button>
  </div>`;
  document.getElementById("detailDrawer").classList.add("show");
 }
+function openProjectDocument(jobId,type){
+ const j=jobs.find(x=>x.id===jobId); if(!j)return;
+ const pack=GTFDocs.ensureForJob(j), d=pack.docs, key=pack.key;
+ const modal=document.getElementById("documentModal"), title=document.getElementById("documentTitle"), content=document.getElementById("documentContent");
+
+ if(type==="estimate"){
+  const e=d.estimate;
+  title.textContent=`Estimate ${e.number}`;
+  content.innerHTML=`<div class="doc-sheet">
+   <div class="doc-sheet-head"><div><strong>${esc(j.customer)}</strong><div class="sub">${esc(j.address)}</div><div class="sub">Issued: ${esc(e.issued)} · Valid until: ${esc(e.validUntil)}</div></div><div style="text-align:right"><span class="doc-status ${docStatusClass(e.status)}">${esc(e.status)}</span><div class="doc-total">${GTFDocs.money(e.total)}</div></div></div>
+   <table class="doc-lines"><thead><tr><th>Description</th><th>Qty</th><th style="text-align:right">Amount</th></tr></thead><tbody>${e.items.map(i=>`<tr><td>${esc(i.description)}</td><td>${esc(i.qty)}</td><td style="text-align:right">${GTFDocs.money(i.amount)}</td></tr>`).join("")}</tbody></table>
+   <div class="note" style="margin-top:12px">${esc(e.notes)}</div>
+   <div class="modal-actions"><button class="btn" onclick="toast('Demo: estimate would be sent to the customer portal/email.')">Send to Customer</button>${e.status!=="Approved"?`<button class="btn primary" onclick="approveEstimateDemo('${key}',${jobId})">Approve Estimate</button>`:""}</div>
+  </div>`;
+ }else if(type==="invoice"){
+  const i=d.invoice;
+  title.textContent=`Invoice ${i.number}`;
+  content.innerHTML=`<div class="doc-sheet">
+   <div class="doc-sheet-head"><div><strong>${esc(j.customer)}</strong><div class="sub">${esc(j.address)}</div><div class="sub">Issued: ${esc(i.issued)} · Due: ${esc(i.dueDate)}</div></div><span class="doc-status ${docStatusClass(i.status)}">${esc(i.status)}</span></div>
+   <div class="detail-grid" style="margin-top:12px"><div class="detail"><span>Total</span><strong>${GTFDocs.money(i.total)}</strong></div><div class="detail"><span>Paid</span><strong>${GTFDocs.money(i.paid)}</strong></div><div class="detail"><span>Balance</span><strong>${GTFDocs.money(i.balance)}</strong></div><div class="detail"><span>Payment Rule</span><strong>${esc(i.paymentRule)}</strong></div></div>
+   <div class="note">${esc(i.notes)}</div>
+   <div class="modal-actions"><button class="btn" onclick="toast('Demo: invoice is visible in the direct customer portal.')">Open Customer View</button>${i.balance>0?`<button class="btn primary" onclick="recordPaymentDemo('${key}',${jobId})">Record Final Payment</button>`:""}</div>
+  </div>`;
+ }else{
+  const w=d.workOrder;
+  title.textContent=`Work Order ${w.number}`;
+  content.innerHTML=`<div class="doc-sheet">
+   <div class="doc-sheet-head"><div><strong>${esc(j.customer)}</strong><div class="sub">${esc(j.address)}</div><div class="sub">${esc(w.service)} · ${esc(w.area)}</div></div><span class="doc-status ${docStatusClass(w.status)}">${esc(w.status)}</span></div>
+   <div class="detail-grid" style="margin-top:12px"><div class="detail"><span>Arrival</span><strong>${esc(w.arrival)}</strong></div><div class="detail"><span>Manager / Crew</span><strong>${esc(w.manager)} · ${esc(w.crew)}</strong></div><div class="detail"><span>Stain</span><strong>${esc(w.stain)}</strong></div><div class="detail"><span>Finish</span><strong>${esc(w.finish)}</strong></div></div>
+   <h4>Scope of Work</h4><ul class="scope-list">${w.scope.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
+   <h4>Materials</h4><ul class="scope-list">${w.materials.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
+   <div class="note">${esc(w.notes)}</div>
+   <div class="modal-actions"><button class="btn" onclick="window.open('crew.html','_blank')">Open Crew View</button>${w.status!=="Released"?`<button class="btn primary" onclick="releaseWorkOrderDemo('${key}',${jobId})">Release to Crew</button>`:""}</div>
+  </div>`;
+ }
+ modal.classList.add("show");
+}
+function closeProjectDocument(){document.getElementById("documentModal").classList.remove("show");}
+function approveEstimateDemo(key,jobId){GTFDocs.approveEstimate(key);openProjectDocument(jobId,"estimate");openDetail(jobId);toast("Estimate approved. Customer can see the updated status.");}
+function recordPaymentDemo(key,jobId){GTFDocs.recordFinalPayment(key);openProjectDocument(jobId,"invoice");openDetail(jobId);toast("Final payment recorded. Customer invoice now shows Paid.");}
+function releaseWorkOrderDemo(key,jobId){GTFDocs.releaseWorkOrder(key);openProjectDocument(jobId,"workorder");openDetail(jobId);toast("Work Order released to the crew view.");}
 function closeDetail(){document.getElementById("detailDrawer").classList.remove("show");}
 function setStatus(id,status){
  const j=jobs.find(x=>x.id===id); if(!j)return;
@@ -465,7 +552,7 @@ document.getElementById("newJobBtn").onclick=openNewJob;
 document.getElementById("jobSearch").addEventListener("input",renderJobs);
 document.getElementById("statusFilter").addEventListener("change",renderJobs);
 document.getElementById("newJobModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeNewJob()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeNewJob();closeDetail();}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeNewJob();closeDetail();closeProjectDocument();}});
 document.getElementById("ptBtn").onclick=()=>{document.getElementById("ptBtn").classList.add("active");document.getElementById("enBtn").classList.remove("active");toast("PT demo: language switch is represented here. Full localization comes in a later phase.");};
 document.getElementById("enBtn").onclick=()=>{document.getElementById("enBtn").classList.add("active");document.getElementById("ptBtn").classList.remove("active");toast("English selected.");};
 renderAll();

@@ -29,6 +29,12 @@
 .hidden{display:none!important}.controls{position:fixed;right:16px;bottom:16px;z-index:20}.panel{display:none;position:absolute;right:0;bottom:52px;width:280px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 18px 55px rgba(0,0,0,.18)}.panel.show{display:block}.panel .btn{width:100%;text-align:left;margin-top:7px}
 .modalBg{display:none;position:fixed;inset:0;background:rgba(10,15,20,.45);z-index:30}.modalBg.show{display:block}.modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,92vw);background:#fff;border-radius:18px;padding:22px}.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}.field label{font-size:12px;color:var(--muted);font-weight:800}.field select,.field textarea{font:inherit;border:1px solid var(--line);border-radius:10px;padding:10px}.field textarea{min-height:85px}.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,10px);opacity:0;background:var(--nav);color:#fff;padding:11px 15px;border-radius:10px;transition:.2s;z-index:50}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:850px){.two{grid-template-columns:1fr}.heroRow{flex-direction:column}}@media(max-width:600px){.shell{padding:14px}.pill{display:none}.hero{padding:20px}.hero h2{font-size:24px}.visit{flex-direction:column;align-items:flex-start}.infoGrid{grid-template-columns:1fr}}
+
+.documentList{display:grid;gap:9px}.documentRow{border:1px solid var(--line);border-radius:12px;padding:13px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.documentRow strong{display:block}.docBadge{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:10px;font-weight:800;background:#E8F5EE;color:#2E7D5B;margin-top:5px}
+.docModalBg{display:none;position:fixed;inset:0;background:rgba(10,15,20,.45);z-index:70}.docModalBg.show{display:block}.docModal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(650px,94vw);max-height:88vh;overflow:auto;background:#fff;border-radius:18px;padding:22px}
+.docTable{width:100%;border-collapse:collapse;margin-top:12px}.docTable th,.docTable td{padding:9px;border-bottom:1px solid var(--line);font-size:12px;text-align:left}.docTable th{font-size:10px;color:var(--muted);text-transform:uppercase}.docMoney{font-size:24px;font-weight:900}
+
 </style>
 </head>
 <body>
@@ -43,26 +49,66 @@
     </div>
     <aside>
       <div class="card section"><h3>Project Details</h3><div class="infoGrid"><div class="info"><span>Service</span><strong id="service">Sand & Finish</strong></div><div class="info"><span>Area</span><strong id="area">980 SF</strong></div><div class="info"><span>Stain / Color</span><strong id="stain">Provincial — pending final selection</strong></div><div class="info"><span>Finish</span><strong id="finish">Water-based</strong></div></div><div class="notice">Stain samples may be applied directly to the floor so you can confirm your color before staining begins.</div></div>
-      <div class="card section" id="billing" style="margin-top:18px"><h3>Invoice & Payment</h3><div class="invoice"><div><strong>Project Invoice</strong><div class="sub">Demo invoice</div></div><div style="text-align:right"><div class="amount">$2,450.00</div><button class="btn primary" onclick="toast('Demo only — production opens a secure payment page.')">Pay Now</button></div></div></div>
+      <div class="card section" id="billing" style="margin-top:18px">
+        <h3>Documents & Payment</h3>
+        <div class="sub" style="margin-bottom:11px">Your approved estimate and current invoice stay attached to this project.</div>
+        <div class="documentList" id="customerDocuments"></div>
+      </div>
       <div class="card section" style="margin-top:18px"><h3>Care & Warranty</h3><div class="links"><button class="btn" onclick="toast('Production opens Georgia Top Floors care & maintenance instructions.')">Floor Care & Maintenance →</button><button class="btn" onclick="toast('Current workflow includes a 2-year labor warranty.')">Warranty Information →</button></div></div>
       <div class="card section" style="margin-top:18px"><h3>Need Help?</h3><div class="sub" style="margin-bottom:12px">Contact Georgia Top Floors about your project.</div><button class="btn dark full" onclick="toast('Production opens call/message options.')">Contact Georgia Top Floors</button></div>
     </aside>
   </div>
 </div>
 <div class="controls"><div class="panel" id="panel"><strong>Presentation Controls</strong><div class="sub">Demo different customer permissions and trip states.</div><button class="btn" onclick="setMode('direct')">Direct homeowner</button><button class="btn" onclick="setMode('contractor')">Contractor-referred homeowner</button><button class="btn" onclick="setCrew('otw')">Simulate OTW</button><button class="btn" onclick="setCrew('arrived')">Simulate Arrived</button><button class="btn" onclick="setCrew('working')">Simulate In Progress</button></div><button class="btn dark" onclick="panel.classList.toggle('show')">Demo Controls</button></div>
+
+<div class="docModalBg" id="customerDocModal" onclick="if(event.target===this)closeCustomerDocument()">
+  <div class="docModal">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div><div class="sub">PROJECT DOCUMENT</div><h3 id="customerDocTitle" style="margin-top:4px"></h3></div>
+      <button class="btn" onclick="closeCustomerDocument()">Close</button>
+    </div>
+    <div id="customerDocContent"></div>
+  </div>
+</div>
+
 <div class="modalBg" id="modal" onclick="if(event.target===this)closeUnavailable()"><div class="modal"><h3>I won't be home</h3><div class="sub">Let the office know before the crew starts the trip.</div><div class="field"><label>Reason</label><select id="reason"><option>I will be away</option><option>I need to reschedule</option><option>No one can provide access</option><option>Other</option></select></div><div class="field"><label>Note</label><textarea placeholder="Optional details..."></textarea></div><div class="actions"><button class="btn" onclick="closeUnavailable()">Cancel</button><button class="btn primary" onclick="saveUnavailable()">Send Notice</button></div></div></div>
 <div class="toast" id="toast"></div>
+<script src="project-docs.js"></script>
 <script>
 const steps=[["Inspection","done"],["Estimate approved","done"],["Furniture / prep","done"],["Sanding","current"],["Stain samples",""],["Stain",""],["Finish coats",""],["Final inspection",""]];
 document.getElementById("steps").innerHTML=steps.map(([n,s],i)=>`<div class="step ${s}"><div class="circle">${s==="done"?"✓":i+1}</div><div><strong>${n}</strong><div class="sub">${s==="done"?"Completed":s==="current"?"In progress":"Upcoming"}</div></div><div>${s==="current"?"Today":""}</div></div>`).join("");
 let timer;
+
+function renderCustomerDocuments(){
+ const d=GTFDocs.get("emily-carter"); if(!d)return;
+ const box=document.getElementById("customerDocuments");
+ box.innerHTML=`
+  ${d.visibility.customerEstimate?`<div class="documentRow"><div><strong>Estimate ${d.estimate.number}</strong><div class="sub">Approved project scope and pricing</div><span class="docBadge">${d.estimate.status}</span></div><button class="btn" onclick="openCustomerDocument('estimate')">View</button></div>`:""}
+  ${d.visibility.customerInvoice?`<div class="documentRow"><div><strong>Invoice ${d.invoice.number}</strong><div class="sub">${GTFDocs.money(d.invoice.balance)} remaining</div><span class="docBadge">${d.invoice.status}</span></div><button class="btn primary" onclick="openCustomerDocument('invoice')">View / Pay</button></div>`:""}
+ `;
+}
+function openCustomerDocument(type){
+ const d=GTFDocs.get("emily-carter"); if(!d)return;
+ const title=document.getElementById("customerDocTitle"), box=document.getElementById("customerDocContent");
+ if(type==="estimate"){
+  const e=d.estimate; title.textContent=`Estimate ${e.number}`;
+  box.innerHTML=`<div class="sub">Issued ${e.issued} · Valid until ${e.validUntil}</div><table class="docTable"><thead><tr><th>Description</th><th>Qty</th><th style="text-align:right">Amount</th></tr></thead><tbody>${e.items.map(i=>`<tr><td>${i.description}</td><td>${i.qty}</td><td style="text-align:right">${GTFDocs.money(i.amount)}</td></tr>`).join("")}</tbody></table><div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px"><strong>Total</strong><div class="docMoney">${GTFDocs.money(e.total)}</div></div><div class="notice">${e.notes}</div>`;
+ }else{
+  const i=d.invoice; title.textContent=`Invoice ${i.number}`;
+  box.innerHTML=`<div class="sub">Issued ${i.issued} · Due ${i.dueDate}</div><div class="infoGrid" style="margin-top:13px"><div class="info"><span>Total</span><strong>${GTFDocs.money(i.total)}</strong></div><div class="info"><span>Paid</span><strong>${GTFDocs.money(i.paid)}</strong></div><div class="info"><span>Balance</span><strong>${GTFDocs.money(i.balance)}</strong></div><div class="info"><span>Status</span><strong>${i.status}</strong></div></div><div class="notice">${i.paymentRule}<br>${i.notes}</div>${i.balance>0?`<button class="btn primary full" style="margin-top:12px" onclick="payCustomerInvoice()">Pay ${GTFDocs.money(i.balance)} — Demo</button>`:`<div class="notice" style="margin-top:12px;background:#E8F5EE;border-color:#C9E7D6;color:#2E7D5B"><strong>Paid in full</strong></div>`}`;
+ }
+ document.getElementById("customerDocModal").classList.add("show");
+}
+function closeCustomerDocument(){document.getElementById("customerDocModal").classList.remove("show")}
+function payCustomerInvoice(){GTFDocs.recordFinalPayment("emily-carter");renderCustomerDocuments();openCustomerDocument("invoice");toast("Demo payment completed. Office and customer views now show Paid.");}
 function setCrew(s){clearInterval(timer);const tracking=document.getElementById("tracking"),st=document.getElementById("status"),crew=document.getElementById("crew"),eta=document.getElementById("eta"),dist=document.getElementById("distance");
 if(s==="otw"){tracking.classList.remove("hidden");st.innerHTML='<span class="dotPulse"></span><span>Crew is on the way</span>';crew.style.left="38px";crew.style.top="165px";eta.textContent="18 min";dist.textContent="7.4 miles away";let n=0;timer=setInterval(()=>{n++;crew.style.left=(38+Math.min(n,8)*24)+"px";crew.style.top=(165-Math.min(n,8)*10)+"px";eta.textContent=Math.max(5,18-n*2)+" min";dist.textContent=Math.max(1.2,7.4-n*.8).toFixed(1)+" miles away";if(n>=8)clearInterval(timer)},1000)}
 else if(s==="arrived"){tracking.classList.add("hidden");st.innerHTML='<span style="width:9px;height:9px;border-radius:50%;background:#52C98A"></span><span>Crew has arrived</span>';toast("Arrival confirmed. Location sharing ended.")}
 else{tracking.classList.add("hidden");st.innerHTML='<span style="width:9px;height:9px;border-radius:50%;background:#7FA7E4"></span><span>Work is in progress</span>';toast("Project status remains visible; employee location is hidden.")}}
-function setMode(m){if(m==="direct"){name.textContent="Emily, your flooring project is underway.";project.textContent="Sand & Finish · Roswell, GA";service.textContent="Sand & Finish";area.textContent="980 SF";stain.textContent="Provincial — pending final selection";finish.textContent="Water-based";visit.textContent="Sand & Finish · Day 1 of 2";billing.classList.remove("hidden");toast("Direct homeowner: invoice/payment can be shown.")}else{name.textContent="John, welcome to your Georgia Top Floors project.";project.textContent="Hardwood Installation · Project provided by Alpha";service.textContent="Hardwood Installation";area.textContent="1,240 SF";stain.textContent="Natural";finish.textContent="Site-finished hardwood";visit.textContent="Hardwood Installation · Day 1 of 3";billing.classList.add("hidden");toast("Contractor-referred homeowner: prices/payment are hidden.")}setCrew("otw")}
+function setMode(m){if(m==="direct"){name.textContent="Emily, your flooring project is underway.";project.textContent="Sand & Finish · Roswell, GA";service.textContent="Sand & Finish";area.textContent="980 SF";stain.textContent="Provincial — pending final selection";finish.textContent="Water-based";visit.textContent="Sand & Finish · Day 1 of 2";billing.classList.remove("hidden");renderCustomerDocuments();toast("Direct homeowner: estimate and invoice are visible.")}else{name.textContent="John, welcome to your Georgia Top Floors project.";project.textContent="Hardwood Installation · Project provided by Alpha";service.textContent="Hardwood Installation";area.textContent="1,240 SF";stain.textContent="Natural";finish.textContent="Site-finished hardwood";visit.textContent="Hardwood Installation · Day 1 of 3";billing.classList.add("hidden");toast("Contractor-referred homeowner: estimate, invoice and pricing are hidden.")}setCrew("otw")}
 function openUnavailable(){modal.classList.add("show")}function closeUnavailable(){modal.classList.remove("show")}function saveUnavailable(){closeUnavailable();toast("Notice sent to the office: "+reason.value)}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove("show"),2700)}
+renderCustomerDocuments();
 setCrew("otw");
 </script>
 </body></html>

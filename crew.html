@@ -14,6 +14,11 @@
 .field{margin-top:12px}.field label{display:block;font-size:11px;color:var(--muted);font-weight:800;margin-bottom:6px}.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit}.field textarea{min-height:76px}
 .toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,10px);opacity:0;background:var(--nav);color:#fff;padding:10px 14px;border-radius:10px;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
 .small{font-size:12px}
+
+.workOrder{border-left:4px solid var(--gold)}.woHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.woStatus{font-size:11px;font-weight:800;background:#E8F5EE;color:#2E7D5B;padding:5px 8px;border-radius:999px}
+.modalBg{display:none;position:fixed;inset:0;background:rgba(10,15,20,.45);z-index:30}.modalBg.show{display:block}.modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,94vw);max-height:88vh;overflow:auto;background:#fff;border-radius:18px;padding:20px}.modal h3{margin-top:0}
+.scope{padding-left:20px}.scope li{margin:7px 0;font-size:13px}.woNote{padding:11px;background:#FFF8E5;border:1px solid #EFE0A8;border-radius:10px;font-size:13px;line-height:1.5}
+
 </style></head>
 <body>
 <div class="phone">
@@ -28,6 +33,12 @@
     </div>
     <div class="field"><label>STAIN / COLOR</label><input id="stain" value="To be selected onsite"></div>
     <div class="field"><label>MATERIALS / NOTES</label><textarea id="notes">Water-based finish. Apply stain samples before final selection.</textarea></div>
+  </div>
+
+  <div class="card workOrder">
+    <div class="woHead"><div><strong>Work Order</strong><div class="sub" id="woNumber">WO-1042 · Sand & Finish</div></div><span class="woStatus" id="woStatus">Ready</span></div>
+    <div class="sub" style="margin:10px 0">Crew sees scope, materials, schedule and field notes — no customer pricing.</div>
+    <button class="btn primary" onclick="openWorkOrder()">View Work Order</button>
   </div>
 
   <div class="card"><strong>Job Status</strong><div class="sub" style="margin:4px 0 12px">OTW starts customer trip tracking. Arrived ends tracking.</div>
@@ -49,9 +60,56 @@
   <div class="card"><strong>Issue / Problem</strong><div class="sub" style="margin:5px 0 10px">Attach evidence only when needed so the system stays light.</div><button class="btn danger" onclick="toast('Problem reported to manager + office. Demo only.')">⚠ Report Problem</button></div>
   <div class="small sub" style="text-align:center">Presentation prototype · No real GPS, messages or customer data.</div>
 </div>
+
+<div class="modalBg" id="workOrderModal" onclick="if(event.target===this)closeWorkOrder()">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+      <div><div class="sub">CREW DOCUMENT</div><h3 id="woTitle">Work Order</h3></div>
+      <button class="btn" style="width:auto" onclick="closeWorkOrder()">Close</button>
+    </div>
+    <div id="woContent"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+<script src="project-docs.js"></script>
 <script>
+
+function renderWorkOrderSummary(){
+ const d=GTFDocs.get("emily-carter");if(!d)return;
+ woNumber.textContent=`${d.workOrder.number} · ${d.workOrder.service}`;
+ woStatus.textContent=d.workOrder.status;
+}
+function openWorkOrder(){
+ const d=GTFDocs.get("emily-carter");if(!d)return;const w=d.workOrder;
+ woTitle.textContent=`Work Order ${w.number}`;
+ woContent.innerHTML=`
+ <div class="grid">
+  <div class="info"><span>Customer</span><strong>${d.project.customer}</strong></div>
+  <div class="info"><span>Arrival</span><strong>${w.arrival}</strong></div>
+  <div class="info"><span>Service</span><strong>${w.service}</strong></div>
+  <div class="info"><span>Area</span><strong>${w.area}</strong></div>
+  <div class="info"><span>Manager</span><strong>${w.manager}</strong></div>
+  <div class="info"><span>Crew</span><strong>${w.crew}</strong></div>
+  <div class="info"><span>Stain / Color</span><strong>${w.stain}</strong></div>
+  <div class="info"><span>Finish</span><strong>${w.finish}</strong></div>
+ </div>
+ <div class="field"><label>PROPERTY</label><div class="sub">${d.project.address}</div></div>
+ <strong>Scope of Work</strong><ul class="scope">${w.scope.map(x=>`<li>${x}</li>`).join("")}</ul>
+ <strong>Materials</strong><ul class="scope">${w.materials.map(x=>`<li>${x}</li>`).join("")}</ul>
+ <div class="woNote"><strong>Field Notes</strong><br>${w.notes}</div>
+ <div style="margin-top:12px"><button class="btn dark" onclick="ackWorkOrder()">Acknowledge Work Order</button></div>`;
+ workOrderModal.classList.add("show");
+}
+function closeWorkOrder(){workOrderModal.classList.remove("show")}
+function ackWorkOrder(){
+ GTFDocs.releaseWorkOrder("emily-carter");
+ renderWorkOrderSummary();
+ closeWorkOrder();
+ toast("Work Order acknowledged. No pricing is exposed to the crew.");
+}
 function setStatus(btn){document.querySelectorAll("[data-status]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");badge.textContent=btn.dataset.status;if(btn.dataset.status==="OTW")toast("OTW: future version starts trip location + customer notification.");else if(btn.dataset.status==="Arrived")toast("Arrived: future version stops customer location tracking.");else toast("Status changed to "+btn.dataset.status+".")}
 function saveStain(){toast("Stain saved: "+stain.value)}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove("show"),2600)}
+renderWorkOrderSummary();
 </script></body></html>
