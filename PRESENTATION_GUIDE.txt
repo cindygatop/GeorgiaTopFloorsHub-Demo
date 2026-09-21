@@ -1,0 +1,40 @@
+GEORGIA TOP FLOORS HUB — QUICK PRESENTATION GUIDE
+
+ARCHITECTURE
+One platform / one database, with different views and permissions.
+
+OFFICE / ADMIN
+- Dashboard
+- Jobs
+- Calendar
+- Customers
+- Crews
+- Internal operational information
+
+CREW / EMPLOYEE
+- Today's assigned jobs
+- Address, arrival window, service, sqft
+- OTW, Arrived, In Progress, Completed
+- Stain/color
+- Materials
+- Notes / Report Problem
+- Future GPS starts only at OTW and ends at Arrived
+
+CUSTOMER
+- Only their own property/project
+- Next visit
+- OTW / arrival tracking
+- Project progress
+- Stain/color
+- Invoice/payment when allowed
+- Care & warranty
+- "I won't be home" notice
+
+CONTRACTOR PRIVACY
+For Alpha or another contractor:
+- homeowner can see project progress, schedule, OTW and project details
+- homeowner does NOT see internal prices, subcontractor prices, margins, purchase orders or internal notes
+
+PRODUCTION
+These may look like separate apps to each user, but they share the same secure backend and database.
+Authentication/roles decide what each person can access.

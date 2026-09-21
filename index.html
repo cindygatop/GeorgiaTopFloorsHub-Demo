@@ -171,6 +171,8 @@ tr:hover td{background:#FFFDF8}
         <p id="pageSubtitle">One place to see today’s work, crews, customers and exceptions.</p>
       </div>
       <div class="actions">
+        <button class="btn" onclick="window.open('crew.html','_blank')">Crew View</button>
+        <button class="btn" onclick="window.open('customer.html','_blank')">Customer View</button>
         <div class="lang"><button id="enBtn" class="active">EN</button><button id="ptBtn">PT</button></div>
         <button class="btn primary" id="newJobBtn">+ New Job</button>
       </div>
@@ -438,7 +440,7 @@ function openDetail(id){
    <button class="btn" onclick="toast('Maps button would open navigation on the field device.')">Open in Maps</button>
    <button class="btn" onclick="toast('Call button would use the customer phone on the field device.')">Call Customer</button>
    <button class="btn" onclick="toast('Problem evidence upload is planned for the crew workflow.')">Report Problem</button>
-   <button class="btn" onclick="toast('Customer portal preview: next visit, OTW, progress and care links.')">Customer Portal</button>
+   <button class="btn" onclick="window.open('customer.html','_blank')">Customer Portal</button>
  </div>`;
  document.getElementById("detailDrawer").classList.add("show");
 }
