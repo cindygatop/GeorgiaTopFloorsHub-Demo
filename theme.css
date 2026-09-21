@@ -180,3 +180,11 @@ body.crew-page .badge.status-danger,body.crew-page .woStatus.status-danger{backg
   body.customer-page .hero{border-radius:22px!important}
   body.crew-page .phone{padding:14px!important}
 }
+
+
+/* Compliance Center integration */
+.compliance-nav-alert{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#d1433b;color:#fff;display:inline-grid;place-items:center;font-size:10px;font-weight:900;line-height:1;box-shadow:0 0 0 3px rgba(209,67,59,.15)}
+.compliance-nav-alert[hidden]{display:none!important}
+.job-agreement-card{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 14px;border:1px solid var(--line-soft);border-radius:16px;background:#fff;box-shadow:var(--shadow-soft);margin:8px 0 14px}
+.job-agreement-card .agreement-copy strong{display:block;margin-bottom:3px}.job-agreement-card .agreement-copy small{color:var(--ink-soft)}
+@media(max-width:650px){.job-agreement-card{align-items:flex-start;flex-direction:column}}
