@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Georgia Top Floors Hub — Database Demo</title>
+<style>
+:root{
+ --bg:#F7F4EC;--card:#fff;--text:#1F2937;--muted:#6B7280;--gold:#C9A646;--goldDark:#A77916;
+ --goldSoft:#F6EDCF;--nav:#18212B;--line:#E8E2D4;--green:#2E7D5B;--greenSoft:#E8F5EE;
+ --blue:#3568B8;--blueSoft:#EAF1FB;--amber:#B7791F;--amberSoft:#FFF4D6;--red:#B83A3A;--redSoft:#FCEBEB;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:var(--nav);color:#fff;padding:22px 16px;position:sticky;top:0;height:100vh}
+.brand{padding:8px 10px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px}
+.brand h1{font-size:18px;margin:0;font-weight:800}.brand small{display:block;color:#C8CDD4;margin-top:4px}
+.demo-pill{display:inline-block;margin-top:10px;background:rgba(201,166,70,.18);color:#F1D77C;border:1px solid rgba(201,166,70,.45);padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.nav{display:flex;flex-direction:column;gap:6px}.nav button{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:0;border-radius:10px;background:transparent;color:#DDE2E7;text-align:left;cursor:pointer}
+.nav button:hover{background:rgba(255,255,255,.06)}.nav button.active{background:var(--gold);color:#1B1B1B;font-weight:800}.icon{width:22px;text-align:center}
+.side-foot{position:absolute;bottom:20px;left:16px;right:16px;color:#98A2AD;font-size:12px;line-height:1.4}
+.main{padding:28px 34px 44px;min-width:0}.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:22px}.topbar h2{margin:0;font-size:28px}.topbar p{margin:5px 0 0;color:var(--muted)}
+.actions{display:flex;gap:9px;align-items:center}.btn{border:1px solid var(--line);background:#fff;padding:10px 13px;border-radius:10px;cursor:pointer;font-weight:800;color:var(--text)}.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:var(--gold);border-color:var(--gold)}.btn.dark{background:var(--nav);border-color:var(--nav);color:#fff}.btn.small{padding:7px 9px;font-size:12px}.btn.danger{background:var(--redSoft);color:var(--red);border-color:#EFCACA}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 5px 20px rgba(24,33,43,.04)}
+.stat{padding:17px}.stat .label{font-size:12px;color:var(--muted);font-weight:800}.stat .value{font-size:28px;font-weight:900;margin-top:6px}.stat .hint{font-size:12px;color:var(--muted);margin-top:4px}
+.section{padding:18px}.section h3{margin:0 0 13px;font-size:18px}.sub{font-size:13px;color:var(--muted);line-height:1.5}
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:15px}.tab{border:1px solid var(--line);background:#fff;padding:9px 11px;border-radius:999px;cursor:pointer;font-weight:800;font-size:13px}.tab.active{background:var(--gold);border-color:var(--gold)}
+.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:13px}.search{display:flex;gap:8px;flex:1;min-width:300px}.search input,.search select{padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff}.search input{flex:1}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px 11px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:top}th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;background:#FBFAF7}tr:hover td{background:#FFFDF8}
+.badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}.green{background:var(--greenSoft);color:var(--green)}.blue{background:var(--blueSoft);color:var(--blue)}.amber{background:var(--amberSoft);color:var(--amber)}.red{background:var(--redSoft);color:var(--red)}.gold{background:var(--goldSoft);color:#7D6418}.gray{background:#F0F1F2;color:#5E6772}
+.link{border:0;background:transparent;color:var(--goldDark);font-weight:900;cursor:pointer;padding:0}
+.alert-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}.alert{border-radius:13px;padding:13px;border:1px solid var(--line);background:#fff}.alert strong{display:block;margin-bottom:3px}.alert.warn{border-left:4px solid var(--amber)}.alert.bad{border-left:4px solid var(--red)}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail{padding:11px;background:#FAF9F5;border-radius:10px}.detail span{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:800;margin-bottom:4px}
+.folder-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.folder{border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;display:flex;justify-content:space-between;gap:8px}.folder strong{font-size:12px}.folder span{font-size:11px;color:var(--muted)}
+.doc-list{display:grid;gap:8px}.doc{display:grid;grid-template-columns:1fr auto auto;gap:9px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:10px}.doc strong{font-size:13px}.doc small{color:var(--muted)}
+.drawer-bg,.modal-bg{display:none;position:fixed;inset:0;background:rgba(10,15,20,.42);z-index:30}.drawer-bg.show,.modal-bg.show{display:block}.drawer{position:absolute;right:0;top:0;height:100%;width:min(590px,96vw);background:#fff;padding:24px;overflow:auto;box-shadow:-20px 0 60px rgba(0,0,0,.2)}.drawer h3{margin-top:0}.modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(620px,92vw);max-height:88vh;overflow:auto;background:#fff;border-radius:18px;padding:22px}.modal h3{margin-top:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:var(--muted);font-weight:800}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:9px;padding:10px}.field textarea{min-height:86px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.note{padding:12px;background:#FFF9E8;border:1px solid #F2E3AD;border-radius:10px;font-size:13px;line-height:1.5}.dnc{padding:11px;background:var(--redSoft);border:1px solid #F0C4C4;color:#8E2E2E;border-radius:10px;font-size:13px}
+.message{background:#F7F8FA;border:1px solid var(--line);border-radius:12px;padding:13px;line-height:1.55;font-size:14px;white-space:pre-wrap}
+.toast{position:fixed;right:24px;bottom:24px;background:var(--nav);color:#fff;padding:12px 16px;border-radius:10px;opacity:0;transform:translateY(10px);transition:.25s;z-index:60}.toast.show{opacity:1;transform:none}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+@media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.alert-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.side-foot{display:none}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.main{padding:20px}.topbar{flex-direction:column;align-items:flex-start}.stats{grid-template-columns:1fr 1fr}.profile-grid,.folder-grid,.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.search{min-width:100%;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+ <aside class="sidebar">
+  <div class="brand"><h1>Georgia Top Floors</h1><small>Operations Hub</small><span class="demo-pill">DATABASE DEMO</span></div>
+  <nav class="nav">
+   <button onclick="location.href='index.html'"><span class="icon">⌂</span>Dashboard</button>
+   <button onclick="location.href='index.html'"><span class="icon">▣</span>Jobs</button>
+   <button onclick="location.href='index.html'"><span class="icon">▦</span>Calendar</button>
+   <button class="active"><span class="icon">◫</span>Database</button>
+   <button onclick="location.href='index.html'"><span class="icon">👥</span>Crews</button>
+  </nav>
+  <div class="side-foot">Presentation prototype.<br>All contact details are fictional/sample data.</div>
+ </aside>
+
+ <main class="main">
+  <div class="topbar">
+   <div><h2>People & Company Database</h2><p>One organized source for contacts, staff, subcontractors, vendors, documents and project history.</p></div>
+   <div class="actions"><button class="btn" onclick="toast('Future import: CSV / Excel cleanup and deduplication before saving to production.')">Import</button><button class="btn primary" onclick="openNewContact()">+ New Contact</button></div>
+  </div>
+
+  <div class="grid stats">
+   <div class="card stat"><div class="label">DEMO CONTACTS</div><div class="value" id="statContacts">0</div><div class="hint">Customers, leads & partners</div></div>
+   <div class="card stat"><div class="label">ACTIVE STAFF</div><div class="value" id="statStaff">0</div><div class="hint">Office + managers</div></div>
+   <div class="card stat"><div class="label">SUBCONTRACTORS</div><div class="value" id="statSubs">0</div><div class="hint">Skills + compliance docs</div></div>
+   <div class="card stat"><div class="label">DOC ALERTS</div><div class="value" id="statDocs">0</div><div class="hint">Expired / expiring soon</div></div>
+  </div>
+
+  <div class="alert-grid">
+   <div class="alert warn"><strong>🟡 Expiring Soon</strong><div class="sub">Demo: Lucas Ferreira · Certificate of Insurance · Oct 4, 2026</div></div>
+   <div class="alert bad"><strong>🔴 Expired</strong><div class="sub">Demo: Marcos Silva · Certificate of Insurance · Sep 10, 2026</div></div>
+  </div>
+
+  <div class="card section">
+   <div class="tabs">
+    <button class="tab active" data-tab="contacts" onclick="setTab('contacts',this)">Contacts & Customers</button>
+    <button class="tab" data-tab="employees" onclick="setTab('employees',this)">Employees</button>
+    <button class="tab" data-tab="subs" onclick="setTab('subs',this)">Subcontractors</button>
+    <button class="tab" data-tab="vendors" onclick="setTab('vendors',this)">Vendors & Partners</button>
+   </div>
+   <div class="toolbar">
+    <div class="search"><input id="search" placeholder="Search name, category, company, phone, email, skill..." oninput="render()"><select id="filter" onchange="render()"><option value="">All categories</option></select></div>
+    <div class="sub" id="count"></div>
+   </div>
+   <div id="content"></div>
+  </div>
+ </main>
+</div>
+
+<div class="drawer-bg" id="drawerBg" onclick="if(event.target===this)closeDrawer()"><div class="drawer"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><div class="sub" id="drawerKicker"></div><h3 id="drawerTitle"></h3></div><button class="btn small" onclick="closeDrawer()">Close</button></div><div id="drawerContent"></div></div></div>
+
+<div class="modal-bg" id="contactModal" onclick="if(event.target===this)closeNewContact()"><div class="modal"><h3>Add Demo Contact</h3><div class="form-grid">
+ <div class="field"><label>Name</label><input id="newName" value="Amanda Brooks"></div>
+ <div class="field"><label>Category</label><select id="newCategory"><option>Lead</option><option>Current Customer</option><option>Past Customer</option><option>Estimate Not Closed</option><option>Builder</option><option>Contractor</option><option>Partner</option></select></div>
+ <div class="field"><label>Phone</label><input id="newPhone" value="(770) 555-0199"></div>
+ <div class="field"><label>Email</label><input id="newEmail" value="amanda@example.com"></div>
+ <div class="field full"><label>Address / Area</label><input id="newAddress" value="Alpharetta, GA"></div>
+ <div class="field"><label>Lead Source</label><input id="newSource" value="Website"></div>
+ <div class="field"><label>Marketing Contact</label><select id="newConsent"><option value="yes">Allowed</option><option value="no">DO NOT CONTACT / Opted Out</option></select></div>
+ <div class="field full"><label>Notes</label><textarea id="newNotes">Interested in hardwood refinishing. Needs estimate.</textarea></div>
+ </div><div class="modal-actions"><button class="btn" onclick="closeNewContact()">Cancel</button><button class="btn primary" onclick="saveNewContact()">Save Demo Contact</button></div></div></div>
+
+<div class="modal-bg" id="messageModal" onclick="if(event.target===this)closeMessage()"><div class="modal"><h3>Suggested Follow-up</h3><div class="sub" style="margin-bottom:10px">Demo only. Production messaging should respect consent, opt-outs and campaign rules.</div><div class="message" id="messageText"></div><div class="modal-actions"><button class="btn" onclick="closeMessage()">Close</button><button class="btn primary" onclick="toast('Demo message copied conceptually — no real SMS/email was sent.')">Use Message</button></div></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const today="2026-09-21";
+let contacts=JSON.parse(localStorage.getItem("gtfDatabaseContacts")||"null")||[
+ {id:101,name:"Emily Carter",category:"Current Customer",company:"Direct Homeowner",phone:"(770) 555-0102",email:"emily@example.com",address:"Roswell, GA",source:"Website",lastService:"Sand & Finish · current project",lastContact:"Sep 21, 2026",status:"Active Project",dnc:false,notes:"Stain selection onsite. Customer portal enabled.",projects:1},
+ {id:102,name:"Michael Reed",category:"Past Customer",company:"Direct Homeowner",phone:"(678) 555-0134",email:"michael@example.com",address:"Marietta, GA",source:"Referral",lastService:"Buff & Coat · 2023",lastContact:"Aug 14, 2026",status:"Reactivation Candidate",dnc:false,notes:"Returning customer. Good candidate for maintenance follow-up.",projects:2},
+ {id:103,name:"Olivia Martin",category:"Lead",company:"Direct Homeowner",phone:"(404) 555-0161",email:"olivia@example.com",address:"Milton, GA",source:"Google",lastService:"None",lastContact:"Sep 19, 2026",status:"New Lead",dnc:false,notes:"Asked about repair and matching existing stain.",projects:0},
+ {id:104,name:"Sarah Brooks",category:"Estimate Not Closed",company:"Direct Homeowner",phone:"(470) 555-0148",email:"sarah@example.com",address:"Alpharetta, GA",source:"Website",lastService:"Estimate only · Aug 2026",lastContact:"Aug 28, 2026",status:"Follow-up Due",dnc:false,notes:"Estimate delivered. No final decision yet.",projects:0},
+ {id:105,name:"Alpha",category:"Contractor",company:"Alpha",phone:"(770) 555-0110",email:"projects@example.com",address:"Metro Atlanta",source:"Partner",lastService:"Recurring projects",lastContact:"Sep 20, 2026",status:"Active Partner",dnc:false,notes:"Contractor-originated projects require restricted homeowner pricing visibility.",projects:12},
+ {id:106,name:"North Atlanta Homes",category:"Builder",company:"North Atlanta Homes",phone:"(678) 555-0180",email:"build@example.com",address:"Metro Atlanta",source:"Partner",lastService:"Installation · 2026",lastContact:"Sep 15, 2026",status:"Active Partner",dnc:false,notes:"Builder relationship. Multiple properties.",projects:8},
+ {id:107,name:"Susan Green",category:"Past Customer",company:"Direct Homeowner",phone:"(404) 555-0177",email:"susan@example.com",address:"Sandy Springs, GA",source:"Referral",lastService:"Hardwood Installation · 2022",lastContact:"Jul 2, 2026",status:"Opted Out",dnc:true,notes:"Customer requested no promotional messages.",projects:1},
+ {id:108,name:"Oak Design Studio",category:"Partner",company:"Oak Design Studio",phone:"(770) 555-0121",email:"studio@example.com",address:"Atlanta, GA",source:"Networking",lastService:"Referral partner",lastContact:"Sep 8, 2026",status:"Active Partner",dnc:false,notes:"Design referral partner.",projects:4}
+];
+
+const employees=[
+ {id:201,name:"Cindy",role:"Office / Admin",access:"Admin",language:"PT / EN",status:"Active",skills:["Customer Service","Scheduling","Estimates","Operations"],notes:"Office access to customer, job and operational records."},
+ {id:202,name:"Caritas",role:"Office / Admin",access:"Admin",language:"PT / EN",status:"Active",skills:["Customer Service","Scheduling","Operations"],notes:"Office access."},
+ {id:203,name:"André",role:"Manager / Project Manager",access:"Manager",language:"PT / EN",status:"Active",skills:["Estimates","Inspections","Project Mgmt","Field Work"],notes:"Manager-level operational access."},
+ {id:204,name:"Isaque",role:"Manager / Project Manager",access:"Manager",language:"PT / EN",status:"Active",skills:["Estimates","Inspections","Project Mgmt","Field Work"],notes:"Manager-level operational access."}
+];
+
+const subs=[
+ {id:301,name:"Lucas Ferreira",company:"LF Floors",phone:"(770) 555-0201",email:"lucas.sub@example.com",trade:"Installer",area:"Metro Atlanta",availability:"Available",status:"Active",jobs:18,skills:["Installation","Repairs","Stairs"],notes:"Demo subcontractor record.",docs:[
+  {name:"W-9",status:"Current",expires:"No expiration"},{name:"Certificate of Insurance",status:"Expiring Soon",expires:"Oct 4, 2026"},{name:"Subcontract Agreement",status:"Current",expires:"Jan 15, 2027"}]},
+ {id:302,name:"Marcos Silva",company:"MS Finish",phone:"(678) 555-0202",email:"marcos.sub@example.com",trade:"Sand & Finish",area:"North Atlanta",availability:"Limited",status:"Active",jobs:27,skills:["Sand & Finish","Stain","Finish Coats"],notes:"Demo record with expired document alert.",docs:[
+  {name:"W-9",status:"Current",expires:"No expiration"},{name:"Certificate of Insurance",status:"Expired",expires:"Sep 10, 2026"},{name:"Workers' Comp",status:"Current",expires:"Feb 2, 2027"}]},
+ {id:303,name:"Rafael Costa",company:"RC Services",phone:"(404) 555-0203",email:"rafael.sub@example.com",trade:"Painter / Trim",area:"Metro Atlanta",availability:"Available",status:"Active",jobs:11,skills:["Paint","Trim","Baseboards"],notes:"All demo compliance documents current.",docs:[
+  {name:"W-9",status:"Current",expires:"No expiration"},{name:"Certificate of Insurance",status:"Current",expires:"May 30, 2027"},{name:"Subcontract Agreement",status:"Current",expires:"Mar 18, 2027"}]}
+];
+
+const vendors=[
+ {id:401,name:"FAF",type:"Vendor",category:"Flooring Supplier",area:"Metro Atlanta",status:"Active",notes:"Material supplier. Demo contact details omitted."},
+ {id:402,name:"Georgia Oak",type:"Vendor",category:"Wood Supplier",area:"Georgia",status:"Active",notes:"Supplier record for purchasing and job history."},
+ {id:403,name:"Georgia Pro Flooring",type:"Vendor",category:"Flooring Supplier",area:"Georgia",status:"Active",notes:"Supplier record."},
+ {id:404,name:"NDM",type:"Vendor",category:"Material Supplier",area:"Georgia",status:"Active",notes:"Supplier record."},
+ {id:405,name:"Alpha",type:"Partner",category:"Contractor",area:"Metro Atlanta",status:"Active",notes:"Partner / contractor with homeowner-facing privacy rules."}
+];
+
+const folders=[
+ ["Before Photos",14],["Stain Samples",5],["Customer Selection",2],["Service Order",1],["Estimate",1],
+ ["During Work",22],["Issues Found",3],["After Photos",11],["Signed Documents",2],["Invoice",1],["Care & Maintenance",2]
+];
+
+let activeTab="contacts";
+
+function badgeClass(v){
+ if(["Active","Current","Active Project","Active Partner","Available"].some(x=>String(v).includes(x))) return "green";
+ if(["Lead","New Lead","Manager","Admin"].some(x=>String(v).includes(x))) return "blue";
+ if(["Follow-up Due","Reactivation Candidate","Expiring Soon","Limited"].some(x=>String(v).includes(x))) return "amber";
+ if(["Expired","Opted Out","Inactive"].some(x=>String(v).includes(x))) return "red";
+ return "gray";
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
+function setTab(tab,btn){
+ activeTab=tab;document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===btn));
+ document.getElementById("search").value="";populateFilter();render();
+}
+function populateFilter(){
+ const f=document.getElementById("filter");let values=[];
+ if(activeTab==="contacts") values=[...new Set(contacts.map(x=>x.category))];
+ if(activeTab==="employees") values=[...new Set(employees.map(x=>x.role))];
+ if(activeTab==="subs") values=[...new Set(subs.map(x=>x.trade))];
+ if(activeTab==="vendors") values=[...new Set(vendors.map(x=>x.type))];
+ f.innerHTML='<option value="">All categories</option>'+values.map(v=>`<option>${esc(v)}</option>`).join("");
+}
+function renderStats(){
+ document.getElementById("statContacts").textContent=contacts.length;
+ document.getElementById("statStaff").textContent=employees.filter(x=>x.status==="Active").length;
+ document.getElementById("statSubs").textContent=subs.length;
+ document.getElementById("statDocs").textContent=subs.flatMap(x=>x.docs).filter(d=>["Expired","Expiring Soon"].includes(d.status)).length;
+}
+function render(){
+ renderStats();
+ const q=document.getElementById("search").value.toLowerCase(), filter=document.getElementById("filter").value;
+ if(activeTab==="contacts") renderContacts(q,filter);
+ if(activeTab==="employees") renderEmployees(q,filter);
+ if(activeTab==="subs") renderSubs(q,filter);
+ if(activeTab==="vendors") renderVendors(q,filter);
+}
+function renderContacts(q,f){
+ const data=contacts.filter(x=>(!f||x.category===f)&&[x.name,x.category,x.company,x.phone,x.email,x.address,x.status].join(" ").toLowerCase().includes(q));
+ document.getElementById("count").textContent=`${data.length} demo record(s)`;
+ document.getElementById("content").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Name</th><th>Category</th><th>Contact</th><th>Last activity</th><th>Status</th><th>Marketing</th><th></th></tr></thead><tbody>${data.map(x=>`<tr>
+ <td><strong>${esc(x.name)}</strong><div class="sub">${esc(x.company)} · ${esc(x.address)}</div></td>
+ <td><span class="badge gold">${esc(x.category)}</span></td>
+ <td>${esc(x.phone)}<div class="sub">${esc(x.email)}</div></td>
+ <td>${esc(x.lastService)}<div class="sub">Last contact: ${esc(x.lastContact)}</div></td>
+ <td><span class="badge ${badgeClass(x.status)}">${esc(x.status)}</span></td>
+ <td>${x.dnc?'<span class="badge red">DO NOT CONTACT</span>':'<span class="badge green">Allowed</span>'}</td>
+ <td><button class="link" onclick="openContact(${x.id})">Open →</button></td></tr>`).join("")||'<tr><td colspan="7" class="empty">No matching records.</td></tr>'}</tbody></table></div>`;
+}
+function renderEmployees(q,f){
+ const data=employees.filter(x=>(!f||x.role===f)&&[x.name,x.role,x.access,x.language,x.skills.join(" ")].join(" ").toLowerCase().includes(q));
+ document.getElementById("count").textContent=`${data.length} staff record(s)`;
+ document.getElementById("content").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Name</th><th>Role</th><th>Access</th><th>Languages</th><th>Skills</th><th>Status</th><th></th></tr></thead><tbody>${data.map(x=>`<tr>
+ <td><strong>${esc(x.name)}</strong></td><td>${esc(x.role)}</td><td><span class="badge blue">${esc(x.access)}</span></td><td>${esc(x.language)}</td><td>${x.skills.map(s=>`<span class="badge gray" style="margin:2px">${esc(s)}</span>`).join("")}</td><td><span class="badge green">${esc(x.status)}</span></td><td><button class="link" onclick="openEmployee(${x.id})">Open →</button></td></tr>`).join("")}</tbody></table></div>`;
+}
+function renderSubs(q,f){
+ const data=subs.filter(x=>(!f||x.trade===f)&&[x.name,x.company,x.trade,x.area,x.skills.join(" ")].join(" ").toLowerCase().includes(q));
+ document.getElementById("count").textContent=`${data.length} subcontractor record(s)`;
+ document.getElementById("content").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Name / Company</th><th>Trade</th><th>Area</th><th>Availability</th><th>Jobs</th><th>Compliance</th><th></th></tr></thead><tbody>${data.map(x=>{const alert=x.docs.find(d=>d.status==="Expired")||x.docs.find(d=>d.status==="Expiring Soon");return `<tr>
+ <td><strong>${esc(x.name)}</strong><div class="sub">${esc(x.company)}</div></td><td>${esc(x.trade)}</td><td>${esc(x.area)}</td><td><span class="badge ${badgeClass(x.availability)}">${esc(x.availability)}</span></td><td>${x.jobs}</td><td>${alert?`<span class="badge ${badgeClass(alert.status)}">${esc(alert.status)}</span>`:'<span class="badge green">Current</span>'}</td><td><button class="link" onclick="openSub(${x.id})">Open →</button></td></tr>`}).join("")}</tbody></table></div>`;
+}
+function renderVendors(q,f){
+ const data=vendors.filter(x=>(!f||x.type===f)&&[x.name,x.type,x.category,x.area,x.status].join(" ").toLowerCase().includes(q));
+ document.getElementById("count").textContent=`${data.length} vendor / partner record(s)`;
+ document.getElementById("content").innerHTML=`<div class="table-wrap"><table><thead><tr><th>Name</th><th>Type</th><th>Category</th><th>Area</th><th>Status</th><th></th></tr></thead><tbody>${data.map(x=>`<tr><td><strong>${esc(x.name)}</strong></td><td><span class="badge gold">${esc(x.type)}</span></td><td>${esc(x.category)}</td><td>${esc(x.area)}</td><td><span class="badge green">${esc(x.status)}</span></td><td><button class="link" onclick="openVendor(${x.id})">Open →</button></td></tr>`).join("")}</tbody></table></div>`;
+}
+function openDrawer(kicker,title,html){
+ document.getElementById("drawerKicker").textContent=kicker;document.getElementById("drawerTitle").textContent=title;document.getElementById("drawerContent").innerHTML=html;document.getElementById("drawerBg").classList.add("show");
+}
+function closeDrawer(){document.getElementById("drawerBg").classList.remove("show")}
+function openContact(id){
+ const x=contacts.find(v=>v.id===id);if(!x)return;
+ const folderHtml=folders.map(([n,c])=>`<div class="folder"><strong>${esc(n)}</strong><span>${c} file${c===1?"":"s"}</span></div>`).join("");
+ openDrawer("CONTACT / CUSTOMER PROFILE",x.name,`
+ ${x.dnc?'<div class="dnc"><strong>DO NOT CONTACT / OPTED OUT</strong><br>Marketing follow-up is blocked for this contact.</div>':`<div style="display:flex;gap:8px;margin-bottom:12px"><button class="btn primary" onclick="openFollowup(${x.id})">Suggested Follow-up</button><button class="btn" onclick="toggleDnc(${x.id})">Set Do Not Contact</button></div>`}
+ <div class="profile-grid">
+  <div class="detail"><span>Category</span><strong>${esc(x.category)}</strong></div><div class="detail"><span>Status</span><strong>${esc(x.status)}</strong></div>
+  <div class="detail"><span>Phone</span><strong>${esc(x.phone)}</strong></div><div class="detail"><span>Email</span><strong>${esc(x.email)}</strong></div>
+  <div class="detail"><span>Address / Area</span><strong>${esc(x.address)}</strong></div><div class="detail"><span>Lead Source</span><strong>${esc(x.source)}</strong></div>
+  <div class="detail"><span>Last Service</span><strong>${esc(x.lastService)}</strong></div><div class="detail"><span>Last Contact</span><strong>${esc(x.lastContact)}</strong></div>
+ </div>
+ <h4>Internal Notes</h4><div class="note">${esc(x.notes)}</div>
+ <h4>Project Digital Folder</h4><div class="sub" style="margin-bottom:9px">Example organization for project documents and photos. Files are not actually uploaded in this static demo.</div><div class="folder-grid">${folderHtml}</div>`);
+}
+function openEmployee(id){
+ const x=employees.find(v=>v.id===id);if(!x)return;openDrawer("EMPLOYEE PROFILE",x.name,`
+ <div class="profile-grid"><div class="detail"><span>Role</span><strong>${esc(x.role)}</strong></div><div class="detail"><span>System Access</span><strong>${esc(x.access)}</strong></div><div class="detail"><span>Languages</span><strong>${esc(x.language)}</strong></div><div class="detail"><span>Status</span><strong>${esc(x.status)}</strong></div></div>
+ <h4>Skills / Responsibilities</h4><div>${x.skills.map(s=>`<span class="badge gray" style="margin:3px">${esc(s)}</span>`).join("")}</div><h4>Notes</h4><div class="note">${esc(x.notes)}</div>`);
+}
+function openSub(id){
+ const x=subs.find(v=>v.id===id);if(!x)return;
+ const docs=x.docs.map(d=>`<div class="doc"><div><strong>${esc(d.name)}</strong><br><small>Expiration: ${esc(d.expires)}</small></div><span class="badge ${badgeClass(d.status)}">${esc(d.status)}</span><button class="btn small" onclick="toast('Document preview/upload will be connected to secure storage later.')">Open</button></div>`).join("");
+ openDrawer("SUBCONTRACTOR PROFILE",x.name,`
+ <div class="profile-grid"><div class="detail"><span>Company</span><strong>${esc(x.company)}</strong></div><div class="detail"><span>Trade</span><strong>${esc(x.trade)}</strong></div><div class="detail"><span>Phone</span><strong>${esc(x.phone)}</strong></div><div class="detail"><span>Email</span><strong>${esc(x.email)}</strong></div><div class="detail"><span>Service Area</span><strong>${esc(x.area)}</strong></div><div class="detail"><span>Availability</span><strong>${esc(x.availability)}</strong></div><div class="detail"><span>Jobs Completed</span><strong>${x.jobs}</strong></div><div class="detail"><span>Status</span><strong>${esc(x.status)}</strong></div></div>
+ <h4>Skills</h4><div>${x.skills.map(s=>`<span class="badge gray" style="margin:3px">${esc(s)}</span>`).join("")}</div><h4>Compliance Documents</h4><div class="doc-list">${docs}</div><h4>Internal Notes</h4><div class="note">${esc(x.notes)}</div>`);
+}
+function openVendor(id){
+ const x=vendors.find(v=>v.id===id);if(!x)return;openDrawer("VENDOR / PARTNER PROFILE",x.name,`<div class="profile-grid"><div class="detail"><span>Type</span><strong>${esc(x.type)}</strong></div><div class="detail"><span>Category</span><strong>${esc(x.category)}</strong></div><div class="detail"><span>Area</span><strong>${esc(x.area)}</strong></div><div class="detail"><span>Status</span><strong>${esc(x.status)}</strong></div></div><h4>Notes</h4><div class="note">${esc(x.notes)}</div><h4>Future Use</h4><div class="sub">Purchases, project history, purchase orders and supplier contacts can be attached to this record.</div>`);
+}
+function followupText(x){
+ if(x.category==="Estimate Not Closed") return `Hi ${x.name.split(" ")[0]}, this is Georgia Top Floors. Just checking in regarding the flooring estimate we provided. If you have any questions or would like to review the project options, we're happy to help.`;
+ if(x.category==="Past Customer") return `Hi ${x.name.split(" ")[0]}, this is Georgia Top Floors. We worked on your floors a while ago and wanted to check how everything is holding up. If you need maintenance, a buff & coat, repair, or help with another area, we'd be happy to assist.`;
+ if(x.category==="Lead") return `Hi ${x.name.split(" ")[0]}, this is Georgia Top Floors. We're following up on your flooring request. If you'd like, we can help with the next step or schedule an estimate.`;
+ return `Hi ${x.name.split(" ")[0]}, this is Georgia Top Floors. We're checking in regarding your flooring project. Let us know if there's anything we can help with.`;
+}
+function openFollowup(id){
+ const x=contacts.find(v=>v.id===id);if(!x)return;if(x.dnc){toast("Follow-up blocked: contact is marked DO NOT CONTACT.");return;}
+ document.getElementById("messageText").textContent=followupText(x);document.getElementById("messageModal").classList.add("show");
+}
+function closeMessage(){document.getElementById("messageModal").classList.remove("show")}
+function toggleDnc(id){
+ const x=contacts.find(v=>v.id===id);if(!x)return;x.dnc=true;x.status="Opted Out";localStorage.setItem("gtfDatabaseContacts",JSON.stringify(contacts));render();openContact(id);toast("Contact marked DO NOT CONTACT in the demo.");
+}
+function openNewContact(){document.getElementById("contactModal").classList.add("show")}
+function closeNewContact(){document.getElementById("contactModal").classList.remove("show")}
+function saveNewContact(){
+ const x={id:Date.now(),name:newName.value||"Demo Contact",category:newCategory.value,company:"Direct / Demo",phone:newPhone.value,email:newEmail.value,address:newAddress.value,source:newSource.value,lastService:"Not recorded",lastContact:"Sep 21, 2026",status:newCategory.value==="Lead"?"New Lead":"Active",dnc:newConsent.value==="no",notes:newNotes.value,projects:0};
+ if(x.dnc)x.status="Opted Out";contacts.unshift(x);localStorage.setItem("gtfDatabaseContacts",JSON.stringify(contacts));closeNewContact();activeTab="contacts";document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab==="contacts"));populateFilter();render();toast("Demo contact saved locally in this browser.");
+}
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove("show"),2800)}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeDrawer();closeNewContact();closeMessage()}})
+populateFilter();render();
+</script>
+</body>
+</html>

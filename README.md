@@ -1,32 +1,55 @@
-# Georgia Top Floors Hub — Presentation Demo
+# Georgia Top Floors Hub — Presentation Demo v3
 
-This demo intentionally shows three separate experiences backed by one future platform:
+This static presentation prototype now demonstrates four views:
 
-1. **Office/Admin** — `index.html`
-2. **Crew/Employee** — `crew.html`
-3. **Customer Portal** — `customer.html`
+1. **Office / Admin** — `index.html`
+2. **People & Company Database** — `database.html`
+3. **Crew / Employee** — `crew.html`
+4. **Customer Portal** — `customer.html`
 
-For the presentation all files are static and public, with fictional data only.
+## Database demo includes
 
-In production, access will be protected by authentication and roles:
-- ADMIN / OFFICE
-- MANAGER
-- CREW
-- CUSTOMER
+- Contacts / Customers
+- Contact classification:
+  - Past Customer
+  - Current Customer
+  - Lead
+  - Estimate Not Closed
+  - Builder
+  - Contractor
+  - Partner
+- Last service / last contact / lead source / status / notes
+- DO NOT CONTACT / Opted Out flag
+- Suggested segmented follow-up examples
+- Employee profiles and system access role examples
+- Subcontractor profiles
+- Skills, availability, jobs and internal notes
+- W-9 / COI / Workers' Comp / Subcontract Agreement examples
+- Expiring Soon / Expired document alerts
+- Vendors & Partners
+- Project Digital Folder categories
+- Search and category filters
+- Add Demo Contact using browser localStorage
 
-A customer will never receive Office/Crew permissions. Contractor-referred homeowners can also have billing/pricing hidden.
+## Publishing on GitHub Pages
 
-## GitHub Pages links
+Upload all files to the root of the existing public repository:
 
-If the repository is:
-`https://github.com/cindygatop/GeorgiaTopFloorsHub-Demo`
+`cindygatop/GeorgiaTopFloorsHub-Demo`
 
-then:
+Expected pages:
 
 - Office: `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/`
+- Database: `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/database.html`
 - Crew: `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/crew.html`
 - Customer: `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/customer.html`
 
-## Important
+## Production architecture
 
-This is a presentation prototype. Real authentication, GPS, SMS/email, Google Calendar, Invoice2go, Square, database and production customer data are not connected yet.
+The production system should use one secure backend/database with role-based access:
+- Admin / Office
+- Manager
+- Crew
+- Customer
+
+The static GitHub Pages demo has no real authentication and therefore must contain sample/fictional data only.

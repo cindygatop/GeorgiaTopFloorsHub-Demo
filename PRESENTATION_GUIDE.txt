@@ -1,40 +1,75 @@
-GEORGIA TOP FLOORS HUB — QUICK PRESENTATION GUIDE
+GEORGIA TOP FLOORS HUB — PRESENTATION GUIDE v3
 
-ARCHITECTURE
-One platform / one database, with different views and permissions.
+SIMPLE IDEA TO EXPLAIN
 
-OFFICE / ADMIN
-- Dashboard
-- Jobs
-- Calendar
-- Customers
-- Crews
-- Internal operational information
+"Today some information is spread between contacts, messages, files, calendars and different systems. The Hub would turn that into one organized company database. The goal is not just to store information, but to make it useful."
 
-CREW / EMPLOYEE
-- Today's assigned jobs
-- Address, arrival window, service, sqft
-- OTW, Arrived, In Progress, Completed
-- Stain/color
-- Materials
-- Notes / Report Problem
-- Future GPS starts only at OTW and ends at Arrived
+DATABASE
 
-CUSTOMER
-- Only their own property/project
-- Next visit
-- OTW / arrival tracking
-- Project progress
-- Stain/color
-- Invoice/payment when allowed
-- Care & warranty
-- "I won't be home" notice
+Contacts can be classified as:
+- Past Customer
+- Current Customer
+- Lead
+- Estimate Not Closed
+- Builder
+- Contractor
+- Partner
 
-CONTRACTOR PRIVACY
-For Alpha or another contractor:
-- homeowner can see project progress, schedule, OTW and project details
-- homeowner does NOT see internal prices, subcontractor prices, margins, purchase orders or internal notes
+Each profile can keep:
+- phone / email / address
+- lead source
+- last service
+- last contact
+- project history
+- internal notes
+- communication permission / DO NOT CONTACT
 
-PRODUCTION
-These may look like separate apps to each user, but they share the same secure backend and database.
-Authentication/roles decide what each person can access.
+This allows targeted follow-up instead of sending generic messages to everyone.
+
+SUBCONTRACTORS
+
+Each subcontractor gets one profile with:
+- company
+- trade / skills
+- service area
+- availability
+- active / inactive
+- jobs completed
+- notes
+- W-9
+- Certificate of Insurance
+- Workers' Comp when applicable
+- licenses / certificates
+- subcontract agreement
+
+Documents with expiration dates can automatically become:
+- Expiring Soon
+- Expired
+
+Core benefit:
+"Today the information depends on us remembering it. The idea is for the information to warn us."
+
+PROJECT DIGITAL FOLDER
+
+Each job can later have:
+- Before Photos
+- Stain Samples
+- Customer Selection
+- Service Order
+- Estimate
+- During Work
+- Issues Found
+- After Photos
+- Signed Documents
+- Invoice
+- Care & Maintenance
+
+ONE PLATFORM, DIFFERENT ACCESS
+
+Office sees the full operation.
+Crew sees only assigned work and field actions.
+Customer sees only their own project.
+Contractor-referred homeowners can have pricing/internal information hidden.
+
+IMPORTANT
+This is a static presentation prototype with sample data. Production will require authentication, permissions, secure database/storage and real integrations.

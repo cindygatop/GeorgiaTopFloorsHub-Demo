@@ -158,6 +158,7 @@ tr:hover td{background:#FFFDF8}
       <button class="active" data-page="dashboard"><span class="icon">⌂</span><span data-i18n="dashboard">Dashboard</span></button>
       <button data-page="jobs"><span class="icon">▣</span><span data-i18n="jobs">Jobs</span></button>
       <button data-page="calendar"><span class="icon">▦</span><span data-i18n="calendar">Calendar</span></button>
+      <button data-href="database.html"><span class="icon">◫</span><span>Database</span></button>
       <button data-page="customers"><span class="icon">◎</span><span data-i18n="customers">Customers</span></button>
       <button data-page="crews"><span class="icon">👥</span><span data-i18n="crews">Crews</span></button>
     </nav>
@@ -203,6 +204,7 @@ tr:hover td{background:#FFFDF8}
               <button onclick="openNewJob()">＋ New Job<small>Create and schedule a project</small></button>
               <button onclick="goPage('calendar')">▦ Calendar<small>Review upcoming visits</small></button>
               <button onclick="goPage('customers')">◎ Customer<small>Find contact & property</small></button>
+              <button onclick="window.location.href='database.html'">◫ Database<small>Contacts, staff, subs & vendors</small></button>
               <button onclick="goPage('crews')">👥 Crews<small>See assignments & skills</small></button>
             </div>
           </div>
@@ -388,7 +390,10 @@ function goPage(id){
  document.getElementById("pageSubtitle").textContent=pageMeta[id][1];
  window.scrollTo({top:0,behavior:"smooth"});
 }
-document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>goPage(b.dataset.page));
+document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
+ if(b.dataset.href){ window.location.href=b.dataset.href; return; }
+ goPage(b.dataset.page);
+});
 function openNewJob(){
  const d=new Date(); d.setDate(d.getDate()+2);
  document.getElementById("fDate").value=d.toISOString().slice(0,10);
