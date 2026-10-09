@@ -4,7 +4,7 @@
 
 - Repositório: `cindygatop/GeorgiaTopFloorsHub-Demo`, branch `main`.
 - HEAD anterior confirmado: `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`.
-- Referência local de reversão: `backup/pre-v5-2026-10-09` no SHA anterior.
+- Referência de reversão local e publicada no GitHub: `backup/pre-v5-2026-10-09` no SHA anterior.
 - Conteúdo de `CODIGO_V5/` aplicado à raiz; não existe pasta adicional `CODIGO_V5` no projeto.
 - Nenhum arquivo da versão anterior foi excluído. Logos e `supabase-schema.sql` preservados byte a byte.
 - Documentos obrigatórios e conversa compartilhada lidos; requisitos preservados em `GTF_MASTER_SPEC.md` e `HISTORY_REVIEW.md`.
@@ -36,6 +36,12 @@
 
 Requer Python com `playwright` e Chromium instalado. Em um terminal execute `python3 -m http.server 8000`; em outro execute `python3 tests/assistant_workflow_smoke.py`, `python3 tests/office_compliance_smoke.py` e `python3 tests/portals_smoke.py`. Os testes usam dados de demonstração em contexto isolado e não enviam mensagens nem chamam APIs de produção. `GTF_BASE_URL` configura o servidor Office/Assistant, `GTF_TEST_URL` o dos portais e `GTF_QA_ARTIFACTS` a pasta de evidências fora do repo.
 
+### Validação do site publicado
+
+Os mesmos três scripts passaram também contra `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/`, após o build do commit de implementação. Assistente, Office/Compliance, Crew e Client mantiveram os comportamentos descritos acima. Zero erros JavaScript capturados e zero overflow horizontal nas páginas verificadas a 1440 e 390 px. Foram registrados 15 screenshots, com conferência visual sem bloqueador. Os contextos eram isolados, com dados fictícios no localStorage; nenhuma mensagem foi enviada ou API de integração acionada.
+
+Comparação HTTP/SHA256: os 13 arquivos verificados (`assistant.js`, `project-docs.js`, `app-core.js`, `compliance.js`, `theme.css` e os oito HTMLs da aplicação) responderam HTTP 200 e eram idênticos aos arquivos locais testados, sem necessidade de cache bust. Logs, resultados e screenshots ficaram em `/workspace/scratch/gtf-v5-published-*` no ambiente de validação; os scripts de reprodução estão versionados em `tests/`.
+
 ## Integrações e limites
 
 - Continua sendo demo estática com localStorage e login público de demonstração. Não existe autenticação segura, isolamento real ou sincronização entre dispositivos.
@@ -51,4 +57,12 @@ Requer Python com `playwright` e Chromium instalado. Em um terminal execute `pyt
 
 ## Publicação
 
-Pages confirmado em `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/`, fonte `main` na raiz. Último build confirmado: `built`, commit `4d9e0fba967a8a44a1d9cc8ec329300a2af36488` (09/10/2026 14:39 UTC). A publicação da referência de backup foi recusada por HTTP 403 tanto no Git quanto no connector (`Resource not accessible by integration`); listas de instalações/contas da integração vieram vazias. A branch não estava protegida, mas a credencial da integração não autoriza escrita. Até reautorizar a integração e confirmar push/deploy, a v5 não está publicada no GitHub ou no site.
+A v5 foi publicada com push atômico da `main` e da referência de reversão após a usuária instalar novamente o ChatGPT Codex Connector. As recusas HTTP 403 anteriores foram resolvidas; não foi necessário alterar a proteção da branch ou usar force push.
+
+- Commit de implementação: [`e26c069d48d54068655d8af33853701e93b2ffda`](https://github.com/cindygatop/GeorgiaTopFloorsHub-Demo/commit/e26c069d48d54068655d8af33853701e93b2ffda).
+- Backup remoto: [`backup/pre-v5-2026-10-09`](https://github.com/cindygatop/GeorgiaTopFloorsHub-Demo/tree/backup/pre-v5-2026-10-09), SHA `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`.
+- Site: [Georgia Top Floors Hub](https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/login.html), GitHub Pages a partir de `main` na raiz.
+- Build da implementação: `built`, commit `e26c069d48d54068655d8af33853701e93b2ffda`, concluído em 09/10/2026 às 19:50:44 UTC. [Workflow](https://github.com/cindygatop/GeorgiaTopFloorsHub-Demo/actions/runs/37982912289) concluído com `success`.
+- Os três smoke scripts passaram no site publicado; 13 arquivos da aplicação responderam HTTP 200 com SHA256 idêntico ao código local testado.
+
+Esta publicação disponibiliza a demo estática e suas correções. Os serviços descritos como pendentes acima continuam sem integração real.

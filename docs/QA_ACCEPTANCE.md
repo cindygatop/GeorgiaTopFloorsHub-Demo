@@ -46,7 +46,7 @@
 
 - [x] Calendar não promete edição de evento já existente. Draft deve sinalizar que abre NOVO evento.
 - [x] Sem OAuth/API keys client-side. `google-calendar-service.example.mjs` é exemplo e deve permanecer não executado no Pages.
-- [ ] Verificar que site publicou a URL, dar URL, commit SHA e resultado dos testes ao usuário. Se branch protection impedir, criar PR e mostrar pendência real.
+- [x] Verificar que site publicou a URL, dar URL, commit SHA e resultado dos testes ao usuário. Se branch protection impedir, criar PR e mostrar pendência real.
 
 ## Após primeiro commit
 
@@ -54,4 +54,4 @@ Solicitar apenas dados de integrações realmente indispensáveis para a próxim
 
 ## Evidência do Codex (09/10/2026)
 
-Checks marcados refletem validação local da demo descrita em VALIDATION_V5.md. HTML passou validação básica e sintaxe de scripts, não W3C. Referência de rollback criada localmente e SHA anterior registrado; envio remoto recusado com 403. URL Google Review não validada por CAPTCHA/429. Publicação da v5 e integrações reais continuam pendentes.
+Checks marcados refletem a validação da demo descrita em VALIDATION_V5.md: 24 testes unitários locais, validação estática e três scripts de navegador aprovados localmente e no site publicado. HTML passou validação básica e sintaxe de scripts, não W3C. Commit de implementação `e26c069d48d54068655d8af33853701e93b2ffda` publicado na `main` e GitHub Pages com build confirmado. Referência remota de rollback: `backup/pre-v5-2026-10-09`, no SHA anterior `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`. A recusa 403 foi resolvida pela reinstalação da integração. Care Guide abre na demo; a URL Google Review continua não validada por CAPTCHA/429. Integrações de produção continuam pendentes.

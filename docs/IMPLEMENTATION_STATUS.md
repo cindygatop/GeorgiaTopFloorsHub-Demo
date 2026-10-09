@@ -1,6 +1,6 @@
 # GTF Hub — status técnico do repasse v5 e ressalvas
 
-Data de preparação: 2026-10-09. Material retirado do ZIP `GeorgiaTopFloorsHub-Demo-v5-FULL.zip`, conferido localmente. O GitHub da usuária foi consultado em 09/10/2026. Último HEAD observado da branch `main`: `4d9e0fba967a8a44a1d9cc8ec329300a2af36488` (pode ter mudado; Codex DEVE verificar antes de escrever). Visto `main` com estrutura da v4 (sem `assistant.js`, `calendar.html`, `google-calendar-service.example.mjs` etc.).
+Data de preparação: 2026-10-09. Material retirado do ZIP `GeorgiaTopFloorsHub-Demo-v5-FULL.zip`, conferido localmente. As seções A–E preservam o diagnóstico histórico do repasse: a `main` ainda era v4, no SHA `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`. A seção F registra a implementação, validação e publicação pelo Codex. Sempre verificar o HEAD remoto antes de novas alterações.
 
 ## A. Implementado na demo v5 (não equivale a produção)
 
@@ -49,4 +49,6 @@ Leitura funcionou, repo `cindygatop/GeorgiaTopFloorsHub-Demo`, usuário `cindyga
 
 ## F. Validação do Codex em 09/10/2026
 
-O código v5 foi aplicado e auditado sobre o HEAD confirmado `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`. As correções e evidências atuais estão em `VALIDATION_V5.md`, e a revisão dos pedidos da conversa compartilhada em `HISTORY_REVIEW.md`. Estes resultados atualizam as ressalvas históricas de QA do pacote. A publicação continua sujeita a acesso real de escrita e confirmação do push/deploy.
+O código v5 foi aplicado e auditado sobre o HEAD confirmado `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`. As correções e evidências atuais estão em `VALIDATION_V5.md`, e a revisão dos pedidos da conversa compartilhada em `HISTORY_REVIEW.md`. Estes resultados atualizam as ressalvas históricas de QA do pacote.
+
+Depois da reinstalação do ChatGPT Codex Connector, o commit de implementação `e26c069d48d54068655d8af33853701e93b2ffda` e a branch `backup/pre-v5-2026-10-09` foram enviados ao GitHub com sucesso. O GitHub Pages confirmou build `built` desse commit às 19:50:44 UTC. Site publicado: https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/login.html. O resultado é uma demo estática validada: 24 testes unitários locais, validação estática e três scripts de navegador aprovados localmente e no site publicado, incluindo Office/Crew/Client a 1440 e 390 px. Autenticação segura, backend, Calendar bidirecional, SMS, assinatura legal e pagamentos continuam pendentes.
