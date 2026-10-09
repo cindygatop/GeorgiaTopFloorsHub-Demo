@@ -1,25 +1,13 @@
-GEORGIA TOP FLOORS HUB — V4 QA REPORT
-Date: 2026-10-08
+GEORGIA TOP FLOORS HUB — v5 validation in Codex
+Date: October 9, 2026
 
-PASSED
-- JavaScript syntax check: app-core.js, project-docs.js, compliance.js
-- Inline JavaScript syntax check: login, Office, Client, Crew, Compliance, Database and Documents pages
-- Local file reference audit: scripts, stylesheets and images resolve
-- Duplicate HTML ID audit on the principal pages
-- Workflow unit flow: Project -> Estimate -> Work Order -> Invoice keeps one project_id
-- Crew-ready Work Order state can be released and updated
-- Compliance migration groups General Liability / Workers Compensation under COI
-- W-9 internal review metadata exists and advances separately from expiration
-- Customer Agreement can update the linked compliance record to Signed
-- Demo authentication, per-user adaptive usage and integration notification queue unit checks
-- No provider API keys or production secrets found in the repository scan
+Current evidence and limitations: docs/VALIDATION_V5.md
+Historical package checks: QA_V5.txt (not the current browser result).
+Reproduce: node --test tests/*.test.js
+Reproduce: python3 tests/validate_static.py
+Browser: python3 tests/assistant_workflow_smoke.py (Playwright + Chromium + local HTTP server).
 
-NOT A PRODUCTION SECURITY TEST
-This is still a static/localStorage demo. Production authentication, database RLS, webhooks,
-payment security, OAuth, e-sign audit trail, backups and integration credentials must be
-implemented on the server-side production stack before real customer data is used.
-
-ENVIRONMENT NOTE
-A full Chromium interaction run was attempted in the build container, but the container's
-headless Chromium process did not return DOM output reliably. The code therefore received
-static syntax/reference checks plus unit-level workflow/data-flow checks instead of a full E2E browser run.
+This is a static localStorage demo. No production authentication, shared database,
+Google Calendar bidirectional sync, Quo SMS, payment processing or legally verified
+signature is connected. Publication is separate from local verification; see the
+publication status in docs/VALIDATION_V5.md.

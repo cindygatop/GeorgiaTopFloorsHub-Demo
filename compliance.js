@@ -1,6 +1,6 @@
 (function(){
   const STORE_KEY='gtfComplianceCenterV1';
-  const TODAY='2026-10-08';
+  const TODAY=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 
   const defaults={
     schemaVersion:3,
@@ -102,10 +102,11 @@
   function addRecord(record){const d=load();record.id=record.id||('cmp-'+Date.now());record.docType=record.docType||inferDocType(record);record.documentGroup=record.documentGroup||inferGroup(record);d.records.unshift(record);save(d);return record;}
   function ensureJobAgreement(job){
     if(!job||job.company!=='Direct Homeowner')return null;
-    const d=load();let r=d.records.find(x=>x.category==='Job Compliance'&&x.documentType==='Customer Agreement / Consent & Acknowledgment'&&(x.jobId===job.id||x.entity===job.customer));
-    if(!r){r={id:'job-'+job.id+'-consent',category:'Job Compliance',entityType:'Job',entity:job.customer,documentType:'Customer Agreement / Consent & Acknowledgment',documentGroup:'Project Compliance',docType:'Agreements',level:'Company-required job signature',status:'Missing',effectiveDate:'',expirationDate:'',signedDate:'',jobId:job.id,linkedTo:job.address,notes:'Created automatically for a direct-homeowner demo job.'};d.records.push(r);save(d);}return r;
+    const projectId=job.projectId||(job.id!=null?'project-'+job.id:null);if(!projectId)return null;
+    const d=load(),matches=d.records.filter(x=>x.category==='Job Compliance'&&x.documentType==='Customer Agreement / Consent & Acknowledgment'&&(x.projectId===projectId||(!x.projectId&&x.jobId!=null&&((job.id!=null&&x.jobId===job.id)||('project-'+x.jobId)===projectId))));if(matches.length>1)return null;let r=matches[0];
+    if(!r){r={id:'consent-'+projectId,projectId,category:'Job Compliance',entityType:'Job',entity:job.customer,documentType:'Customer Agreement / Consent & Acknowledgment',documentGroup:'Project Compliance',docType:'Agreements',level:'Company-required job signature',status:'Missing',effectiveDate:'',expirationDate:'',signedDate:'',jobId:job.id,linkedTo:job.address,notes:'Created automatically for a direct-homeowner demo project. A local demo signature is not legal evidence.'};d.records.push(r);save(d);}else if(!r.projectId){r.projectId=projectId;save(d);}return r;
   }
-  function getJobAgreement(job){if(!job)return null;const d=load();return d.records.find(x=>x.category==='Job Compliance'&&x.documentType==='Customer Agreement / Consent & Acknowledgment'&&(x.jobId===job.id||x.entity===job.customer))||ensureJobAgreement(job);}
+  function getJobAgreement(job){return ensureJobAgreement(job);}
   function markJobAgreementSigned(job){const r=getJobAgreement(job);if(!r)return null;return updateRecord(r.id,x=>{x.status='Signed';x.signedDate=TODAY;x.effectiveDate=TODAY;x.portalSignature=true;});}
   function statusClass(status){const s=status||'';if(['Current','Signed'].includes(s))return 'green';if(['Expiring Soon','Review Needed','Signature Needed'].includes(s))return 'amber';if(['Expired','Missing'].includes(s))return 'red';return 'gray';}
   function dispatch(){try{window.dispatchEvent(new CustomEvent('gtf-compliance-changed'));}catch(e){}updateNavBadges();}

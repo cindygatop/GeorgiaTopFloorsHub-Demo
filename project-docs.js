@@ -3,7 +3,7 @@ const KEY='gtfWorkflowV2';
 const uid=(p='id')=>`${p}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
 const clone=v=>JSON.parse(JSON.stringify(v));
 const money=v=>Number(v||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
-const today='2026-10-08';
+const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 
 const seed={
  services:[
@@ -43,10 +43,12 @@ const seed={
  ]
 };
 
+function projectAppointments(projectId){try{return (JSON.parse(localStorage.getItem('gtfDemoJobs')||'[]')||[]).filter(j=>(j.projectId||('project-'+j.id))===projectId);}catch(e){return [];}}
 function migrate(s){
  let changed=false;
  (s.estimates||[]).forEach(e=>{if(!e.projectId){e.projectId=`project-${String(e.number||e.id).replace(/\D/g,'')||e.id}`;changed=true;}});
- (s.workOrders||[]).forEach(w=>{const e=(s.estimates||[]).find(x=>x.id===w.estimateId);if(!w.projectId){w.projectId=e?.projectId||`project-${w.id}`;changed=true;}if(!w.scheduledDate){w.scheduledDate='';changed=true;}if(!Array.isArray(w.assignedCrewUsers)){w.assignedCrewUsers=String(w.crew||'').split('+').map(x=>x.trim()).filter(Boolean);changed=true;}});
+ (s.workOrders||[]).forEach(w=>{const e=(s.estimates||[]).find(x=>x.id===w.estimateId);if(!w.projectId){w.projectId=e?.projectId||`project-${w.id}`;changed=true;}if(w.scheduledDate==null){w.scheduledDate='';changed=true;}if(!Array.isArray(w.assignedCrewUsers)){w.assignedCrewUsers=String(w.crew||'').split('+').map(x=>x.trim()).filter(Boolean);changed=true;}});
+ (s.workOrders||[]).forEach(w=>{const appointments=projectAppointments(w.projectId);if(!w.appointmentId&&appointments.length===1&&(s.workOrders||[]).filter(x=>x.projectId===w.projectId).length===1){w.appointmentId=appointments[0].appointmentId||('appointment-'+appointments[0].id);changed=true;}});
  (s.invoices||[]).forEach(i=>{const e=(s.estimates||[]).find(x=>x.id===i.estimateId);if(!i.projectId){i.projectId=e?.projectId||`project-${i.id}`;changed=true;}});
  return changed;
 }
@@ -55,33 +57,34 @@ function load(){
  const s=clone(seed);migrate(s);save(s);return s;
 }
 function save(s){localStorage.setItem(KEY,JSON.stringify(s));window.dispatchEvent(new CustomEvent('gtf-workflow-changed'));return s;}
-function reset(){localStorage.removeItem(KEY);const s=clone(seed);save(s);return s;}
+function reset(){localStorage.removeItem(KEY);const s=clone(seed);migrate(s);save(s);return s;}
 function nextNumber(prefix,arr){let max=1040;arr.forEach(x=>{const m=String(x.number||'').match(/(\d+)$/);if(m)max=Math.max(max,Number(m[1]));});return `${prefix}-${max+1}`;}
 function lineAmount(i){return Number(i.qty||0)*Number(i.unitPrice||0);}
 function totals(doc){const subtotal=(doc.items||[]).reduce((s,i)=>s+lineAmount(i),0);const tax=subtotal*(Number(doc.taxRate||0)/100);const discount=Number(doc.discount||0);return {subtotal,tax,discount,total:Math.max(0,subtotal+tax-discount)};}
 function paidForInvoice(s,invoiceId){return s.payments.filter(p=>p.invoiceId===invoiceId).reduce((a,p)=>a+Number(p.amount||0),0);}
 function invoiceFinancials(s,inv){const t=totals(inv),paid=paidForInvoice(s,inv.id),balance=Math.max(0,t.total-paid);let status=inv.status;if(balance<=0&&t.total>0)status='Paid';else if(paid>0)status='Partially Paid';else if(status==='Paid')status='Open';return {...t,paid,balance,status};}
 function getEstimate(id){return load().estimates.find(x=>x.id===id)||null;}
-function getEstimateByCustomer(name){return load().estimates.find(x=>x.customer===name)||null;}
+function getEstimateByCustomer(name){const matches=load().estimates.filter(x=>x.customer===name);return matches.length===1?matches[0]:null;}
 function getWorkOrderByEstimate(estId){return load().workOrders.find(x=>x.estimateId===estId)||null;}
 function getInvoiceByEstimate(estId){return load().invoices.find(x=>x.estimateId===estId)||null;}
 function getReleasedWorkOrders(){return load().workOrders.filter(x=>x.status==='Released');}
 function saveEstimate(input){
  const s=load();let e;
- if(input.id){e=s.estimates.find(x=>x.id===input.id);if(!e)throw new Error('Estimate not found');Object.assign(e,input);}
- else{e={...input,id:uid('est'),number:nextNumber('EST',s.estimates),status:input.status||'Draft',issued:input.issued||today,validUntil:input.validUntil||'',customerVisible:input.customerType!=='contractor'};s.estimates.unshift(e);}
+ if(input.id){e=s.estimates.find(x=>x.id===input.id);if(!e)throw new Error('Estimate not found');const projectId=e.projectId;Object.assign(e,input);e.projectId=projectId||input.projectId||uid('project');}
+ else{e={...input,id:uid('est'),projectId:input.projectId||uid('project'),number:nextNumber('EST',s.estimates),status:input.status||'Draft',issued:input.issued||today,validUntil:input.validUntil||'',customerVisible:input.customerType!=='contractor'};s.estimates.unshift(e);}
  save(s);return e;
 }
 function setEstimateStatus(id,status){const s=load(),e=s.estimates.find(x=>x.id===id);if(!e)return null;e.status=status;if(status==='Approved')e.approvedAt=today;save(s);return e;}
-function createWorkOrder(estId,extra={}){const s=load(),e=s.estimates.find(x=>x.id===estId);if(!e)throw new Error('Estimate not found');if(e.status!=='Approved')throw new Error('Estimate must be approved first');let w=s.workOrders.find(x=>x.estimateId===estId);if(w)return w;const primary=e.items[0]||{};w={id:uid('wo'),projectId:e.projectId||extra.projectId||uid('project'),number:nextNumber('WO',s.workOrders),estimateId:e.id,customer:e.customer,company:e.company,address:e.address,status:'Draft',service:primary.description||'Project',area:primary.qty&&primary.unit?`${primary.qty} ${primary.unit}`:'Project',arrival:extra.arrival||'8:00–9:00 AM',scheduledDate:extra.scheduledDate||'',manager:extra.manager||'To assign',crew:extra.crew||'To assign',assignedCrewUsers:String(extra.crew||'To assign').split('+').map(x=>x.trim()).filter(Boolean),stain:extra.stain||'To confirm onsite',finish:extra.finish||'To confirm',scope:e.items.map(i=>`${i.description} — ${i.qty} ${i.unit}`),materials:['To confirm before service'],notes:extra.notes||e.notes||''};s.workOrders.unshift(w);save(s);return w;}
+function createWorkOrder(estId,extra={}){const s=load(),e=s.estimates.find(x=>x.id===estId);if(!e)throw new Error('Estimate not found');if(e.status!=='Approved')throw new Error('Estimate must be approved first');let w=s.workOrders.find(x=>x.estimateId===estId);if(w)return w;const primary=e.items[0]||{},appointments=projectAppointments(e.projectId),appointment=extra.appointmentId?appointments.find(j=>(j.appointmentId||('appointment-'+j.id))===extra.appointmentId):appointments.length===1?appointments[0]:null;w={id:uid('wo'),projectId:e.projectId,appointmentId:appointment?(appointment.appointmentId||('appointment-'+appointment.id)):null,number:nextNumber('WO',s.workOrders),estimateId:e.id,customer:e.customer,company:e.company,address:e.address,status:'Draft',service:primary.description||'Project',area:primary.qty&&primary.unit?`${primary.qty} ${primary.unit}`:'Project',arrival:extra.arrival||appointment?.window||'8:00–9:00 AM',scheduledDate:extra.scheduledDate||appointment?.scheduledDate||(/^20\d{2}-\d{2}-\d{2}$/.test(appointment?.date||'')?appointment.date:''),manager:extra.manager||appointment?.manager||'To assign',crew:extra.crew||appointment?.crew||'To assign',assignedCrewUsers:String(extra.crew||appointment?.crew||'To assign').split('+').map(x=>x.trim()).filter(Boolean),stain:extra.stain||'To confirm onsite',finish:extra.finish||'To confirm',scope:e.items.map(i=>`${i.description} — ${i.qty} ${i.unit}`),materials:['To confirm before service'],notes:extra.notes||e.notes||''};s.workOrders.unshift(w);save(s);return w;}
 function updateWorkOrder(id,patch){const s=load(),w=s.workOrders.find(x=>x.id===id);if(!w)return null;Object.assign(w,patch);save(s);return w;}
 function releaseWorkOrder(id){return updateWorkOrder(id,{status:'Released'});}
 function createInvoice(estId,extra={}){const s=load(),e=s.estimates.find(x=>x.id===estId);if(!e)throw new Error('Estimate not found');if(e.status!=='Approved')throw new Error('Estimate must be approved first');let inv=s.invoices.find(x=>x.estimateId===estId);if(inv)return inv;inv={id:uid('inv'),projectId:e.projectId||uid('project'),number:nextNumber('INV',s.invoices),estimateId:e.id,customer:e.company==='Direct Homeowner'?e.customer:e.company,projectCustomer:e.customer,company:e.company,customerType:e.customerType,address:e.address,status:'Open',issued:extra.issued||today,dueDate:extra.dueDate||today,paymentRule:extra.paymentRule||'70% initial / 30% final',customerVisible:e.customerType!=='contractor'&&e.customerVisible!==false,notes:extra.notes||'Generated from approved estimate.',items:clone(e.items),taxRate:e.taxRate||0,discount:e.discount||0};s.invoices.unshift(inv);save(s);return inv;}
 function recordPayment(invoiceId,amount,method='Other',note=''){const s=load(),inv=s.invoices.find(x=>x.id===invoiceId);if(!inv)throw new Error('Invoice not found');const f=invoiceFinancials(s,inv);const amt=Math.max(0,Math.min(Number(amount||0),f.balance));if(!amt)return null;const p={id:uid('pay'),invoiceId:inv.id,invoiceNumber:inv.number,customer:inv.customer,date:today,amount:amt,method,note};s.payments.unshift(p);save(s);return p;}
-function approveCustomerEstimate(customerName){const s=load(),e=s.estimates.find(x=>x.customer===customerName&&x.customerVisible!==false);if(!e)return null;e.status='Approved';e.approvedAt=today;save(s);return e;}
-function getCustomerBundle(customerName){const s=load();const e=s.estimates.find(x=>x.customer===customerName);if(!e)return null;const w=s.workOrders.find(x=>x.estimateId===e.id)||null;const inv=s.invoices.find(x=>x.estimateId===e.id)||null;return {estimate:e,workOrder:w,invoice:inv,invoiceFinancials:inv?invoiceFinancials(s,inv):null};}
-function bundleForJob(job){const s=load();const e=s.estimates.find(x=>x.customer===job.customer)||null;return {estimate:e,workOrder:e?s.workOrders.find(x=>x.estimateId===e.id)||null:null,invoice:e?s.invoices.find(x=>x.estimateId===e.id)||null:null};}
-function ensureEstimateForJob(job){let e=getEstimateByCustomer(job.customer);if(e){if(job.projectId&&!e.projectId){e=saveEstimate({...e,projectId:job.projectId});}return e;}return saveEstimate({projectId:job.projectId||('project-'+job.id),customer:job.customer,company:job.company,customerType:job.company==='Direct Homeowner'?'direct':'contractor',address:job.address,status:'Draft',issued:today,validUntil:'Oct 21, 2026',taxRate:0,discount:0,customerVisible:job.company==='Direct Homeowner',notes:job.notes||'',items:[{id:uid('li'),description:job.service,qty:parseFloat(String(job.sf||'1').replace(/,/g,''))||1,unit:String(job.sf||'').includes('SF')?'SF':'Project',unitPrice:0}]});}
+function approveCustomerEstimate(customerName,projectId){const s=load(),matches=s.estimates.filter(x=>x.customer===customerName&&x.customerVisible!==false&&(!projectId||x.projectId===projectId));if(matches.length!==1)return null;const e=matches[0];e.status='Approved';e.approvedAt=today;save(s);return e;}
+function getCustomerBundles(customerName){const s=load();return s.estimates.filter(x=>x.customer===customerName).map(e=>{const w=s.workOrders.find(x=>x.estimateId===e.id&&x.projectId===e.projectId)||null;const inv=s.invoices.find(x=>x.estimateId===e.id&&x.projectId===e.projectId)||null;return {estimate:e,workOrder:w,invoice:inv,invoiceFinancials:inv?invoiceFinancials(s,inv):null};});}
+function getCustomerBundle(customerName,projectId){const bundles=getCustomerBundles(customerName).filter(b=>!projectId||b.estimate.projectId===projectId);return bundles.length===1?bundles[0]:null;}
+function bundleForJob(job){const s=load();const e=s.estimates.find(x=>x.projectId===(job.projectId||('project-'+job.id)))||null;return {estimate:e,workOrder:e?s.workOrders.find(x=>x.estimateId===e.id&&x.projectId===e.projectId)||null:null,invoice:e?s.invoices.find(x=>x.estimateId===e.id&&x.projectId===e.projectId)||null:null};}
+function ensureEstimateForJob(job){let e=load().estimates.find(x=>x.projectId===(job.projectId||('project-'+job.id)));if(e)return e;return saveEstimate({projectId:job.projectId||('project-'+job.id),customer:job.customer,company:job.company,customerType:job.company==='Direct Homeowner'?'direct':'contractor',address:job.address,status:'Draft',issued:today,validUntil:'Oct 21, 2026',taxRate:0,discount:0,customerVisible:job.company==='Direct Homeowner',notes:job.notes||'',items:[{id:uid('li'),description:job.service,qty:parseFloat(String(job.sf||'1').replace(/,/g,''))||1,unit:String(job.sf||'').includes('SF')?'SF':'Project',unitPrice:0}]});}
 
 // Compatibility layer for the previous demo buttons.
 const GTFDocs={
@@ -94,6 +97,6 @@ const GTFDocs={
  resetDemo:reset
 };
 
-window.GTFWorkflow={KEY,money,lineAmount,totals,load,save,reset,nextNumber,getEstimate,getEstimateByCustomer,getWorkOrderByEstimate,getInvoiceByEstimate,getReleasedWorkOrders,saveEstimate,setEstimateStatus,createWorkOrder,updateWorkOrder,releaseWorkOrder,createInvoice,recordPayment,invoiceFinancials,approveCustomerEstimate,getCustomerBundle,bundleForJob,ensureEstimateForJob};
+window.GTFWorkflow={KEY,money,lineAmount,totals,load,save,reset,nextNumber,getEstimate,getEstimateByCustomer,getWorkOrderByEstimate,getInvoiceByEstimate,getReleasedWorkOrders,saveEstimate,setEstimateStatus,createWorkOrder,updateWorkOrder,releaseWorkOrder,createInvoice,recordPayment,invoiceFinancials,approveCustomerEstimate,getCustomerBundle,getCustomerBundles,bundleForJob,ensureEstimateForJob};
 window.GTFDocs=GTFDocs;
 })();

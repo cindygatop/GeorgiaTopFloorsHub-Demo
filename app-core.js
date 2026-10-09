@@ -5,11 +5,14 @@
   const INTEGRATION_KEY='gtfIntegrationStateV1';
   const REVIEW_URL='https://search.google.com/local/writereview?placeid=ChIJvdGf-LAT9YgRl6baSSmrcSI';
 
+  // DEMO ONLY: these local accounts are not secure authentication or isolation.
   const users=[
-    {id:'office-admin',name:'Cindy',email:'office@georgiatopfloors.com',password:'gtf2026',role:'office',label:'Office Admin',home:'index.html'},
-    {id:'office-ops',name:'Office Team',email:'ops@georgiatopfloors.com',password:'gtf2026',role:'office',label:'Office',home:'index.html'},
-    {id:'crew-carlos',name:'Carlos',email:'carlos@georgiatopfloors.com',password:'gtf2026',role:'crew',label:'Crew',home:'crew.html',crewName:'Carlos'},
-    {id:'client-emily',name:'Emily Carter',email:'emily@example.com',password:'gtf2026',role:'client',label:'Client',home:'customer.html',customerName:'Emily Carter'}
+    {id:'office-caritas',name:'Caritas',email:'caritas@gtf.demo',password:'gtf2026',role:'office',label:'Office',home:'index.html'},
+    {id:'office-cristiano',name:'Cristiano',email:'cristiano@gtf.demo',password:'gtf2026',role:'office',label:'Office',home:'index.html'},
+    {id:'office-alicia',name:'Alicia',email:'alicia@gtf.demo',password:'gtf2026',role:'office',label:'Office',home:'index.html'},
+    {id:'office-cindy',name:'Cindy',email:'cindy@gtf.demo',password:'gtf2026',role:'office',label:'Office',home:'index.html'},
+    {id:'crew-carlos',name:'Carlos',email:'carlos@gtf.demo',password:'gtf2026',role:'crew',label:'Crew',home:'crew.html',crewName:'Carlos'},
+    {id:'client-emily',name:'Emily Carter',email:'emily@gtf.demo',password:'gtf2026',role:'client',label:'Client',home:'customer.html',customerName:'Emily Carter',customerId:'client-emily',projectId:'project-2'}
   ];
 
   function clone(v){return JSON.parse(JSON.stringify(v));}
@@ -38,14 +41,14 @@
   function trackAction(actionId,label,href){const s=getSession();if(!s||s.role!=='office')return;const d=usageData();d[s.id]=d[s.id]||{};const x=d[s.id][actionId]||{count:0,label,href};x.count+=1;x.label=label||x.label;x.href=href||x.href;x.lastUsed=Date.now();d[s.id][actionId]=x;saveUsage(d)}
   function smartActions(defaults){const s=getSession();if(!s)return defaults;const d=usageData()[s.id]||{};const now=Date.now();const enriched=defaults.map((a,i)=>{const u=d[a.id]||{};const days=u.lastUsed?Math.max(0,(now-u.lastUsed)/86400000):999;const recency=u.lastUsed?Math.max(0,14-days):0;return {...a,score:(u.count||0)*4+recency-i*.1,count:u.count||0}});return enriched.sort((a,b)=>b.score-a.score).slice(0,4)}
 
-  function integrationState(){try{return JSON.parse(localStorage.getItem(INTEGRATION_KEY)||'null')||{googleCalendar:false,quo:false,payments:false,eSignature:false}}catch(e){return {googleCalendar:false,quo:false,payments:false,eSignature:false}}}
+  function integrationState(){return {googleCalendar:false,quo:false,payments:false,eSignature:false}; /* No integrations are connected in this static build. */}
   function saveIntegrationState(s){localStorage.setItem(INTEGRATION_KEY,JSON.stringify(s));window.dispatchEvent(new CustomEvent('gtf-integrations-changed'));return s}
   function setIntegration(name,value){const s=integrationState();s[name]=!!value;return saveIntegrationState(s)}
 
   function notifications(){try{return JSON.parse(localStorage.getItem(NOTIFICATION_KEY)||'[]')}catch(e){return []}}
   function pushNotification(n){const arr=notifications();arr.unshift({id:'note-'+Date.now(),createdAt:new Date().toISOString(),read:false,...n});localStorage.setItem(NOTIFICATION_KEY,JSON.stringify(arr.slice(0,50)));window.dispatchEvent(new CustomEvent('gtf-notifications-changed'));return arr[0]}
-  function queueCrewSMS(job){const state=integrationState();return pushNotification({type:'crew-sms',status:state.quo?'ready':'setup-required',title:`New appointment · ${job.customer}`,body:`${job.service} · ${job.date} · ${job.window} · ${job.address}`,crew:job.crew,projectId:job.projectId||('project-'+job.id)});}
-  function queueCalendarSync(job){const state=integrationState();return pushNotification({type:'calendar-sync',status:state.googleCalendar?'ready':'setup-required',title:`Calendar sync · ${job.customer}`,body:`${job.date} · ${job.window} · ${job.service}`,projectId:job.projectId||('project-'+job.id)});}
+  function queueCrewSMS(job){return pushNotification({type:'crew-sms',status:'setup-required',title:`Appointment draft · ${job.customer}`,body:`${job.service} · ${job.date} · ${job.window} · ${job.address}`,crew:job.crew,projectId:job.projectId||('project-'+job.id),appointmentId:job.appointmentId||('appointment-'+job.id)});}
+  function queueCalendarSync(job){return pushNotification({type:'calendar-sync',status:'setup-required',title:`Calendar sync request · ${job.customer}`,body:`${job.date} · ${job.window} · ${job.service}`,projectId:job.projectId||('project-'+job.id),appointmentId:job.appointmentId||('appointment-'+job.id)});}
   function queueQuoAlert(from,preview){return pushNotification({type:'quo-message',status:'new',title:`Quo message · ${from}`,body:preview});}
   function markAllRead(){const arr=notifications().map(n=>({...n,read:true}));localStorage.setItem(NOTIFICATION_KEY,JSON.stringify(arr));window.dispatchEvent(new CustomEvent('gtf-notifications-changed'));}
 

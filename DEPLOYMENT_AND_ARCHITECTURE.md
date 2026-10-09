@@ -1,17 +1,17 @@
 # Georgia Top Floors Hub — caminho para produção
 
-Atualizado em **8 de outubro de 2026**.
+Atualizado em **9 de outubro de 2026**.
 
 ## 1. O que esta versão já faz
 
 Esta entrega continua sendo uma **demo estática**, mas agora demonstra a estrutura do produto real:
 
-- login de demonstração e três visões separadas: Office, Crew e Client;
+- login de demonstração com quatro perfis Office e três visões separadas: Office, Crew e Client;
 - permissões de navegação por papel;
 - projeto como registro central, ligando Estimate → Work Order → Invoice → appointment → documentos;
 - Work Orders liberadas para o crew correspondente;
 - fila de SMS/alerta de appointment para crew;
-- fila de sincronização com Google Calendar;
+- fila de sincronização Google Calendar (sem integração ativa), assistente local para agendamento e rascunho de novo evento;
 - painel de integrações preparado para Calendar, Quo, e-signature e payments;
 - Client View com Agreement → assinatura → Warranty desbloqueada;
 - Care & Maintenance Guide e “Before Your Job”;
@@ -19,14 +19,16 @@ Esta entrega continua sendo uma **demo estática**, mas agora demonstra a estrut
 - Compliance agrupado por família de documento, filtro por tipo e revisão periódica de W-9;
 - atalhos adaptativos por usuário do Office e indicadores discretos de urgência.
 
-### Logins da demo
+### Logins da demo (v5)
 
-| Visão | E-mail | Senha |
-|---|---|---|
-| Office | office@georgiatopfloors.com | gtf2026 |
-| Office 2 | ops@georgiatopfloors.com | gtf2026 |
-| Crew | carlos@georgiatopfloors.com | gtf2026 |
-| Client | emily@example.com | gtf2026 |
+| Visão | Nome | E-mail | Senha |
+|---|---|---|---|
+| Office | Caritas | caritas@gtf.demo | gtf2026 |
+| Office | Cristiano | cristiano@gtf.demo | gtf2026 |
+| Office | Alicia | alicia@gtf.demo | gtf2026 |
+| Office | Cindy | cindy@gtf.demo | gtf2026 |
+| Crew | Carlos | carlos@gtf.demo | gtf2026 |
+| Client | Emily Carter | emily@gtf.demo | gtf2026 |
 
 Essas credenciais ficam no JavaScript da demo. **Não devem ser usadas em produção.**
 
@@ -250,3 +252,12 @@ Para a próxima fase técnica, precisaremos, quando chegar a hora:
 - acesso ao DNS do domínio escolhido.
 
 Não precisamos decidir tudo isso para continuar refinando a demo.
+
+## 2026-10-09 — Incremento v5: Assistant e Google Calendar
+
+- **Já funciona na mesma sessão de navegador:** entrar como Caritas, Cristiano, Alicia ou Cindy; atalhos por perfil; flags; busca aproximada com pequenos erros no nome; escolha da cliente pelo endereço; confirmação de alteração; gravação local do Job e Work Order ligados; sugestão para escrever a mensagem do cliente; link para criar um rascunho de **novo** evento Google. O centro de compliance exibe uma linha de COI por entidade, abrindo a GL e Workers' Comp dentro dela.
+- **Ainda não funciona entre dispositivos:** a sessão atual e o banco de clientes só existem no navegador; não há segurança de verdade ou sincronização automática. Não usar com dados privados. O login aqui não substitui Supabase Auth.
+- **Ativação de produção:** ligar um site com backend seguro (ex.: Next.js no Vercel), Supabase Auth/DB/RLS, migração dos projetos para dados reais, domínios HTTPS, Google Cloud OAuth e webhooks, Quo, assinatura eletrônica e pagamentos, auditoria e backups. Não conectar a API em browser público.
+- **Google:** o plano técnico detalhado e um adaptador server-side de exemplo estão em `GOOGLE_CALENDAR_IMPLEMENTATION.md` e `google-calendar-service.example.mjs`. A gravação definitiva só pode informar sucesso depois de resposta da API Google; a demo marca corretamente como pendente.
+- **Custos aproximados de partida:** infraestrutura Vercel Pro US$20/mês (1 seat) e Supabase Pro US$25/mês (instância Micro coberta pelo crédito), total base US$45/mês, mais domínio, SMS/Quo, assinatura, taxas dos pagamentos e consumo variável. Valores mudam, confira páginas oficiais. Não existe um preço fixo por cliente SaaS antes de definir planos/uso de IA. Links: https://vercel.com/docs/plans/pro-plan e https://supabase.com/pricing.
+- **Próxima decisão para implementação real:** qual conta Google será dona do calendário principal; qual e-mail/domínio da empresa será usado no login e no OAuth; quem pode editar calendário; políticas de acesso por função; e documento final do Agreement / care guide.

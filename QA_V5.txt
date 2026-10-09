@@ -1,0 +1,24 @@
+HISTORICAL REPORT FROM THE V5 ZIP. Current Codex validation: docs/VALIDATION_V5.md
+
+GTF HUB v5 - VERIFICATION REPORT (2026-10-09)
+
+Validated in this environment:
+- Javascript syntax checked with Node for app-core.js, assistant.js, project-docs.js, and all inline <script> blocks in HTML.
+- Assistant matching/date parser executed against real demo names: Emily Carter, Sarah Johnson, typo 'Emilly Catrer', Brazilian date 15/10/2026, 24-hour and 12-hour times.
+- Google Calendar prefilled NEW EVENT link generated with correct local event ranges for 8-9 AM, 1-2 PM, 11 AM-noon, 2:30-3:30 PM.
+- Source code checked for expected role routing, IDs, matching linkage and no added credentials.
+
+Browser visual navigation testing: attempted in headless Chromium; environment blocked local HTTP and file navigation with ERR_BLOCKED_BY_ADMINISTRATOR. Therefore visual cross-browser validation on GitHub Pages remains REQUIRED; not represented as passing.
+
+Manual acceptance checklist for GitHub Pages:
+1. Open login.html, click Caritas then sign out; try Cristiano, Alicia, Cindy, Carlos and Emily.
+2. Office initial view: personalized greeting, centered chat, urgency pills. Mobile: swipe horizontally through navigation.
+3. Try 'alterar horario da Emily Carter para amanha as 14:30', inspect confirmed preview, hit Confirm; verify Jobs and Work Order schedule. Test 'Emilly Catrer'.
+4. Try 'Change Sarah Johnson to 10/15/2026 at 2 PM'. No changes before confirmation.
+5. Add another demo job with customer Emily Carter but different address; assistant should ask which address, not guess.
+6. After change, click Draft message; verify copy button and that nothing sends.
+7. Calendar.html: event draft only. Verify it does not silently change existing Google event.
+8. Compliance Center: one Certificate of Insurance (COI) row per entity, open and inspect GL/WC; filter Insurance / COI and W-9; test W-9 review.
+9. Compare Crew on desktop and phone; check customer agreement unlock and Google feedback link destination (verify exact Google Business Profile review URL).
+10. Create a fresh job for an existing customer; ensure new project/estimate is not accidentally attached to older estimate. Reload to confirm local demo persistence.
+11. Never upload real customers/secrets. Multi-device synchronization and secure access not available until backend implementation.

@@ -163,8 +163,8 @@ tr:hover td{background:#FFFDF8}
 @media(max-width:760px){.doc-strip{grid-template-columns:1fr}}
 
 </style>
-<link rel="stylesheet" href="theme.css?v=3">
-<script src="app-core.js?v=3"></script>
+<link rel="stylesheet" href="theme.css?v=5">
+<script src="app-core.js?v=5"></script>
 <script>GTFAuth.requireRole("office");</script>
 </head>
 <body class="office-page">
@@ -204,40 +204,23 @@ tr:hover td{background:#FFFDF8}
     </div>
 
     <section class="page active" id="dashboard">
-      <div class="card section smart-card">
-        <div class="toolbar" style="margin-bottom:10px"><div><h3 style="margin-bottom:4px">Smart Shortcuts</h3><div class="sub">This row quietly adapts to the actions this Office user uses most often.</div></div><span class="urgency-flag low"><i></i>Personalized locally</span></div>
-        <div class="smart-actions" id="smartActions"></div>
-      </div>
-      <div class="grid stats">
-        <div class="card stat"><div class="label">TODAY'S JOBS</div><div class="value" id="statToday">5</div><div class="hint">Across 4 properties</div></div>
-        <div class="card stat"><div class="label">IN PROGRESS</div><div class="value" id="statProgress">2</div><div class="hint">Live operational status</div></div>
-        <div class="card stat"><div class="label">NEEDS ATTENTION</div><div class="value" id="statAttention">2</div><div class="hint">Material / issue follow-up</div></div>
-        <div class="card stat"><div class="label">CREWS ACTIVE</div><div class="value">3</div><div class="hint">Managers + field teams</div></div>
-      </div>
-
-      <div class="grid two">
-        <div class="card section">
-          <h3>Today's Jobs</h3>
-          <div class="job-list" id="todayJobs"></div>
+      <div class="assistant-home">
+        <div class="assistant-statusbar" id="assistantStatusbar" aria-label="Priority overview"></div>
+        <div class="assistant-main">
+          <img src="assets/gtf-logo.png" class="assistant-logo" alt="Georgia Top Floors">
+          <p class="assistant-eyebrow">YOUR OFFICE ASSISTANT <span class="assistant-demo-badge">DEMO · LOCAL</span></p>
+          <h1 id="assistantGreeting">Good morning, Caritas.</h1>
+          <p id="assistantPrompt" class="assistant-prompt">What would you like to take care of today?</p>
+          <div id="assistantConversation" class="assistant-conversation" aria-live="polite"></div>
+          <form class="assistant-compose" id="assistantForm" autocomplete="off">
+            <label class="sr-only" for="assistantInput">Ask the assistant</label>
+            <textarea id="assistantInput" rows="2" placeholder="Try: Reschedule Emily Carter to tomorrow at 2 PM…"></textarea>
+            <div class="assistant-compose-bottom"><span>Find jobs · Reschedule · Priorities · Draft a message</span><button class="assistant-send" type="submit" aria-label="Send message">↑</button></div>
+          </form>
+          <div class="assistant-suggestions" id="assistantSuggestions"><button type="button" data-query="Show me what needs attention">What needs attention?</button><button type="button" data-query="Find Emily Carter">Find a customer</button><button type="button" data-query="Change Emily Carter's appointment to tomorrow at 2 PM">Reschedule a job</button></div>
+          <div class="assistant-pending-note">Changes save to this browser in demo mode. Google Calendar and SMS require a secure backend connection.</div>
         </div>
-        <div>
-          <div class="card section" style="margin-bottom:16px">
-            <h3>Needs Attention</h3>
-            <div class="attn"><strong>Material pickup</strong><span class="sub">Alpha / Johnson · Engineered hardwood</span></div>
-            <div class="attn"><strong>Customer unavailable</strong><span class="sub">Emily Carter · tomorrow 8–9 AM</span></div>
-          </div>
-          <div class="card section">
-            <h3>Quick Actions</h3>
-            <div class="quick">
-              <button data-track-action="new-job" data-track-label="New Job" onclick="openNewJob()">＋ New Job<small>Create and schedule a project</small></button>
-              <button data-track-action="calendar" data-track-label="Calendar" onclick="goPage('calendar')">▦ Calendar<small>Review upcoming visits</small></button>
-              <button data-track-action="billing" data-track-label="Estimates & Billing" onclick="window.location.href='documents.html'">▤ Estimates & Billing<small>Sales workflow, work orders & payments</small></button>
-              <button data-track-action="customers" data-track-label="Customers" onclick="goPage('customers')">◎ Customer<small>Find contact & property</small></button>
-              <button data-track-action="database" data-track-label="Database" onclick="window.location.href='database.html'">◫ Database<small>Contacts, staff, subs & vendors</small></button>
-              <button data-track-action="crews" data-track-label="Crews" onclick="goPage('crews')">👥 Crews<small>See assignments & skills</small></button>
-            </div>
-          </div>
-        </div>
+        <div class="assistant-shortcuts"><span class="assistant-shortcuts-label">YOUR SHORTCUTS</span><div class="smart-actions" id="smartActions"></div></div>
       </div>
     </section>
 
@@ -270,7 +253,7 @@ tr:hover td{background:#FFFDF8}
 
     <section class="page" id="calendar">
       <div class="card section">
-        <div class="toolbar"><div><h3 style="margin-bottom:4px">Schedule</h3><div class="sub">Customer-facing arrival windows, internal assignments and multi-day work.</div></div><button class="btn" data-track-action="calendar-sync" data-track-label="Google Calendar Sync" onclick="syncCalendarDemo()">↻ Google Calendar Sync</button></div>
+        <div class="toolbar"><div><h3 style="margin-bottom:4px">Schedule</h3><div class="sub">Customer-facing arrival windows, internal assignments and multi-day work.</div></div><button class="btn" data-track-action="calendar-sync" data-track-label="Google Calendar Sync" onclick="openIntegrationSetup()">↻ Google Calendar Sync</button></div>
         <div class="calendar" id="calendarGrid"></div>
       </div>
     </section>
@@ -341,8 +324,9 @@ tr:hover td{background:#FFFDF8}
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="compliance.js?v=2"></script>
-<script src="project-docs.js?v=3"></script>
+<script src="compliance.js?v=5"></script>
+<script src="project-docs.js?v=5"></script>
+<script src="assistant.js?v=5"></script>
 <script>
 const baseJobs = [
  {id:1,customer:"John Miller",company:"Alpha",address:"2850 Windward Pkwy, Alpharetta, GA",service:"Hardwood Installation",date:"Today",window:"8:00–9:00 AM",manager:"André",crew:"Carlos + Edilson",status:"In Progress",sf:"1,240 SF",stain:"Natural",materials:"3¼\" white oak, shoe molding",notes:"Contractor-referred project. Homeowner portal must not show contractor pricing."},
@@ -353,7 +337,10 @@ const baseJobs = [
  {id:6,customer:"Olivia Martin",company:"Direct Homeowner",address:"660 Pine Grove Rd, Milton, GA",service:"Flooring Repair",date:"Tomorrow",window:"8:00–9:00 AM",manager:"Isaque",crew:"Carlos",status:"Scheduled",sf:"Repair area TBD",stain:"Match existing",materials:"To inspect",notes:"Customer sent photos before visit."},
  {id:7,customer:"Brian Wilson",company:"Builder Partner",address:"220 Summit View, Sandy Springs, GA",service:"Hardwood Installation",date:"Fri",window:"8:00–9:00 AM",manager:"André",crew:"Edilson + team",status:"Scheduled",sf:"2,100 SF",stain:"Natural",materials:"White oak",notes:"Multi-day job. Day 1 of 3."}
 ];
-let jobs = JSON.parse(localStorage.getItem("gtfDemoJobs") || "null") || baseJobs;
+let jobs;
+try{const saved=JSON.parse(localStorage.getItem("gtfDemoJobs")||"null");jobs=Array.isArray(saved)?saved:baseJobs;}catch(e){jobs=baseJobs;}
+jobs.forEach(j=>{j.projectId=j.projectId||("project-"+j.id);j.appointmentId=j.appointmentId||("appointment-"+j.id);});
+localStorage.setItem("gtfDemoJobs",JSON.stringify(jobs));
 const customers = [
  {name:"Alpha",type:"Contractor / Partner",contact:"John Miller + property contacts",projects:12,detail:"Recurring partner. Pricing visibility is restricted from homeowner portal."},
  {name:"Emily Carter",type:"Direct Homeowner",contact:"Roswell, GA",projects:1,detail:"Sand & Finish project with stain selection onsite."},
@@ -377,7 +364,7 @@ function statusClass(status){
 }
 function urgencyForJob(j){if(j.status==="Problem")return "high";if(j.status==="Waiting for Material")return "medium";return "low";}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
-function renderAll(){renderToday();renderJobs();renderCalendar();renderCustomers();renderCrews();renderStats();renderSmartActions();}
+function renderAll(){renderJobs();renderCalendar();renderCustomers();renderCrews();renderSmartActions();if(window.GTFAssistant)GTFAssistant.refresh();}
 function renderStats(){
  document.getElementById("statToday").textContent=jobs.filter(j=>j.date==="Today").length;
  document.getElementById("statProgress").textContent=jobs.filter(j=>["OTW","Arrived","In Progress"].includes(j.status)).length;
@@ -427,7 +414,7 @@ function renderCrews(){
  <div class="card person-card"><h4>${esc(c.name)}</h4><div class="meta"><strong>${esc(c.role)}</strong><br>${esc(c.today)}</div><div class="skills">${c.skills.map(s=>`<span class="skill">${esc(s)}</span>`).join("")}</div></div>`).join("");
 }
 const pageMeta={
- dashboard:["Office Dashboard","One place to see today’s work, crews, customers and exceptions."],
+ dashboard:["Assistant","A simpler way to manage schedules, projects and priorities."],
  jobs:["Jobs & Projects","Structured projects, services, measurements, assignments and status."],
  calendar:["Calendar","Internal schedule with customer-friendly arrival windows."],
  customers:["Customers","Companies, homeowners, property contacts and project history."],
@@ -437,6 +424,7 @@ function goPage(id){
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  document.getElementById(id).classList.add("active");
  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ document.body.classList.toggle("is-assistant-home",id==="dashboard");
  document.getElementById("pageTitle").textContent=pageMeta[id][0];
  document.getElementById("pageSubtitle").textContent=pageMeta[id][1];
  window.scrollTo({top:0,behavior:"smooth"});
@@ -453,15 +441,17 @@ function openNewJob(){
 function closeNewJob(){document.getElementById("newJobModal").classList.remove("show");}
 function saveDemoJob(){
  const dateVal=document.getElementById("fDate").value;
+ const jobId=Date.now();
  const j={
-  id:Date.now(),
+  id:jobId,
   customer:document.getElementById("fCustomer").value||"Demo Customer",
   company:document.getElementById("fCompany").value||"Direct Homeowner",
   address:document.getElementById("fAddress").value,
   service:document.getElementById("fService").value,
   manager:document.getElementById("fManager").value,
   crew:document.getElementById("fCrew").value||"To assign",
-  projectId:"project-"+Date.now(),
+  projectId:"project-"+jobId,
+  appointmentId:"appointment-"+jobId,
   date:dateVal||"Upcoming",
   window:document.getElementById("fWindow").value,
   status:"Scheduled",
@@ -472,7 +462,8 @@ function saveDemoJob(){
  };
  jobs.unshift(j); if(window.GTFCompliance)GTFCompliance.ensureJobAgreement(j); if(window.GTFWorkflow)GTFWorkflow.ensureEstimateForJob(j); if(window.GTFIntegrations){GTFIntegrations.queueCrewSMS(j);GTFIntegrations.queueCalendarSync(j);} persist(); renderAll(); closeNewJob(); goPage("jobs"); toast("Project created. Crew SMS and Calendar sync were queued; external delivery activates after integration setup.");
 }
-function persist(){localStorage.setItem("gtfDemoJobs",JSON.stringify(jobs));}
+function persist(){localStorage.setItem("gtfDemoJobs",JSON.stringify(jobs));window.dispatchEvent(new CustomEvent("gtf-jobs-changed"));}
+window.GTFJobs=()=>jobs;
 function docStatusClass(status){
  if(["Approved","Paid","Ready","Released"].includes(status)) return "good";
  if(["Partially Paid","Open","Draft"].includes(status)) return "warn";
@@ -594,7 +585,7 @@ function openJobMaps(id){const j=jobs.find(x=>x.id===id);if(!j||!j.address){toas
 function notifyCrewForJob(id){const j=jobs.find(x=>x.id===id);if(!j)return;const n=GTFIntegrations.queueCrewSMS(j);toast(n.status==='ready'?'Crew SMS queued through the connected messaging service.':'Crew SMS queued. Connect Quo to send it automatically.');}
 function syncJobCalendar(id){const j=jobs.find(x=>x.id===id);if(!j)return;const n=GTFIntegrations.queueCalendarSync(j);toast(n.status==='ready'?'Appointment queued for Google Calendar sync.':'Calendar event queued. Connect Google Calendar to enable two-way sync.');}
 function syncCalendarDemo(){jobs.filter(j=>j.status!=="Completed").forEach(j=>GTFIntegrations.queueCalendarSync(j));toast("Appointments queued. Two-way Google Calendar sync activates after OAuth/webhook setup.");}
-function openIntegrationSetup(){const state=GTFIntegrations.integrationState();document.getElementById("integrationContent").innerHTML=`<div class="detail-grid"><div class="detail"><span>Google Calendar</span><strong class="integration-state ${state.googleCalendar?'ready':'pending'}">${state.googleCalendar?'Connected (demo flag)':'Setup required'}</strong></div><div class="detail"><span>Quo</span><strong class="integration-state ${state.quo?'ready':'pending'}">${state.quo?'Connected (demo flag)':'Setup required'}</strong></div><div class="detail"><span>E-signature</span><strong class="integration-state ${state.eSignature?'ready':'pending'}">${state.eSignature?'Connected (demo flag)':'Provider not selected'}</strong></div><div class="detail"><span>Payments</span><strong class="integration-state ${state.payments?'ready':'pending'}">${state.payments?'Connected (demo flag)':'Provider not selected'}</strong></div></div><div class="note">These switches only demonstrate the app state. Production connections require server-side credentials, OAuth/webhooks and a real database. No API key should ever be stored in this static site.</div><div class="actions" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn" onclick="toggleDemoIntegration('googleCalendar')">Toggle Calendar Demo</button><button class="btn" onclick="toggleDemoIntegration('quo')">Toggle Quo Demo</button><button class="btn" onclick="toggleDemoIntegration('eSignature')">Toggle E-sign Demo</button><button class="btn" onclick="toggleDemoIntegration('payments')">Toggle Payments Demo</button></div>`;document.getElementById("integrationModal").classList.add("show");}
+function openIntegrationSetup(){document.getElementById("integrationContent").innerHTML=`<div class="detail-grid"><div class="detail"><span>Google Calendar</span><strong class="integration-state pending">Not connected</strong><p class="sub">Secure OAuth, event IDs, webhook + incremental sync required.</p></div><div class="detail"><span>Quo / SMS</span><strong class="integration-state pending">Not connected</strong><p class="sub">Server-side webhook and message credentials required.</p></div><div class="detail"><span>E-signature</span><strong class="integration-state pending">Not connected</strong><p class="sub">Agreement is a demo signature, not a signed legal PDF.</p></div><div class="detail"><span>Payments</span><strong class="integration-state pending">Not connected</strong><p class="sub">Checkout, receipts and accounting need a backend.</p></div></div><div class="note">The assistant can reschedule local demo jobs, queue a calendar request, and open a prefilled Google Calendar draft. It cannot alter a real Google event until the backend integration is configured. Never upload secret credentials to GitHub.</div><button class="btn primary" onclick="location.href='calendar.html'" style="margin-top:12px">Calendar Integration Guide</button>`;document.getElementById("integrationModal").classList.add("show");}
 function toggleDemoIntegration(name){const s=GTFIntegrations.integrationState();GTFIntegrations.setIntegration(name,!s[name]);openIntegrationSetup();}
 function closeIntegrationSetup(){document.getElementById("integrationModal").classList.remove("show");}
 function toast(msg){
@@ -608,6 +599,7 @@ document.getElementById("newJobModal").addEventListener("click",e=>{if(e.target=
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeNewJob();closeDetail();closeProjectDocument();closeIntegrationSetup();}});
 document.getElementById("ptBtn").onclick=()=>{document.getElementById("ptBtn").classList.add("active");document.getElementById("enBtn").classList.remove("active");toast("PT demo: language switch is represented here. Full localization comes in a later phase.");};
 document.getElementById("enBtn").onclick=()=>{document.getElementById("enBtn").classList.add("active");document.getElementById("ptBtn").classList.remove("active");toast("English selected.");};
+document.body.classList.add("is-assistant-home");
 renderAll();
 </script>
 </body>

@@ -211,3 +211,87 @@ body.office-page .job-card{padding:13px 14px!important}.card.section{padding:17p
 
 @media(max-width:1000px){.smart-actions{grid-template-columns:1fr 1fr}.project-link-strip{grid-template-columns:1fr 1fr}}
 @media(max-width:650px){.smart-actions{grid-template-columns:1fr}.gtf-notify-panel{right:14px;top:72px}.gtf-user-chip{width:100%;justify-content:space-between}.project-link-strip{grid-template-columns:1fr}}
+
+/* GTF Hub v5: assistant-first office and responsive field experience */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body.office-page{background:#f6f5f1!important}
+body.office-page .sidebar{background:#242b2c!important}
+body.office-page .sidebar .nav button:not(.active):hover{background:#33413d!important}
+body.office-page .main{max-width:none!important}
+body.office-page .topbar .actions{flex-wrap:wrap;justify-content:flex-end}
+body.office-page.is-assistant-home .topbar>div:first-child{display:none}
+body.office-page.is-assistant-home .topbar{margin-bottom:0!important;justify-content:flex-end;min-height:40px}
+body.office-page.is-assistant-home .topbar .actions .btn.primary{display:none}
+.assistant-home{min-height:calc(100vh - 150px);display:flex;flex-direction:column;align-items:center;padding:0 20px 18px}
+.assistant-statusbar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:9px;max-width:100%;margin:13px auto 36px}
+.priority-pill{display:inline-flex;gap:7px;align-items:center;padding:7px 12px;font-size:11px;color:#5d625f;background:white;border:1px solid #e6e5df;border-radius:999px;cursor:pointer;box-shadow:0 3px 13px rgba(12,30,20,.035)}
+.priority-pill b{font-size:11px}.priority-pill i{width:7px;height:7px;border-radius:50%;background:#4e956d;flex:none}
+.priority-pill.is-red i{background:#bd4c4b}.priority-pill.is-yellow i{background:#c39437}.priority-pill:hover{border-color:#b7af98;transform:translateY(-1px)}
+.assistant-main{width:min(730px,100%);text-align:center;display:flex;flex-direction:column;align-items:center;margin:auto 0;min-height:450px;justify-content:center}
+.assistant-logo{height:59px;max-width:200px;object-fit:contain;margin:0 0 12px}
+.assistant-eyebrow{font-size:10px;letter-spacing:.17em;font-weight:800;color:#8a8372;margin:3px 0 14px}
+.assistant-demo-badge{font-size:9px;letter-spacing:.03em;color:#8e9089;border:1px solid #dbdcd5;border-radius:999px;padding:3px 6px;margin-left:4px}
+.assistant-main h1{font-size:clamp(30px,4vw,46px);letter-spacing:-.052em;line-height:1.14;margin:0;color:#26302a}
+.assistant-prompt{font-size:clamp(16px,2vw,20px);line-height:1.4;color:#6d716c;margin:11px 0 28px}
+.assistant-compose{border:1px solid #d8dcd4;background:#fff;border-radius:23px;box-shadow:0 13px 50px rgba(27,47,33,.09);width:100%;padding:12px 15px 12px 20px;text-align:left}
+body.office-page .assistant-compose textarea{display:block;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;resize:vertical;width:100%;height:57px;min-height:47px;max-height:150px;padding:8px 0!important;font-size:15px;outline:none}
+.assistant-compose-bottom{display:flex;align-items:center;justify-content:space-between;color:#969b96;font-size:11px;gap:12px}
+.assistant-send{width:34px;height:34px;flex:none;background:#b79139;color:white;border:0;border-radius:12px;font-size:21px;font-weight:600;cursor:pointer}
+.assistant-send:hover{background:#98742d}
+.assistant-conversation{max-height:370px;overflow:auto;width:100%;text-align:left;display:flex;flex-direction:column;gap:9px;margin:0 0 13px}
+.assistant-conversation:empty{display:none}
+.assistant-message{background:#fff;border:1px solid #e7e6df;border-radius:17px 17px 17px 5px;padding:12px 15px;max-width:95%;font-size:13px;line-height:1.58;align-self:flex-start;color:#394139;box-shadow:0 3px 10px rgba(24,36,28,.03)}
+.assistant-message.user{background:#eaece6;border-color:#e4e9e3;align-self:flex-end;border-radius:17px 17px 5px 17px}
+.assistant-message-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.assistant-message-actions button{border:1px solid #d9dfd8;border-radius:999px;background:#f9fbf8;padding:6px 10px;color:#3d5f4c;font-size:11px;font-weight:800;cursor:pointer;text-align:left}
+.assistant-message-actions button:hover{border-color:#86a88e}
+.assistant-suggestions{margin:14px auto 0;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px}
+.assistant-suggestions button{border:1px solid #e3e5df;background:#fffefa;padding:9px 13px;border-radius:999px;font-size:12px;color:#57675b;cursor:pointer}
+.assistant-suggestions button:hover{background:#f2f7f3}
+.assistant-pending-note{font-size:11px;color:#8b918c;line-height:1.5;margin-top:16px;max-width:570px}
+.assistant-shortcuts{width:min(900px,100%);margin-top:25px;padding-top:14px;border-top:1px solid #e5e7df}
+.assistant-shortcuts-label{font-size:10px;font-weight:900;letter-spacing:.1em;color:#a29a8e}
+body.office-page .assistant-shortcuts .smart-actions{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:9px!important;margin-top:10px}
+body.office-page .assistant-shortcuts .smart-action{min-height:64px;padding:10px!important;background:#fff!important;box-shadow:none!important;border:1px solid #e4e5dd!important;border-radius:14px!important;text-align:left}
+body.office-page .assistant-shortcuts .smart-action strong{font-size:12px}
+body.office-page .assistant-shortcuts .smart-action small{font-size:10px}
+/* Priority flags across navigation and data cards stay subtle. */
+body.office-page .urgency-high,body.office-page .urgency-card.urgency-high{border-left:3px solid #bd4c4b!important}
+body.office-page .urgency-medium,body.office-page .urgency-card.urgency-medium{border-left:3px solid #c39337!important}
+body.office-page .urgency-low,body.office-page .urgency-card.urgency-low{border-left:3px solid #5e9572!important}
+/* Crew is a full desktop application, never a 520px phone preview. */
+body.crew-page .phone{max-width:1300px!important;width:100%!important;padding:32px 34px!important;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(310px,.8fr);gap:16px;align-content:start}
+body.crew-page .phone>.top{grid-column:1/-1;margin-bottom:5px!important}
+body.crew-page .phone>.card{margin:0!important;min-width:0}
+body.crew-page .phone>.card:nth-child(2),body.crew-page .phone>.card:nth-child(3){grid-column:2}
+body.crew-page .phone>.card:nth-child(4){grid-column:1;grid-row:2/span 2}
+body.crew-page .phone>.card:nth-child(5){grid-column:1;grid-row:4}
+body.crew-page .phone>.card:nth-child(6){grid-column:1;grid-row:5}
+body.crew-page .phone>.card:nth-child(7){grid-column:2;grid-row:4}
+body.crew-page .phone>.card:nth-child(8){grid-column:2;grid-row:5}
+body.crew-page .phone>.small.sub{grid-column:1/-1}
+body.crew-page .phone .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.crew-page .phone .card{box-shadow:0 8px 24px rgba(16,31,26,.035)!important}
+@media(max-width:1050px){body.office-page .topbar .actions{gap:7px}body.office-page .assistant-shortcuts .smart-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:760px){body.crew-page .phone{display:block;max-width:640px!important;padding:14px!important}body.crew-page .phone>.card{margin:0 0 13px!important}body.office-page .assistant-home{padding:0 3px 24px}body.office-page .assistant-statusbar{margin:16px auto 30px}body.office-page .assistant-main{min-height:470px}body.office-page .assistant-shortcuts .smart-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}body.office-page.is-assistant-home .topbar .actions .btn:not(.gtf-notify-btn){padding:6px 8px!important;font-size:11px}body.office-page .assistant-compose-bottom span{max-width:220px}}
+@media(max-width:450px){body.office-page .assistant-main h1{font-size:28px}body.office-page .assistant-shortcuts .smart-actions{grid-template-columns:1fr 1fr!important}body.office-page .assistant-statusbar{gap:5px}.priority-pill{padding:7px 9px;font-size:10px}body.crew-page .phone .grid{grid-template-columns:1fr 1fr}}
+/* Narrow-screen Office navigation remains reachable without a full-height menu. */
+@media(max-width:860px){
+  body.office-page .app{grid-template-columns:minmax(0,1fr)!important}
+  body.office-page .sidebar{min-width:0;max-width:100%}
+  body.office-page .library-grid{grid-template-columns:minmax(0,1fr)}
+  body.office-page .library-item{min-width:0}
+  body.office-page .library-item .badge{max-width:100%;white-space:normal;text-align:left}
+  body.office-page .sidebar{padding:12px 12px 9px!important}
+  body.office-page .sidebar .brand{padding:2px 5px 7px!important;margin-bottom:5px!important;display:flex;align-items:center;gap:10px}
+  body.office-page .sidebar .brand-logo{width:130px!important;margin:0!important}
+  body.office-page .sidebar .brand small,body.office-page .sidebar .brand .demo-pill{display:none!important}
+  body.office-page .sidebar .nav{display:flex!important;flex-direction:row!important;overflow-x:auto;scrollbar-width:thin;gap:5px!important;padding-bottom:6px}
+  body.office-page .sidebar .nav button{width:auto!important;flex:0 0 auto!important;white-space:nowrap;padding:8px 10px!important;font-size:11px}
+  body.office-page .sidebar .nav button .icon{width:auto!important}
+  body.office-page .main{padding:14px 13px!important}
+  body.office-page .topbar .actions{max-width:100%;width:100%;display:flex;flex-wrap:nowrap;overflow-x:auto;padding:0 0 5px;justify-content:flex-start}
+  body.office-page .topbar .actions>*{flex-shrink:0}
+  body.office-page .topbar .actions .gtf-user-chip{width:auto!important}
+  body.office-page.is-assistant-home .topbar{margin-bottom:2px!important}
+}

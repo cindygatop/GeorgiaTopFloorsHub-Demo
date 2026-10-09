@@ -1,50 +1,55 @@
-# Georgia Top Floors Hub — Demo v4 / SaaS-ready prototype
+# Georgia Top Floors Hub — v5 (interactive prototype)
 
-This repository is still a **static presentation prototype**, but it now demonstrates the intended product architecture for a future multi-tenant web app.
+**Open `login.html`.** This is a static demo. No real authentication, shared database, Google Calendar write, Quo SMS, payment processing or enforceable e-signature service is connected.
 
-## Start here
+## Demo profiles (all use password `gtf2026`)
 
-Open `login.html`.
+| Role | Name | Demo e-mail |
+|---|---|---|
+| Office | Caritas | `caritas@gtf.demo` |
+| Office | Cristiano | `cristiano@gtf.demo` |
+| Office | Alicia | `alicia@gtf.demo` |
+| Office | Cindy | `cindy@gtf.demo` |
+| Crew | Carlos | `carlos@gtf.demo` |
+| Client | Emily Carter | `emily@gtf.demo` |
 
-### Demo credentials
+Click any profile on the login page to skip typing credentials. Role-based routing is a **demo** feature, not secure backend authorization. All Office profiles see the same sample business data on the same browser, but have separate adaptive shortcuts.
 
-- Office: `office@georgiatopfloors.com` / `gtf2026`
-- Office: `ops@georgiatopfloors.com` / `gtf2026`
-- Crew: `carlos@georgiatopfloors.com` / `gtf2026`
-- Client: `emily@example.com` / `gtf2026`
+## Updated flows
 
-## Views
+- Office has a clean ChatGPT-style Assistant home, date-aware greeting, 3 small priority indicators and per-user shortcuts.
+- Assistant matches names with minor typos, asks which property if ambiguous, proposes a reschedule, confirms, saves the local job and related Work Order, queues (but does NOT send) SMS/Calendar sync, and offers a customer message draft.
+- `calendar.html` offers manually prefilled **NEW event** drafts in Google Calendar. These do not update an existing event.
+- COI displayed once **per company/subcontractor**, with General Liability and Workers' Compensation as nested coverage records. W-9 tracked for internal review, not treated as automatic federal expiration.
+- Crew now has wide desktop layouts as well as narrow mobile layouts; Client is responsive too.
+- Client portal retains Google Review feedback, Before Your Job, placeholder Agreement → demo signature → warranty unlock.
+- Estimate, Work Order, Invoice are linked by `projectId` when creating new projects.
 
-- Office / Admin: `index.html`
-- Database: `database.html`
-- Compliance: `compliance.html`
-- Estimates & Billing: `documents.html`
-- Crew: `crew.html`
-- Client Portal: `customer.html`
+## Paths
 
-## New in this update
+`index.html` Office · `compliance.html` Compliance · `documents.html` billing · `database.html` contacts · `crew.html` crew · `customer.html` client · `calendar.html` integration information.
 
-- role-based demo login and redirects;
-- Office Smart Shortcuts by user behavior;
-- subtle urgency indicators;
-- project linkage across Estimate → Work Order → Invoice;
-- crew assignment and appointment notification queue;
-- Google Calendar sync queue / integration state;
-- Quo integration state and notification hooks;
-- Client Agreement → signature → Warranty unlock flow;
-- Before Your Job section;
-- Google Review feedback button;
-- Compliance document-type filter;
-- grouped COI view with General Liability / Workers Compensation inside;
-- W-9 annual internal review workflow;
-- more real working demo buttons: Maps, copy follow-up message, Work Order acknowledgment, Report Problem.
+## Production preparation
 
-## Important security limitation
+Read `DEPLOYMENT_AND_ARCHITECTURE.md`, `GOOGLE_CALENDAR_IMPLEMENTATION.md`, `supabase-schema.sql` and `google-calendar-service.example.mjs`. A future production site must use secure server authentication, role checks and isolated database records for each company. **Never put real client or company data, passwords, payment details or API tokens in this demo repository.**
 
-Authentication and data in this version are simulated with browser `localStorage`. This is **not production security**. Keep this repository free of real customer data and secrets.
+## Validação e histórico
 
-For the production plan, costs, integrations and multi-tenant design, read:
+Leia `docs/HISTORY_REVIEW.md`, `docs/VALIDATION_V5.md` e `docs/QA_ACCEPTANCE.md`. O schema Supabase é uma proposta não aplicada; possui pendências de isolamento e permissões para resolver antes de produção.
 
-- `DEPLOYMENT_AND_ARCHITECTURE.md`
-- `supabase-schema.sql`
-- `UPLOAD_THESE_FILES.txt`
+Checks reproduzíveis, na raiz do repositório:
+
+```sh
+node --test tests/*.test.js
+python3 tests/validate_static.py
+```
+
+Os smoke tests de navegador usam Python + Playwright e Chromium. Inicie `python3 -m http.server 8000` e execute:
+
+```sh
+python3 tests/assistant_workflow_smoke.py
+python3 tests/office_compliance_smoke.py
+python3 tests/portals_smoke.py
+```
+
+Não acessam APIs de produção nem enviam mensagens. Resultados e limites em `docs/VALIDATION_V5.md`.
