@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#201b14">
+<title>Georgia Top Floors Hub — Sign In</title>
+<link rel="stylesheet" href="theme.css?v=3">
+<style>
+.login-shell{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(420px,.95fr);background:#f7f4ec}.login-brand{padding:7vw;display:flex;flex-direction:column;justify-content:center;background:radial-gradient(circle at 15% 5%,rgba(201,166,70,.18),transparent 32%),#211c15;color:#fff}.login-brand img{width:min(290px,70%);margin-bottom:34px}.login-brand h1{font-size:clamp(34px,5vw,64px);line-height:.98;letter-spacing:-.05em;margin:0 0 20px}.login-brand p{max-width:570px;color:#d8d0c3;line-height:1.65;font-size:16px}.login-pane{padding:7vw 6vw;display:flex;align-items:center}.login-card{width:min(520px,100%);background:#fff;border:1px solid #e8dfd0;border-radius:28px;padding:28px;box-shadow:0 24px 70px rgba(48,39,26,.10)}.login-card h2{font-size:30px;margin:0 0 7px}.login-card .sub{margin-bottom:22px}.login-field{display:flex;flex-direction:column;gap:7px;margin:13px 0}.login-field label{font-size:12px;font-weight:850;color:#6b7280}.login-field input{padding:13px 14px;border:1px solid #e3dacb;border-radius:14px;font:inherit}.login-btn{width:100%;margin-top:10px;padding:13px 15px}.demo-accounts{display:grid;gap:9px;margin-top:20px;padding-top:18px;border-top:1px solid #eee7dc}.demo-account{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 12px;border:1px solid #eee5d8;border-radius:14px;background:#fffdf8;cursor:pointer}.demo-account:hover{border-color:#d8c27b}.demo-account strong{display:block}.demo-account small{display:block;color:#7a746b;margin-top:2px}.login-error{display:none;background:#feeeec;color:#aa332d;padding:10px 12px;border-radius:12px;margin-top:12px;font-size:13px}.login-error.show{display:block}.login-note{font-size:12px;color:#7a746b;line-height:1.5;margin-top:16px}@media(max-width:860px){.login-shell{grid-template-columns:1fr}.login-brand{padding:50px 24px}.login-pane{padding:24px}.login-brand h1{font-size:40px}}
+</style>
+</head>
+<body>
+<div class="login-shell">
+  <section class="login-brand"><img src="assets/gtf-logo-gold.png?v=2" alt="Georgia Top Floors"><h1>One system.<br>Three views.</h1><p>Office manages the operation. Crew sees only the field information they need. Clients follow their project, documents, warranty and next steps without seeing internal data.</p></section>
+  <main class="login-pane"><div class="login-card"><h2>Sign in</h2><div class="sub">Demo authentication with role-based routing. Production authentication will be moved to the secure backend.</div><div class="login-field"><label>Email</label><input id="email" autocomplete="username" value="office@georgiatopfloors.com"></div><div class="login-field"><label>Password</label><input id="password" type="password" autocomplete="current-password" value="gtf2026"></div><button class="btn primary login-btn" onclick="signIn()">Sign in</button><div id="error" class="login-error">Email or password not recognized.</div><div class="demo-accounts"><div class="sub"><strong>Demo accounts</strong> — click one to enter.</div><button class="demo-account" onclick="demo('office-admin')"><span><strong>Office</strong><small>Full operations view</small></span><span>→</span></button><button class="demo-account" onclick="demo('crew-carlos')"><span><strong>Crew</strong><small>Assigned work orders only</small></span><span>→</span></button><button class="demo-account" onclick="demo('client-emily')"><span><strong>Client</strong><small>Project portal only</small></span><span>→</span></button></div><div class="login-note">This login is intentionally local for the prototype. Do not use real passwords or customer data in this demo.</div></div></main>
+</div>
+<script src="app-core.js?v=3"></script>
+<script>
+const existing=GTFAuth.getSession();if(existing){location.replace(GTFAuth.roleHome(existing.role));}
+function signIn(){const s=GTFAuth.login(email.value,password.value);if(!s){error.classList.add('show');return;}location.href=s.home;}
+function demo(id){const s=GTFAuth.loginAs(id);if(s)location.href=s.home;}
+document.addEventListener('keydown',e=>{if(e.key==='Enter')signIn()});
+</script>
+</body></html>

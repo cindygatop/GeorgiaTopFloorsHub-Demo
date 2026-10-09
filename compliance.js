@@ -1,15 +1,16 @@
 (function(){
   const STORE_KEY='gtfComplianceCenterV1';
-  const TODAY='2026-09-21';
+  const TODAY='2026-10-08';
 
   const defaults={
+    schemaVersion:3,
     records:[
       {id:'cmp-annual',category:'Company & Insurance',entityType:'Company',entity:'Georgia Top Floors',documentType:'Georgia Annual Registration',level:'Required',status:'Current',effectiveDate:'2026-01-10',expirationDate:'2027-04-01',linkedTo:'Company',notes:'Georgia business annual registration tracking.'},
       {id:'cmp-gl',category:'Company & Insurance',entityType:'Company',entity:'Georgia Top Floors',documentType:'General Liability Insurance / COI',level:'Required if licensed / contractually required',status:'Current',effectiveDate:'2026-03-31',expirationDate:'2027-03-31',linkedTo:'Company',notes:'Track carrier, policy number, limits and certificate.'},
       {id:'cmp-wc',category:'Company & Insurance',entityType:'Company',entity:'Georgia Top Floors',documentType:"Workers' Compensation Insurance",level:'Required when applicable',status:'Current',effectiveDate:'2025-10-12',expirationDate:'2026-10-12',linkedTo:'Company',notes:'Georgia generally requires coverage when regularly employing 3 or more people.'},
       {id:'cmp-local',category:'Company & Insurance',entityType:'Company',entity:'Georgia Top Floors',documentType:'Local Business / Occupational Tax Certificate',level:'Local / if applicable',status:'Current',effectiveDate:'2026-01-01',expirationDate:'2026-12-31',linkedTo:'Company',notes:'Track city/county business licensing or occupational tax certificate where applicable.'},
 
-      {id:'sub-lucas-w9',category:'People & Subcontractors',entityType:'Subcontractor',entity:'Lucas Ferreira / LF Floors',documentType:'Form W-9',level:'Required for tax reporting when applicable',status:'Current',effectiveDate:'2026-01-15',expirationDate:'',linkedTo:'Subcontractor #301',notes:'Taxpayer identification record. No routine expiration date.'},
+      {id:'sub-lucas-w9',category:'People & Subcontractors',entityType:'Subcontractor',entity:'Lucas Ferreira / LF Floors',documentType:'Form W-9',documentGroup:'W-9 / Tax Profile',docType:'W-9 & Tax Forms',level:'Required for tax reporting when applicable',status:'Current',effectiveDate:'2026-01-15',expirationDate:'',reviewDate:'2027-01-15',renewalPolicy:'Annual company review; request a new W-9 when taxpayer information changes',linkedTo:'Subcontractor #301',notes:'W-9 does not have a routine federal expiration date. This demo tracks an annual internal review so the office can confirm the legal name, address and TIN information are still current.'},
       {id:'sub-lucas-coi',category:'People & Subcontractors',entityType:'Subcontractor',entity:'Lucas Ferreira / LF Floors',documentType:'Certificate of Insurance — General Liability',level:'Company requirement / risk control',status:'Current',effectiveDate:'2025-10-04',expirationDate:'2026-10-04',linkedTo:'Subcontractor #301',notes:'Renewed certificate should be collected before expiration.'},
       {id:'sub-marcos-coi',category:'People & Subcontractors',entityType:'Subcontractor',entity:'Marcos Silva / MS Finish',documentType:'Certificate of Insurance — General Liability',level:'Company requirement / risk control',status:'Current',effectiveDate:'2025-09-10',expirationDate:'2026-09-10',linkedTo:'Subcontractor #302',notes:'Expired in demo — requires review before new assignment.'},
       {id:'sub-marcos-wc',category:'People & Subcontractors',entityType:'Subcontractor',entity:'Marcos Silva / MS Finish',documentType:"Workers' Compensation COI / Evidence",level:'If applicable',status:'Current',effectiveDate:'2026-02-02',expirationDate:'2027-02-02',linkedTo:'Subcontractor #302',notes:'Track coverage or applicable exemption/evidence according to company process.'},
@@ -19,7 +20,7 @@
       {id:'agr-alpha',category:'Contracts & Agreements',entityType:'Partner',entity:'Alpha',documentType:'Contractor / Partner Agreement',level:'Company requirement',status:'Current',effectiveDate:'2026-02-01',expirationDate:'2027-02-01',linkedTo:'Partner Account',notes:'Master relationship terms.'},
       {id:'agr-terms',category:'Contracts & Agreements',entityType:'Company',entity:'Georgia Top Floors',documentType:'Customer Terms & Conditions Template',level:'Company template',status:'Review Needed',effectiveDate:'2026-01-01',expirationDate:'',reviewDate:'2026-10-01',linkedTo:'Template Library',notes:'Periodic review of customer-facing terms and warranty language.'},
 
-      {id:'job-emily-consent',category:'Job Compliance',entityType:'Job',entity:'Emily Carter',documentType:'Customer Agreement / Consent & Acknowledgment',level:'Company-required job signature',status:'Signed',effectiveDate:'2026-09-18',expirationDate:'',signedDate:'2026-09-18',jobId:2,linkedTo:'410 Lakeview Ln, Roswell, GA',notes:'Source of truth is the Job. Compliance Center monitors whether the signature is on file.'},
+      {id:'job-emily-consent',category:'Job Compliance',entityType:'Job',entity:'Emily Carter',documentType:'Customer Agreement / Consent & Acknowledgment',documentGroup:'Project Compliance',docType:'Agreements',level:'Company-required job signature',status:'Missing',effectiveDate:'',expirationDate:'',signedDate:'',jobId:2,linkedTo:'410 Lakeview Ln, Roswell, GA',notes:'Source of truth is the Job. Compliance Center monitors whether the signature is on file.'},
       {id:'job-michael-consent',category:'Job Compliance',entityType:'Job',entity:'Michael Reed',documentType:'Customer Agreement / Consent & Acknowledgment',level:'Company-required job signature',status:'Signed',effectiveDate:'2026-09-20',expirationDate:'',signedDate:'2026-09-20',jobId:3,linkedTo:'118 Peachtree Ct, Marietta, GA',notes:'Signed job-specific acknowledgment.'},
       {id:'job-sarah-consent',category:'Job Compliance',entityType:'Job',entity:'Sarah Johnson',documentType:'Customer Agreement / Consent & Acknowledgment',level:'Company-required job signature',status:'Missing',effectiveDate:'',expirationDate:'',signedDate:'',jobId:4,linkedTo:'772 Brookstone Dr, Cumming, GA',notes:'Signature missing in demo. Should be completed before work begins if required by company policy.'},
       {id:'job-robert-change',category:'Job Compliance',entityType:'Job',entity:'Robert Hayes',documentType:'Change Order / Additional Work Authorization',level:'Project-specific',status:'Signature Needed',effectiveDate:'',expirationDate:'',signedDate:'',jobId:5,linkedTo:'9330 River Club Pkwy, Johns Creek, GA',notes:'Demo issue requires manager review and signed authorization before additional paid scope.'},
@@ -38,7 +39,7 @@
       {category:'Company & Insurance',name:"Workers' Compensation Policy / Evidence",applies:'When legally required or contractually required',monitor:'Policy expiration'},
       {category:'Company & Insurance',name:'Commercial Auto / Umbrella Insurance',applies:'If carried / required by contracts',monitor:'Policy expiration'},
 
-      {category:'People & Subcontractors',name:'Form W-9',applies:'Subcontractors/vendors paid as reportable payees',monitor:'On file / updated when legal name or TIN changes'},
+      {category:'People & Subcontractors',name:'Form W-9',applies:'Subcontractors/vendors paid as reportable payees',monitor:'Annual internal review; request new form when taxpayer information changes'},
       {category:'People & Subcontractors',name:'Subcontractor COI — General Liability',applies:'Company risk-control requirement',monitor:'Expiration / coverage limits'},
       {category:'People & Subcontractors',name:"Workers' Comp COI / applicable evidence",applies:'Subcontractor risk/compliance review',monitor:'Expiration / applicability'},
       {category:'People & Subcontractors',name:'Trade License / Certification',applies:'When the trade or scope requires it',monitor:'Expiration'},
@@ -70,9 +71,12 @@
   };
 
   function clone(v){return JSON.parse(JSON.stringify(v));}
+  function inferDocType(r){const d=String(r.documentType||'').toLowerCase();const c=String(r.category||'');if(d.includes('w-9')||d.includes('1099')||d.includes('ein')||d.includes('tax'))return 'W-9 & Tax Forms';if(d.includes('insurance')||d.includes('coi')||d.includes("workers' compensation"))return 'Insurance / COI';if(d.includes('agreement')||d.includes('terms')||d.includes('change order')||d.includes('acknowledgment'))return 'Agreements';if(d.includes('registration')||d.includes('license')||d.includes('certificate'))return 'Licenses & Registrations';if(c==='Safety & Certifications'||d.includes('sds')||d.includes('osha')||d.includes('rrp'))return 'Safety';if(c==='Job Compliance')return 'Job Documents';if(d.includes('i-9'))return 'Employment';return 'Other';}
+  function inferGroup(r){const d=String(r.documentType||'').toLowerCase();if(d.includes('general liability')||d.includes("workers' compensation")||d.includes('workers comp')||d.includes('coi'))return 'Certificate of Insurance (COI)';if(d.includes('w-9'))return 'W-9 / Tax Profile';if(r.category==='Job Compliance')return 'Project Compliance';return r.documentType||'Document';}
+  function migrate(data){let changed=false;const oldVersion=Number(data.schemaVersion||1);if(oldVersion<3){const em=(data.records||[]).find(r=>r.id==='job-emily-consent');if(em){em.status='Missing';em.effectiveDate='';em.signedDate='';em.portalSignature=false;changed=true;}data.schemaVersion=3;changed=true;}(data.records||[]).forEach(r=>{if(!r.docType){r.docType=inferDocType(r);changed=true;}if(!r.documentGroup){r.documentGroup=inferGroup(r);changed=true;}if(r.documentType==='Form W-9'){if(!r.reviewDate){const base=parseDate(r.effectiveDate)||parseDate(TODAY);base.setFullYear(base.getFullYear()+1);r.reviewDate=base.toISOString().slice(0,10);changed=true;}if(!r.renewalPolicy){r.renewalPolicy='Annual company review; request a new W-9 when taxpayer information changes';changed=true;}if(String(r.notes||'').includes('No routine expiration date.')&&!String(r.notes||'').includes('annual internal review')){r.notes='W-9 does not have a routine federal expiration date. The system uses an annual internal review reminder so the office can confirm taxpayer information is still current.';changed=true;}}});return changed;}
   function load(){
-    try{const v=JSON.parse(localStorage.getItem(STORE_KEY)||'null');if(v&&Array.isArray(v.records))return v;}catch(e){}
-    const d=clone(defaults);save(d);return d;
+    try{const v=JSON.parse(localStorage.getItem(STORE_KEY)||'null');if(v&&Array.isArray(v.records)){if(migrate(v))save(v);return v;}}catch(e){}
+    const d=clone(defaults);migrate(d);save(d);return d;
   }
   function save(data){localStorage.setItem(STORE_KEY,JSON.stringify(data));dispatch();return data;}
   function parseDate(v){if(!v)return null;const d=new Date(v+'T00:00:00');return isNaN(d)?null:d;}
@@ -92,22 +96,22 @@
   function categoryRecords(category){return load().records.filter(r=>!category||category==='All'||r.category===category);}
   function getRecord(id){return load().records.find(r=>r.id===id)||null;}
   function updateRecord(id,fn){const d=load();const r=d.records.find(x=>x.id===id);if(!r)return null;fn(r);save(d);return r;}
-  function renewRecord(id){return updateRecord(id,r=>{const base=parseDate(r.expirationDate)||parseDate(TODAY);if(base){base.setFullYear(base.getFullYear()+1);r.expirationDate=base.toISOString().slice(0,10);}r.status='Current';r.notes=(r.notes||'')+' Renewed in demo.';});}
-  function markReviewed(id){return updateRecord(id,r=>{r.status='Current';r.reviewDate='2027-09-21';r.notes=(r.notes||'')+' Reviewed in demo.';});}
+  function renewRecord(id){return updateRecord(id,r=>{if(r.documentType==='Form W-9'){const base=parseDate(r.reviewDate)||parseDate(TODAY);base.setFullYear(base.getFullYear()+1);r.reviewDate=base.toISOString().slice(0,10);r.status='Current';r.notes=(r.notes||'')+' Annual W-9 review completed in demo.';return;}const base=parseDate(r.expirationDate)||parseDate(TODAY);if(base){base.setFullYear(base.getFullYear()+1);r.expirationDate=base.toISOString().slice(0,10);}r.status='Current';r.notes=(r.notes||'')+' Renewed in demo.';});}
+  function markReviewed(id){return updateRecord(id,r=>{r.status='Current';const base=parseDate(TODAY);base.setFullYear(base.getFullYear()+1);r.reviewDate=base.toISOString().slice(0,10);r.notes=(r.notes||'')+' Reviewed in demo.';});}
   function markSigned(id){return updateRecord(id,r=>{r.status='Signed';r.signedDate=TODAY;r.effectiveDate=TODAY;});}
-  function addRecord(record){const d=load();record.id=record.id||('cmp-'+Date.now());d.records.unshift(record);save(d);return record;}
+  function addRecord(record){const d=load();record.id=record.id||('cmp-'+Date.now());record.docType=record.docType||inferDocType(record);record.documentGroup=record.documentGroup||inferGroup(record);d.records.unshift(record);save(d);return record;}
   function ensureJobAgreement(job){
     if(!job||job.company!=='Direct Homeowner')return null;
     const d=load();let r=d.records.find(x=>x.category==='Job Compliance'&&x.documentType==='Customer Agreement / Consent & Acknowledgment'&&(x.jobId===job.id||x.entity===job.customer));
-    if(!r){r={id:'job-'+job.id+'-consent',category:'Job Compliance',entityType:'Job',entity:job.customer,documentType:'Customer Agreement / Consent & Acknowledgment',level:'Company-required job signature',status:'Missing',effectiveDate:'',expirationDate:'',signedDate:'',jobId:job.id,linkedTo:job.address,notes:'Created automatically for a direct-homeowner demo job.'};d.records.push(r);save(d);}return r;
+    if(!r){r={id:'job-'+job.id+'-consent',category:'Job Compliance',entityType:'Job',entity:job.customer,documentType:'Customer Agreement / Consent & Acknowledgment',documentGroup:'Project Compliance',docType:'Agreements',level:'Company-required job signature',status:'Missing',effectiveDate:'',expirationDate:'',signedDate:'',jobId:job.id,linkedTo:job.address,notes:'Created automatically for a direct-homeowner demo job.'};d.records.push(r);save(d);}return r;
   }
   function getJobAgreement(job){if(!job)return null;const d=load();return d.records.find(x=>x.category==='Job Compliance'&&x.documentType==='Customer Agreement / Consent & Acknowledgment'&&(x.jobId===job.id||x.entity===job.customer))||ensureJobAgreement(job);}
-  function markJobAgreementSigned(job){const r=getJobAgreement(job);if(!r)return null;return markSigned(r.id);}
+  function markJobAgreementSigned(job){const r=getJobAgreement(job);if(!r)return null;return updateRecord(r.id,x=>{x.status='Signed';x.signedDate=TODAY;x.effectiveDate=TODAY;x.portalSignature=true;});}
   function statusClass(status){const s=status||'';if(['Current','Signed'].includes(s))return 'green';if(['Expiring Soon','Review Needed','Signature Needed'].includes(s))return 'amber';if(['Expired','Missing'].includes(s))return 'red';return 'gray';}
   function dispatch(){try{window.dispatchEvent(new CustomEvent('gtf-compliance-changed'));}catch(e){}updateNavBadges();}
   function updateNavBadges(){const count=issues().length;document.querySelectorAll('.compliance-nav-alert').forEach(el=>{el.textContent=count>9?'9+':String(count);el.hidden=count===0;el.title=count?`${count} compliance item${count===1?'':'s'} need attention`:'No compliance alerts';});}
   document.addEventListener('DOMContentLoaded',updateNavBadges);
   window.addEventListener('storage',updateNavBadges);
   window.addEventListener('gtf-compliance-changed',updateNavBadges);
-  window.GTFCompliance={STORE_KEY,TODAY,load,save,derivedStatus,isIssue,issues,currentCount,categoryRecords,getRecord,updateRecord,renewRecord,markReviewed,markSigned,addRecord,ensureJobAgreement,getJobAgreement,markJobAgreementSigned,statusClass,updateNavBadges,reset(){localStorage.removeItem(STORE_KEY);const d=load();dispatch();return d;}};
+  window.GTFCompliance={STORE_KEY,TODAY,load,save,inferDocType,inferGroup,derivedStatus,isIssue,issues,currentCount,categoryRecords,getRecord,updateRecord,renewRecord,markReviewed,markSigned,addRecord,ensureJobAgreement,getJobAgreement,markJobAgreementSigned,statusClass,updateNavBadges,reset(){localStorage.removeItem(STORE_KEY);const d=load();dispatch();return d;}};
 })();

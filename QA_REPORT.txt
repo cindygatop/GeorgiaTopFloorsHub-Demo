@@ -1,20 +1,25 @@
-Georgia Top Floors UI v2.0 — QA REPORT
+GEORGIA TOP FLOORS HUB — V4 QA REPORT
+Date: 2026-10-08
 
-RESULT: PASS
+PASSED
+- JavaScript syntax check: app-core.js, project-docs.js, compliance.js
+- Inline JavaScript syntax check: login, Office, Client, Crew, Compliance, Database and Documents pages
+- Local file reference audit: scripts, stylesheets and images resolve
+- Duplicate HTML ID audit on the principal pages
+- Workflow unit flow: Project -> Estimate -> Work Order -> Invoice keeps one project_id
+- Crew-ready Work Order state can be released and updated
+- Compliance migration groups General Liability / Workers Compensation under COI
+- W-9 internal review metadata exists and advances separately from expiration
+- Customer Agreement can update the linked compliance record to Signed
+- Demo authentication, per-user adaptive usage and integration notification queue unit checks
+- No provider API keys or production secrets found in the repository scan
 
-CHECKS
-- index.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
-- database.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
-- documents.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
-- customer.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
-- crew.html: HTML parsed, IDs unique, assets/routes present, inline JS syntax OK
-- project-docs.js: syntax OK
-- theme.css: braces balanced
-- index.html: Estimates & Billing nav uses data-href and will not be overwritten
-- logo assets: dark-sidebar and light-surface variants assigned
-- GitHub Pages cache-bust: theme.css?v=2 present on all pages
+NOT A PRODUCTION SECURITY TEST
+This is still a static/localStorage demo. Production authentication, database RLS, webhooks,
+payment security, OAuth, e-sign audit trail, backups and integration credentials must be
+implemented on the server-side production stack before real customer data is used.
 
-ISSUES
-None found in static/logic QA.
-
-Workflow logic test: Estimate approval -> Work Order -> Release -> Invoice -> Payment was executed separately and passed.
+ENVIRONMENT NOTE
+A full Chromium interaction run was attempted in the build container, but the container's
+headless Chromium process did not return DOM output reliably. The code therefore received
+static syntax/reference checks plus unit-level workflow/data-flow checks instead of a full E2E browser run.

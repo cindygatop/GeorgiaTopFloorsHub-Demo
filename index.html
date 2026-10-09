@@ -163,7 +163,9 @@ tr:hover td{background:#FFFDF8}
 @media(max-width:760px){.doc-strip{grid-template-columns:1fr}}
 
 </style>
-<link rel="stylesheet" href="theme.css?v=2">
+<link rel="stylesheet" href="theme.css?v=3">
+<script src="app-core.js?v=3"></script>
+<script>GTFAuth.requireRole("office");</script>
 </head>
 <body class="office-page">
 <div class="app">
@@ -193,14 +195,19 @@ tr:hover td{background:#FFFDF8}
         <p id="pageSubtitle">One place to see today’s work, crews, customers and exceptions.</p>
       </div>
       <div class="actions">
-        <button class="btn" onclick="window.open('crew.html','_blank')">Crew View</button>
-        <button class="btn" onclick="window.open('customer.html','_blank')">Customer View</button>
+        <button class="btn" onclick="openIntegrationSetup()">Integrations</button>
+        <button class="btn" onclick="window.open('crew.html?preview=1','_blank')">Crew View</button>
+        <button class="btn" onclick="window.open('customer.html?preview=1','_blank')">Customer View</button>
         <div class="lang"><button id="enBtn" class="active">EN</button><button id="ptBtn">PT</button></div>
         <button class="btn primary" id="newJobBtn">+ New Job</button>
       </div>
     </div>
 
     <section class="page active" id="dashboard">
+      <div class="card section smart-card">
+        <div class="toolbar" style="margin-bottom:10px"><div><h3 style="margin-bottom:4px">Smart Shortcuts</h3><div class="sub">This row quietly adapts to the actions this Office user uses most often.</div></div><span class="urgency-flag low"><i></i>Personalized locally</span></div>
+        <div class="smart-actions" id="smartActions"></div>
+      </div>
       <div class="grid stats">
         <div class="card stat"><div class="label">TODAY'S JOBS</div><div class="value" id="statToday">5</div><div class="hint">Across 4 properties</div></div>
         <div class="card stat"><div class="label">IN PROGRESS</div><div class="value" id="statProgress">2</div><div class="hint">Live operational status</div></div>
@@ -222,12 +229,12 @@ tr:hover td{background:#FFFDF8}
           <div class="card section">
             <h3>Quick Actions</h3>
             <div class="quick">
-              <button onclick="openNewJob()">＋ New Job<small>Create and schedule a project</small></button>
-              <button onclick="goPage('calendar')">▦ Calendar<small>Review upcoming visits</small></button>
-              <button onclick="window.location.href='documents.html'">▤ Estimates & Billing<small>Sales workflow, work orders & payments</small></button>
-              <button onclick="goPage('customers')">◎ Customer<small>Find contact & property</small></button>
-              <button onclick="window.location.href='database.html'">◫ Database<small>Contacts, staff, subs & vendors</small></button>
-              <button onclick="goPage('crews')">👥 Crews<small>See assignments & skills</small></button>
+              <button data-track-action="new-job" data-track-label="New Job" onclick="openNewJob()">＋ New Job<small>Create and schedule a project</small></button>
+              <button data-track-action="calendar" data-track-label="Calendar" onclick="goPage('calendar')">▦ Calendar<small>Review upcoming visits</small></button>
+              <button data-track-action="billing" data-track-label="Estimates & Billing" onclick="window.location.href='documents.html'">▤ Estimates & Billing<small>Sales workflow, work orders & payments</small></button>
+              <button data-track-action="customers" data-track-label="Customers" onclick="goPage('customers')">◎ Customer<small>Find contact & property</small></button>
+              <button data-track-action="database" data-track-label="Database" onclick="window.location.href='database.html'">◫ Database<small>Contacts, staff, subs & vendors</small></button>
+              <button data-track-action="crews" data-track-label="Crews" onclick="goPage('crews')">👥 Crews<small>See assignments & skills</small></button>
             </div>
           </div>
         </div>
@@ -263,7 +270,7 @@ tr:hover td{background:#FFFDF8}
 
     <section class="page" id="calendar">
       <div class="card section">
-        <div class="toolbar"><div><h3 style="margin-bottom:4px">Schedule</h3><div class="sub">Customer-facing arrival windows, internal assignments and multi-day work.</div></div><button class="btn" onclick="toast('Google Calendar sync is planned for a later phase.')">↻ Google Calendar Sync</button></div>
+        <div class="toolbar"><div><h3 style="margin-bottom:4px">Schedule</h3><div class="sub">Customer-facing arrival windows, internal assignments and multi-day work.</div></div><button class="btn" data-track-action="calendar-sync" data-track-label="Google Calendar Sync" onclick="syncCalendarDemo()">↻ Google Calendar Sync</button></div>
         <div class="calendar" id="calendarGrid"></div>
       </div>
     </section>
@@ -293,6 +300,7 @@ tr:hover td{background:#FFFDF8}
       <div class="field full"><label>Property Address</label><input id="fAddress" value="1245 Oak Ridge Dr, Alpharetta, GA"></div>
       <div class="field"><label>Service</label><select id="fService"><option>Sand & Finish</option><option>Hardwood Installation</option><option>Buff & Coat</option><option>Flooring Repair</option><option>Stairs</option></select></div>
       <div class="field"><label>Manager</label><select id="fManager"><option>André</option><option>Isaque</option></select></div>
+      <div class="field"><label>Crew / Assignee</label><select id="fCrew"><option>Carlos</option><option>Edilson</option><option>Edson</option><option>Carlos + Edilson</option><option>To assign</option></select></div>
       <div class="field"><label>Date</label><input id="fDate" type="date"></div>
       <div class="field"><label>Arrival Window</label><input id="fWindow" value="8:00–9:00 AM"></div>
       <div class="field"><label>Square Feet</label><input id="fSf" value="850 SF"></div>
@@ -324,10 +332,17 @@ tr:hover td{background:#FFFDF8}
   </div>
 </div>
 
+
+<div class="modal-backdrop" id="integrationModal" onclick="if(event.target===this)closeIntegrationSetup()">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><div class="sub">PRODUCTION CONNECTIONS</div><h3>Integrations</h3></div><button class="btn small" onclick="closeIntegrationSetup()">Close</button></div>
+    <div id="integrationContent"></div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
-<script src="compliance.js?v=1"></script>
-<script src="project-docs.js?v=2"></script>
+<script src="compliance.js?v=2"></script>
+<script src="project-docs.js?v=3"></script>
 <script>
 const baseJobs = [
  {id:1,customer:"John Miller",company:"Alpha",address:"2850 Windward Pkwy, Alpharetta, GA",service:"Hardwood Installation",date:"Today",window:"8:00–9:00 AM",manager:"André",crew:"Carlos + Edilson",status:"In Progress",sf:"1,240 SF",stain:"Natural",materials:"3¼\" white oak, shoe molding",notes:"Contractor-referred project. Homeowner portal must not show contractor pricing."},
@@ -360,8 +375,9 @@ function statusClass(status){
  const m={"Scheduled":"scheduled","OTW":"otw","Arrived":"arrived","In Progress":"inprogress","Waiting for Material":"waiting","Problem":"problem","Completed":"completed"};
  return m[status]||"scheduled";
 }
+function urgencyForJob(j){if(j.status==="Problem")return "high";if(j.status==="Waiting for Material")return "medium";return "low";}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]));}
-function renderAll(){renderToday();renderJobs();renderCalendar();renderCustomers();renderCrews();renderStats();}
+function renderAll(){renderToday();renderJobs();renderCalendar();renderCustomers();renderCrews();renderStats();renderSmartActions();}
 function renderStats(){
  document.getElementById("statToday").textContent=jobs.filter(j=>j.date==="Today").length;
  document.getElementById("statProgress").textContent=jobs.filter(j=>["OTW","Arrived","In Progress"].includes(j.status)).length;
@@ -371,7 +387,7 @@ function renderToday(){
  const list=document.getElementById("todayJobs");
  const data=jobs.filter(j=>j.date==="Today").slice(0,5);
  list.innerHTML=data.map(j=>`
-   <div class="job-card">
+   <div class="job-card urgency-card urgency-${urgencyForJob(j)}">
     <div><div class="job-title">${esc(j.company)} | ${esc(j.customer)}</div><div class="sub">${esc(j.service)} · ${esc(j.address)}</div></div>
     <div><strong>${esc(j.window)}</strong><div class="sub">${esc(j.manager)} · ${esc(j.crew)}</div></div>
     <div style="display:flex;gap:8px;align-items:center"><span class="badge ${statusClass(j.status)}">${esc(j.status)}</span><button class="btn small" onclick="openDetail(${j.id})">Open</button></div>
@@ -390,7 +406,7 @@ function renderJobs(){
   <td>${esc(j.service)}<div class="sub">${esc(j.sf)}</div></td>
   <td>${esc(j.date)}<div class="sub">${esc(j.window)}</div></td>
   <td>${esc(j.manager)}<div class="sub">${esc(j.crew)}</div></td>
-  <td><span class="badge ${statusClass(j.status)}">${esc(j.status)}</span></td>
+  <td><span class="badge ${statusClass(j.status)}">${esc(j.status)}</span><div class="urgency-flag ${urgencyForJob(j)}" style="margin-top:6px"><i></i>${urgencyForJob(j)} priority</div></td>
   <td><button class="link-btn" onclick="openDetail(${j.id})">Open →</button></td>
  </tr>`).join("") || `<tr><td colspan="6" class="empty">No matching jobs.</td></tr>`;
 }
@@ -444,7 +460,8 @@ function saveDemoJob(){
   address:document.getElementById("fAddress").value,
   service:document.getElementById("fService").value,
   manager:document.getElementById("fManager").value,
-  crew:"To assign",
+  crew:document.getElementById("fCrew").value||"To assign",
+  projectId:"project-"+Date.now(),
   date:dateVal||"Upcoming",
   window:document.getElementById("fWindow").value,
   status:"Scheduled",
@@ -453,7 +470,7 @@ function saveDemoJob(){
   materials:"To confirm",
   notes:document.getElementById("fNotes").value
  };
- jobs.unshift(j); if(window.GTFCompliance)GTFCompliance.ensureJobAgreement(j); persist(); renderAll(); closeNewJob(); goPage("jobs"); toast("Demo job created and saved locally.");
+ jobs.unshift(j); if(window.GTFCompliance)GTFCompliance.ensureJobAgreement(j); if(window.GTFWorkflow)GTFWorkflow.ensureEstimateForJob(j); if(window.GTFIntegrations){GTFIntegrations.queueCrewSMS(j);GTFIntegrations.queueCalendarSync(j);} persist(); renderAll(); closeNewJob(); goPage("jobs"); toast("Project created. Crew SMS and Calendar sync were queued; external delivery activates after integration setup.");
 }
 function persist(){localStorage.setItem("gtfDemoJobs",JSON.stringify(jobs));}
 function docStatusClass(status){
@@ -497,12 +514,16 @@ function openDetail(id){
  <div style="margin-top:10px"><button class="btn primary" onclick="window.location.href='documents.html'">Open Estimates & Billing</button></div>
  <h4>Customer Agreement / Consent</h4>
  ${agreement?`<div class="job-agreement-card"><div class="agreement-copy"><strong>Customer Agreement / Consent & Acknowledgment</strong><small>Stored on this Job; monitored in Compliance Center.</small><div style="margin-top:7px"><span class="badge ${GTFCompliance.statusClass(agreementStatus)}">${esc(agreementStatus)}</span></div></div>${["Missing","Signature Needed"].includes(agreementStatus)?`<button class="btn primary small" onclick="markJobAgreementSigned(${j.id})">Mark Signed</button>`:`<button class="btn small" onclick="window.location.href='compliance.html'">Open Compliance</button>`}</div>`:`<div class="note">Contractor/partner job: customer consent requirements follow the applicable account/project agreement.</div>`}
+ <h4>Linked Project Record</h4>
+ <div class="project-link-strip">${(()=>{const b=GTFWorkflow.bundleForJob(j);return `<div class="project-link-item"><span>Project</span><strong>${esc(j.projectId||('project-'+j.id))}</strong></div><div class="project-link-item"><span>Estimate</span><strong>${b.estimate?esc(b.estimate.number):'—'}</strong></div><div class="project-link-item"><span>Work Order</span><strong>${b.workOrder?esc(b.workOrder.number):'—'}</strong></div><div class="project-link-item"><span>Invoice</span><strong>${b.invoice?esc(b.invoice.number):'—'}</strong></div>`})()}</div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 16px"><button class="btn" onclick="notifyCrewForJob(${j.id})">Send / Queue Crew SMS</button><button class="btn" onclick="syncJobCalendar(${j.id})">Sync / Queue Calendar</button></div>
  <h4>Internal Notes</h4><div class="note">${esc(j.notes)}</div>
  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-   <button class="btn" onclick="toast('Maps button would open navigation on the field device.')">Open in Maps</button>
+   <button class="btn" onclick="openJobMaps(${j.id})">Open in Maps</button>
    <button class="btn" onclick="toast('Call button would use the customer phone on the field device.')">Call Customer</button>
-   <button class="btn" onclick="window.open('crew.html','_blank')">Crew View</button>
-   <button class="btn" onclick="window.open('customer.html','_blank')">Customer Portal</button>
+   <button class="btn" onclick="openIntegrationSetup()">Integrations</button>
+        <button class="btn" onclick="window.open('crew.html?preview=1','_blank')">Crew View</button>
+   <button class="btn" onclick="window.open('customer.html?preview=1','_blank')">Customer Portal</button>
  </div>`;
  document.getElementById("detailDrawer").classList.add("show");
 }
@@ -518,7 +539,7 @@ function openProjectDocument(jobId,type){
    <div class="doc-sheet-head"><div><strong>${esc(j.customer)}</strong><div class="sub">${esc(j.address)}</div><div class="sub">Issued: ${esc(e.issued)} · Valid until: ${esc(e.validUntil)}</div></div><div style="text-align:right"><span class="doc-status ${docStatusClass(e.status)}">${esc(e.status)}</span><div class="doc-total">${GTFDocs.money(e.total)}</div></div></div>
    <table class="doc-lines"><thead><tr><th>Description</th><th>Qty</th><th style="text-align:right">Amount</th></tr></thead><tbody>${e.items.map(i=>`<tr><td>${esc(i.description)}</td><td>${esc(i.qty)}</td><td style="text-align:right">${GTFDocs.money(i.amount)}</td></tr>`).join("")}</tbody></table>
    <div class="note" style="margin-top:12px">${esc(e.notes)}</div>
-   <div class="modal-actions"><button class="btn" onclick="toast('Demo: estimate would be sent to the customer portal/email.')">Send to Customer</button>${e.status!=="Approved"?`<button class="btn primary" onclick="approveEstimateDemo('${key}',${jobId})">Approve Estimate</button>`:""}</div>
+   <div class="modal-actions"><button class="btn" onclick="queueCustomerDocument(${jobId},'estimate')">Send to Customer</button>${e.status!=="Approved"?`<button class="btn primary" onclick="approveEstimateDemo('${key}',${jobId})">Approve Estimate</button>`:""}</div>
   </div>`;
  }else if(type==="invoice"){
   const i=d.invoice;
@@ -527,7 +548,7 @@ function openProjectDocument(jobId,type){
    <div class="doc-sheet-head"><div><strong>${esc(j.customer)}</strong><div class="sub">${esc(j.address)}</div><div class="sub">Issued: ${esc(i.issued)} · Due: ${esc(i.dueDate)}</div></div><span class="doc-status ${docStatusClass(i.status)}">${esc(i.status)}</span></div>
    <div class="detail-grid" style="margin-top:12px"><div class="detail"><span>Total</span><strong>${GTFDocs.money(i.total)}</strong></div><div class="detail"><span>Paid</span><strong>${GTFDocs.money(i.paid)}</strong></div><div class="detail"><span>Balance</span><strong>${GTFDocs.money(i.balance)}</strong></div><div class="detail"><span>Payment Rule</span><strong>${esc(i.paymentRule)}</strong></div></div>
    <div class="note">${esc(i.notes)}</div>
-   <div class="modal-actions"><button class="btn" onclick="toast('Demo: invoice is visible in the direct customer portal.')">Open Customer View</button>${i.balance>0?`<button class="btn primary" onclick="recordPaymentDemo('${key}',${jobId})">Record Final Payment</button>`:""}</div>
+   <div class="modal-actions"><button class="btn" onclick="window.open('customer.html?preview=1','_blank')">Open Customer View</button>${i.balance>0?`<button class="btn primary" onclick="recordPaymentDemo('${key}',${jobId})">Record Final Payment</button>`:""}</div>
   </div>`;
  }else{
   const w=d.workOrder;
@@ -538,7 +559,7 @@ function openProjectDocument(jobId,type){
    <h4>Scope of Work</h4><ul class="scope-list">${w.scope.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
    <h4>Materials</h4><ul class="scope-list">${w.materials.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
    <div class="note">${esc(w.notes)}</div>
-   <div class="modal-actions"><button class="btn" onclick="window.open('crew.html','_blank')">Open Crew View</button>${w.status!=="Released"?`<button class="btn primary" onclick="releaseWorkOrderDemo('${key}',${jobId})">Release to Crew</button>`:""}</div>
+   <div class="modal-actions"><button class="btn" onclick="window.open('crew.html?preview=1','_blank')">Open Crew View</button>${w.status!=="Released"?`<button class="btn primary" onclick="releaseWorkOrderDemo('${key}',${jobId})">Release to Crew</button>`:""}</div>
   </div>`;
  }
  modal.classList.add("show");
@@ -552,10 +573,30 @@ function closeDetail(){document.getElementById("detailDrawer").classList.remove(
 function setStatus(id,status){
  const j=jobs.find(x=>x.id===id); if(!j)return;
  j.status=status; persist(); renderAll(); openDetail(id);
- if(status==="OTW") toast("OTW started — future version will begin trip tracking + customer SMS/email.");
+ if(status==="OTW"){ if(window.GTFIntegrations)GTFIntegrations.pushNotification({type:"customer-update",status:"queued",title:`OTW · ${j.customer}`,body:"Customer trip notification queued."}); toast("OTW started. Customer notification queued for the production messaging integration."); }
  else if(status==="Arrived") toast("Arrived — future version will stop trip tracking.");
  else toast(`Status changed to ${status}.`);
 }
+function renderSmartActions(){
+ const box=document.getElementById("smartActions");if(!box||!window.GTFAdaptive)return;
+ const defs=[
+  {id:"new-job",label:"New Job",hint:"Create a project",urgency:"low",action:"openNewJob()"},
+  {id:"calendar",label:"Calendar",hint:"Review appointments",urgency:"low",action:"goPage('calendar')"},
+  {id:"billing",label:"Estimates & Billing",hint:"Estimate → WO → Invoice",urgency:"medium",action:"location.href='documents.html'"},
+  {id:"compliance",label:"Compliance",hint:"Expirations & signatures",urgency:(window.GTFCompliance&&GTFCompliance.issues().length?'high':'low'),action:"location.href='compliance.html'"},
+  {id:"database",label:"Database",hint:"People & companies",urgency:"low",action:"location.href='database.html'"},
+  {id:"crews",label:"Crews",hint:"Assignments & skills",urgency:"low",action:"goPage('crews')"}
+ ];
+ box.innerHTML=GTFAdaptive.smartActions(defs).map(a=>`<button class="btn smart-action urgency-${a.urgency}" data-track-action="${a.id}" data-track-label="${a.label}" onclick="${a.action}"><strong>${a.label}</strong><small>${a.hint}${a.count?' · used '+a.count+'×':''}</small></button>`).join('');
+}
+function queueCustomerDocument(id,type){const j=jobs.find(x=>x.id===id);if(!j)return;GTFIntegrations.pushNotification({type:'customer-document',status:'queued',title:`${type==='estimate'?'Estimate':'Document'} ready · ${j.customer}`,body:`${j.projectId||('project-'+j.id)} · ${j.service}`,projectId:j.projectId});toast(type==='estimate'?'Estimate placed in the customer delivery queue. Connect email/SMS to deliver externally.':'Document queued for customer delivery.');}
+function openJobMaps(id){const j=jobs.find(x=>x.id===id);if(!j||!j.address){toast('No property address is available.');return;}window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(j.address),'_blank','noopener,noreferrer');}
+function notifyCrewForJob(id){const j=jobs.find(x=>x.id===id);if(!j)return;const n=GTFIntegrations.queueCrewSMS(j);toast(n.status==='ready'?'Crew SMS queued through the connected messaging service.':'Crew SMS queued. Connect Quo to send it automatically.');}
+function syncJobCalendar(id){const j=jobs.find(x=>x.id===id);if(!j)return;const n=GTFIntegrations.queueCalendarSync(j);toast(n.status==='ready'?'Appointment queued for Google Calendar sync.':'Calendar event queued. Connect Google Calendar to enable two-way sync.');}
+function syncCalendarDemo(){jobs.filter(j=>j.status!=="Completed").forEach(j=>GTFIntegrations.queueCalendarSync(j));toast("Appointments queued. Two-way Google Calendar sync activates after OAuth/webhook setup.");}
+function openIntegrationSetup(){const state=GTFIntegrations.integrationState();document.getElementById("integrationContent").innerHTML=`<div class="detail-grid"><div class="detail"><span>Google Calendar</span><strong class="integration-state ${state.googleCalendar?'ready':'pending'}">${state.googleCalendar?'Connected (demo flag)':'Setup required'}</strong></div><div class="detail"><span>Quo</span><strong class="integration-state ${state.quo?'ready':'pending'}">${state.quo?'Connected (demo flag)':'Setup required'}</strong></div><div class="detail"><span>E-signature</span><strong class="integration-state ${state.eSignature?'ready':'pending'}">${state.eSignature?'Connected (demo flag)':'Provider not selected'}</strong></div><div class="detail"><span>Payments</span><strong class="integration-state ${state.payments?'ready':'pending'}">${state.payments?'Connected (demo flag)':'Provider not selected'}</strong></div></div><div class="note">These switches only demonstrate the app state. Production connections require server-side credentials, OAuth/webhooks and a real database. No API key should ever be stored in this static site.</div><div class="actions" style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn" onclick="toggleDemoIntegration('googleCalendar')">Toggle Calendar Demo</button><button class="btn" onclick="toggleDemoIntegration('quo')">Toggle Quo Demo</button><button class="btn" onclick="toggleDemoIntegration('eSignature')">Toggle E-sign Demo</button><button class="btn" onclick="toggleDemoIntegration('payments')">Toggle Payments Demo</button></div>`;document.getElementById("integrationModal").classList.add("show");}
+function toggleDemoIntegration(name){const s=GTFIntegrations.integrationState();GTFIntegrations.setIntegration(name,!s[name]);openIntegrationSetup();}
+function closeIntegrationSetup(){document.getElementById("integrationModal").classList.remove("show");}
 function toast(msg){
  const t=document.getElementById("toast"); t.textContent=msg;t.classList.add("show");
  clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>t.classList.remove("show"),2600);
@@ -564,7 +605,7 @@ document.getElementById("newJobBtn").onclick=openNewJob;
 document.getElementById("jobSearch").addEventListener("input",renderJobs);
 document.getElementById("statusFilter").addEventListener("change",renderJobs);
 document.getElementById("newJobModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeNewJob()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeNewJob();closeDetail();closeProjectDocument();}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeNewJob();closeDetail();closeProjectDocument();closeIntegrationSetup();}});
 document.getElementById("ptBtn").onclick=()=>{document.getElementById("ptBtn").classList.add("active");document.getElementById("enBtn").classList.remove("active");toast("PT demo: language switch is represented here. Full localization comes in a later phase.");};
 document.getElementById("enBtn").onclick=()=>{document.getElementById("enBtn").classList.add("active");document.getElementById("ptBtn").classList.remove("active");toast("English selected.");};
 renderAll();

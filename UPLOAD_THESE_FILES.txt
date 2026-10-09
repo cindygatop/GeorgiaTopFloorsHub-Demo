@@ -1,0 +1,29 @@
+GEORGIA TOP FLOORS HUB — V3 UPDATE
+
+UPLOAD / REPLACE THESE FILES IN THE ROOT OF YOUR GITHUB REPOSITORY:
+
+NEW
+- app-core.js
+- login.html
+- DEPLOYMENT_AND_ARCHITECTURE.md
+- supabase-schema.sql
+
+REPLACE
+- index.html
+- customer.html
+- crew.html
+- compliance.html
+- compliance.js
+- project-docs.js
+- database.html
+- documents.html
+- theme.css
+- README.md
+- QA_REPORT.txt
+
+KEEP THE EXISTING assets/ FOLDER. No asset file was changed in this update.
+
+IMPORTANT
+- This version is still a static demo and stores data in the browser localStorage.
+- Do not add real customer data, API keys, payment secrets, Google credentials or Quo credentials to the public GitHub repo.
+- Open login.html to test the role-based demo.

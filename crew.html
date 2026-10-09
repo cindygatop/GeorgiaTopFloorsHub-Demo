@@ -21,10 +21,13 @@
 .scope{padding-left:20px}.scope li{margin:7px 0;font-size:13px}.woNote{padding:11px;background:#FFF8E5;border:1px solid #EFE0A8;border-radius:10px;font-size:13px;line-height:1.5}
 
 </style>
-<link rel="stylesheet" href="theme.css?v=2"></head>
+<link rel="stylesheet" href="theme.css?v=3"><script src="app-core.js?v=3"></script>
+<script>GTFAuth.requireRole("crew");</script>
+</head>
 <body class="crew-page">
 <div class="phone">
   <div class="top"><div><div class="brand"><img class="crew-logo" src="assets/gtf-logo.png?v=2" alt="Georgia Top Floors"></div><div class="sub">Crew App · Today's Jobs</div></div><span class="pill">DEMO</span></div>
+  <div class="card" id="crewAlertsCard"><strong>Appointment Alerts</strong><div class="sub" id="crewAlerts" style="margin-top:7px">No new appointment alerts.</div></div>
   <div class="card"><strong>Released Work Orders</strong><div class="sub" style="margin:5px 0 10px">Only Work Orders released by the office appear here.</div><select id="assignmentSelect" onchange="selectAssignment(this.value)" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:10px"></select></div>
   <div class="card">
     <div class="jobHead"><div><h2 id="jobCustomer">Released Work Order</h2><div class="sub" id="jobAddress">Select an assignment</div></div><span class="badge" id="badge">Scheduled</span></div>
@@ -33,6 +36,7 @@
       <div class="info"><span>Service</span><strong id="jobService">—</strong></div>
       <div class="info"><span>Area</span><strong id="jobArea">—</strong></div>
       <div class="info"><span>Manager</span><strong id="jobManager">—</strong></div>
+      <div class="info"><span>Project</span><strong id="jobProject">—</strong></div>
     </div>
     <div class="field"><label>STAIN / COLOR</label><input id="stain" value="To confirm"></div>
     <div class="field"><label>MATERIALS / NOTES</label><textarea id="notes">Water-based finish. Apply stain samples before final selection.</textarea></div>
@@ -54,13 +58,13 @@
   </div>
 
   <div class="card"><strong>Quick Actions</strong><div class="actions" style="margin-top:12px">
-    <button class="btn" onclick="toast('Production opens Apple/Google Maps with the project address.')">Open Maps</button>
+    <button class="btn" onclick="openMaps()">Open Maps</button>
     <button class="btn" onclick="toast('Production calls the customer from the phone.')">Call Customer</button>
     <button class="btn" onclick="saveStain()">Save Stain</button>
-    <button class="btn" onclick="toast('Material usage will later sync with inventory.')">Materials Used</button>
+    <button class="btn" onclick="addCalendar()">Calendar</button>
   </div></div>
 
-  <div class="card"><strong>Issue / Problem</strong><div class="sub" style="margin:5px 0 10px">Attach evidence only when needed so the system stays light.</div><button class="btn danger" onclick="toast('Problem reported to manager + office. Demo only.')">⚠ Report Problem</button></div>
+  <div class="card"><strong>Issue / Problem</strong><div class="sub" style="margin:5px 0 10px">Flag the Work Order for the office. Photos/evidence can be added when the production storage is connected.</div><button class="btn danger" onclick="reportProblem()">⚠ Report Problem</button></div>
   <div class="small sub" style="text-align:center">Presentation prototype · No real GPS, messages or customer data.</div>
 </div>
 
@@ -75,11 +79,11 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<script src="project-docs.js?v=2"></script>
+<script src="project-docs.js?v=3"></script>
 <script>
 
 let currentWorkOrderId=null;
-function renderAssignments(){const list=GTFWorkflow.getReleasedWorkOrders();assignmentSelect.innerHTML=list.length?list.map(w=>`<option value="${w.id}">${w.number} · ${w.customer} · ${w.service}</option>`).join(''):'<option value="">No released Work Orders</option>';if(list.length){const keep=list.find(x=>x.id===currentWorkOrderId)||list[0];currentWorkOrderId=keep.id;assignmentSelect.value=keep.id;renderSelectedWorkOrder();}else{currentWorkOrderId=null;renderEmptyWorkOrder();}}
+function renderAssignments(){const session=GTFAuth.currentUser();const crewName=session?.crewName||session?.name||'';const all=GTFWorkflow.getReleasedWorkOrders();const list=all.filter(w=>!crewName||String(w.crew||'').toLowerCase().includes(crewName.toLowerCase())||(w.assignedCrewUsers||[]).some(x=>String(x).toLowerCase()===crewName.toLowerCase()));assignmentSelect.innerHTML=list.length?list.map(w=>`<option value="${w.id}">${w.number} · ${w.customer} · ${w.service}</option>`).join(''):'<option value="">No released Work Orders</option>';if(list.length){const keep=list.find(x=>x.id===currentWorkOrderId)||list[0];currentWorkOrderId=keep.id;assignmentSelect.value=keep.id;renderSelectedWorkOrder();}else{currentWorkOrderId=null;renderEmptyWorkOrder();}}
 function selectAssignment(id){currentWorkOrderId=id;renderSelectedWorkOrder();}
 function crewStatusClass(status){
  if(["Arrived","Completed","Released"].includes(status))return "status-success";
@@ -88,15 +92,22 @@ function crewStatusClass(status){
  if(["Problem","Cancelled"].includes(status))return "status-danger";
  return "status-neutral";
 }
-function renderEmptyWorkOrder(){jobCustomer.textContent='No released Work Orders';jobAddress.textContent='Office must release a Work Order first.';jobArrival.textContent='—';jobService.textContent='—';jobArea.textContent='—';jobManager.textContent='—';woNumber.textContent='No Work Order';woStatus.textContent='Waiting';woStatus.className='woStatus '+crewStatusClass('Waiting');stain.value='';notes.value='';}
-function renderSelectedWorkOrder(){const s=GTFWorkflow.load(),w=s.workOrders.find(x=>x.id===currentWorkOrderId);if(!w){renderEmptyWorkOrder();return;}jobCustomer.textContent=w.customer;jobAddress.textContent=w.address;jobArrival.textContent=w.arrival;jobService.textContent=w.service;jobArea.textContent=w.area;jobManager.textContent=w.manager;woNumber.textContent=`${w.number} · ${w.service}`;woStatus.textContent=w.status;woStatus.className='woStatus '+crewStatusClass(w.status);stain.value=w.stain||'To confirm';notes.value=w.notes||'';}
+function renderEmptyWorkOrder(){jobCustomer.textContent='No released Work Orders';jobAddress.textContent='Office must release a Work Order first.';jobArrival.textContent='—';jobService.textContent='—';jobArea.textContent='—';jobManager.textContent='—';jobProject.textContent='—';woNumber.textContent='No Work Order';woStatus.textContent='Waiting';woStatus.className='woStatus '+crewStatusClass('Waiting');stain.value='';notes.value='';}
+function renderSelectedWorkOrder(){const s=GTFWorkflow.load(),w=s.workOrders.find(x=>x.id===currentWorkOrderId);if(!w){renderEmptyWorkOrder();return;}jobCustomer.textContent=w.customer;jobAddress.textContent=w.address;jobArrival.textContent=w.arrival;jobService.textContent=w.service;jobArea.textContent=w.area;jobManager.textContent=w.manager;jobProject.textContent=w.projectId||'—';woNumber.textContent=`${w.number} · ${w.service}`;woStatus.textContent=w.status;woStatus.className='woStatus '+crewStatusClass(w.status);stain.value=w.stain||'To confirm';notes.value=w.notes||'';}
 function renderWorkOrderSummary(){renderAssignments();}
-function openWorkOrder(){const s=GTFWorkflow.load(),w=s.workOrders.find(x=>x.id===currentWorkOrderId);if(!w){toast('No released Work Order available.');return;}woTitle.textContent=`Work Order ${w.number}`;woContent.innerHTML=`<div class="grid"><div class="info"><span>Customer</span><strong>${w.customer}</strong></div><div class="info"><span>Arrival</span><strong>${w.arrival}</strong></div><div class="info"><span>Service</span><strong>${w.service}</strong></div><div class="info"><span>Area</span><strong>${w.area}</strong></div><div class="info"><span>Manager</span><strong>${w.manager}</strong></div><div class="info"><span>Crew</span><strong>${w.crew}</strong></div><div class="info"><span>Stain / Color</span><strong>${w.stain}</strong></div><div class="info"><span>Finish</span><strong>${w.finish}</strong></div></div><div class="field"><label>PROPERTY</label><div class="sub">${w.address}</div></div><strong>Scope of Work</strong><ul class="scope">${w.scope.map(x=>`<li>${x}</li>`).join('')}</ul><strong>Materials</strong><ul class="scope">${w.materials.map(x=>`<li>${x}</li>`).join('')}</ul><div class="woNote"><strong>Field Notes</strong><br>${w.notes||''}</div><div class="woNote" style="margin-top:10px"><strong>Privacy:</strong> Work Orders do not include Estimate prices, Invoice totals, payments or margin.</div><div style="margin-top:12px"><button class="btn dark" onclick="closeWorkOrder();toast('Work Order acknowledged by crew — demo only.')">Acknowledge Work Order</button></div>`;workOrderModal.classList.add('show');}
+function openWorkOrder(){const s=GTFWorkflow.load(),w=s.workOrders.find(x=>x.id===currentWorkOrderId);if(!w){toast('No released Work Order available.');return;}woTitle.textContent=`Work Order ${w.number}`;woContent.innerHTML=`<div class="grid"><div class="info"><span>Customer</span><strong>${w.customer}</strong></div><div class="info"><span>Arrival</span><strong>${w.arrival}</strong></div><div class="info"><span>Service</span><strong>${w.service}</strong></div><div class="info"><span>Area</span><strong>${w.area}</strong></div><div class="info"><span>Manager</span><strong>${w.manager}</strong></div><div class="info"><span>Crew</span><strong>${w.crew}</strong></div><div class="info"><span>Project</span><strong>${w.projectId||'—'}</strong></div><div class="info"><span>Stain / Color</span><strong>${w.stain}</strong></div><div class="info"><span>Finish</span><strong>${w.finish}</strong></div></div><div class="field"><label>PROPERTY</label><div class="sub">${w.address}</div></div><strong>Scope of Work</strong><ul class="scope">${w.scope.map(x=>`<li>${x}</li>`).join('')}</ul><strong>Materials</strong><ul class="scope">${w.materials.map(x=>`<li>${x}</li>`).join('')}</ul><div class="woNote"><strong>Field Notes</strong><br>${w.notes||''}</div><div class="woNote" style="margin-top:10px"><strong>Privacy:</strong> Work Orders do not include Estimate prices, Invoice totals, payments or margin.</div><div style="margin-top:12px"><button class="btn dark" onclick="ackWorkOrder()">Acknowledge Work Order</button></div>`;workOrderModal.classList.add('show');}
 function closeWorkOrder(){workOrderModal.classList.remove('show')}
-function ackWorkOrder(){closeWorkOrder();toast('Work Order acknowledged. No pricing is exposed to the crew.');}
-function setStatus(btn){document.querySelectorAll("[data-status]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");badge.textContent=btn.dataset.status;badge.className="badge "+crewStatusClass(btn.dataset.status);if(btn.dataset.status==="OTW")toast("OTW: future version starts trip location + customer notification.");else if(btn.dataset.status==="Arrived")toast("Arrived: future version stops customer location tracking.");else toast("Status changed to "+btn.dataset.status+".")}
+function ackWorkOrder(){const w=currentWO();if(w)GTFWorkflow.updateWorkOrder(w.id,{acknowledgedAt:new Date().toISOString(),acknowledgedBy:GTFAuth.currentUser()?.name||'Crew'});closeWorkOrder();toast('Work Order acknowledged and saved.');}
+function reportProblem(){const w=currentWO();if(!w){toast('Select a Work Order first.');return;}GTFWorkflow.updateWorkOrder(w.id,{status:'Problem',problemReportedAt:new Date().toISOString(),problemReportedBy:GTFAuth.currentUser()?.name||'Crew'});GTFIntegrations.pushNotification({type:'crew-problem',status:'attention',title:`Problem reported · ${w.customer}`,body:`${w.number} · ${w.service} · ${w.address}`,projectId:w.projectId,crew:w.crew});badge.textContent='Problem';badge.className='badge '+crewStatusClass('Problem');renderSelectedWorkOrder();toast('Problem flagged for the office.');}
+function setStatus(btn){document.querySelectorAll("[data-status]").forEach(x=>x.classList.remove("active"));btn.classList.add("active");badge.textContent=btn.dataset.status;badge.className="badge "+crewStatusClass(btn.dataset.status);if(currentWorkOrderId)GTFWorkflow.updateWorkOrder(currentWorkOrderId,{status:btn.dataset.status});if(btn.dataset.status==="OTW"){GTFIntegrations.pushNotification({type:"customer-update",status:"queued",title:"Crew is on the way",body:"Customer OTW notification queued."});toast("OTW saved. Customer notification queued.");}else if(btn.dataset.status==="Arrived")toast("Arrived saved. Location sharing should stop in production.");else toast("Status saved: "+btn.dataset.status+".");}
 function saveStain(){if(currentWorkOrderId)GTFWorkflow.updateWorkOrder(currentWorkOrderId,{stain:stain.value,notes:notes.value});toast("Work Order field details saved in demo.");}
+function currentWO(){const s=GTFWorkflow.load();return s.workOrders.find(x=>x.id===currentWorkOrderId)||null;}
+function openMaps(){const w=currentWO();if(!w){toast("Select a Work Order first.");return;}window.open("https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(w.address),"_blank","noopener,noreferrer");}
+function addCalendar(){const w=currentWO();if(!w){toast("Select a Work Order first.");return;}GTFIntegrations.pushNotification({type:"calendar-sync",status:GTFIntegrations.integrationState().googleCalendar?'ready':'setup-required',title:`Crew calendar · ${w.customer}`,body:`${w.arrival} · ${w.service}`,projectId:w.projectId});toast(GTFIntegrations.integrationState().googleCalendar?"Calendar sync queued.":"Calendar sync queued. Office must connect Google Calendar first.");}
+function renderCrewAlerts(){const session=GTFAuth.currentUser();const name=session?.crewName||session?.name||'';const notes=GTFIntegrations.notifications().filter(n=>n.type==='crew-sms'&&(!name||String(n.crew||'').toLowerCase().includes(name.toLowerCase()))).slice(0,3);crewAlerts.innerHTML=notes.length?notes.map(n=>`<div style="padding:8px 0;border-bottom:1px solid var(--line)"><strong>${n.title}</strong><div class="sub">${n.body}</div></div>`).join(''):'No new appointment alerts.';}
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove("show"),2600)}
 window.addEventListener("focus",renderWorkOrderSummary);window.addEventListener("storage",renderWorkOrderSummary);window.addEventListener("gtf-workflow-changed",renderWorkOrderSummary);
 renderWorkOrderSummary();
+renderCrewAlerts();
+window.addEventListener("gtf-notifications-changed",renderCrewAlerts);
 </script></body></html>

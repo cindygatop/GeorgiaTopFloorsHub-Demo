@@ -3,7 +3,7 @@ const KEY='gtfWorkflowV2';
 const uid=(p='id')=>`${p}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
 const clone=v=>JSON.parse(JSON.stringify(v));
 const money=v=>Number(v||0).toLocaleString('en-US',{style:'currency',currency:'USD'});
-const today='2026-09-21';
+const today='2026-10-08';
 
 const seed={
  services:[
@@ -16,24 +16,24 @@ const seed={
   {id:'svc-furniture',description:'Furniture Handling',unit:'Project'}
  ],
  estimates:[
-  {id:'est-1042',number:'EST-1042',customer:'Emily Carter',company:'Direct Homeowner',customerType:'direct',address:'410 Lakeview Ln, Roswell, GA',status:'Sent',issued:'Sep 18, 2026',validUntil:'Oct 18, 2026',taxRate:0,discount:0,customerVisible:true,notes:'Stain samples will be selected onsite before final staining.',items:[
+  {id:'est-1042',projectId:'project-2',number:'EST-1042',customer:'Emily Carter',company:'Direct Homeowner',customerType:'direct',address:'410 Lakeview Ln, Roswell, GA',status:'Sent',issued:'Sep 18, 2026',validUntil:'Oct 18, 2026',taxRate:0,discount:0,customerVisible:true,notes:'Stain samples will be selected onsite before final staining.',items:[
     {id:'li-1',description:'Sand & Finish',qty:980,unit:'SF',unitPrice:4.00},
     {id:'li-2',description:'Water-based finish upgrade',qty:980,unit:'SF',unitPrice:0.50},
     {id:'li-3',description:'Furniture Handling',qty:1,unit:'Project',unitPrice:350.00}
   ]},
-  {id:'est-1043',number:'EST-1043',customer:'John Miller',company:'Alpha',customerType:'contractor',address:'2850 Windward Pkwy, Alpharetta, GA',status:'Approved',issued:'Sep 17, 2026',validUntil:'Oct 17, 2026',taxRate:0,discount:0,customerVisible:false,notes:'Contractor-originated project. Homeowner financial visibility disabled.',items:[
+  {id:'est-1043',projectId:'project-1',number:'EST-1043',customer:'John Miller',company:'Alpha',customerType:'contractor',address:'2850 Windward Pkwy, Alpharetta, GA',status:'Approved',issued:'Sep 17, 2026',validUntil:'Oct 17, 2026',taxRate:0,discount:0,customerVisible:false,notes:'Contractor-originated project. Homeowner financial visibility disabled.',items:[
     {id:'li-4',description:'Hardwood Installation',qty:1240,unit:'SF',unitPrice:3.25},
     {id:'li-5',description:'Shoe Molding',qty:280,unit:'LF',unitPrice:1.35}
   ],approvedAt:'Sep 18, 2026'},
-  {id:'est-1044',number:'EST-1044',customer:'Sarah Brooks',company:'Direct Homeowner',customerType:'direct',address:'1555 North Point Dr, Alpharetta, GA',status:'Draft',issued:'Sep 21, 2026',validUntil:'Oct 21, 2026',taxRate:0,discount:100,customerVisible:true,notes:'Estimate Not Closed follow-up candidate.',items:[
+  {id:'est-1044',projectId:'project-demo-1044',number:'EST-1044',customer:'Sarah Brooks',company:'Direct Homeowner',customerType:'direct',address:'1555 North Point Dr, Alpharetta, GA',status:'Draft',issued:'Sep 21, 2026',validUntil:'Oct 21, 2026',taxRate:0,discount:100,customerVisible:true,notes:'Estimate Not Closed follow-up candidate.',items:[
     {id:'li-6',description:'Buff & Coat',qty:760,unit:'SF',unitPrice:2.50}
   ]}
  ],
  workOrders:[
-  {id:'wo-1043',number:'WO-1043',estimateId:'est-1043',customer:'John Miller',company:'Alpha',address:'2850 Windward Pkwy, Alpharetta, GA',status:'Released',service:'Hardwood Installation',area:'1,240 SF',arrival:'8:00–9:00 AM',manager:'André',crew:'Carlos + Edilson',stain:'Natural',finish:'Site-finished hardwood',scope:['Hardwood Installation — 1240 SF','Shoe Molding — 280 LF'],materials:['3¼\" white oak','Shoe molding','Installation supplies'],notes:'No customer pricing is included in this Work Order.'}
+  {id:'wo-1043',projectId:'project-1',number:'WO-1043',estimateId:'est-1043',customer:'John Miller',company:'Alpha',address:'2850 Windward Pkwy, Alpharetta, GA',status:'Released',service:'Hardwood Installation',area:'1,240 SF',arrival:'8:00–9:00 AM',manager:'André',crew:'Carlos + Edilson',stain:'Natural',finish:'Site-finished hardwood',scope:['Hardwood Installation — 1240 SF','Shoe Molding — 280 LF'],materials:['3¼\" white oak','Shoe molding','Installation supplies'],notes:'No customer pricing is included in this Work Order.'}
  ],
  invoices:[
-  {id:'inv-1043',number:'INV-1043',estimateId:'est-1043',customer:'Alpha',projectCustomer:'John Miller',company:'Alpha',customerType:'contractor',address:'2850 Windward Pkwy, Alpharetta, GA',status:'Partially Paid',issued:'Sep 18, 2026',dueDate:'Sep 21, 2026',paymentRule:'70% initial / 30% final',customerVisible:false,notes:'Internal contractor billing example.',items:[
+  {id:'inv-1043',projectId:'project-1',number:'INV-1043',estimateId:'est-1043',customer:'Alpha',projectCustomer:'John Miller',company:'Alpha',customerType:'contractor',address:'2850 Windward Pkwy, Alpharetta, GA',status:'Partially Paid',issued:'Sep 18, 2026',dueDate:'Sep 21, 2026',paymentRule:'70% initial / 30% final',customerVisible:false,notes:'Internal contractor billing example.',items:[
     {description:'Hardwood Installation',qty:1240,unit:'SF',unitPrice:3.25},
     {description:'Shoe Molding',qty:280,unit:'LF',unitPrice:1.35}
   ],taxRate:0,discount:0}
@@ -43,9 +43,16 @@ const seed={
  ]
 };
 
+function migrate(s){
+ let changed=false;
+ (s.estimates||[]).forEach(e=>{if(!e.projectId){e.projectId=`project-${String(e.number||e.id).replace(/\D/g,'')||e.id}`;changed=true;}});
+ (s.workOrders||[]).forEach(w=>{const e=(s.estimates||[]).find(x=>x.id===w.estimateId);if(!w.projectId){w.projectId=e?.projectId||`project-${w.id}`;changed=true;}if(!w.scheduledDate){w.scheduledDate='';changed=true;}if(!Array.isArray(w.assignedCrewUsers)){w.assignedCrewUsers=String(w.crew||'').split('+').map(x=>x.trim()).filter(Boolean);changed=true;}});
+ (s.invoices||[]).forEach(i=>{const e=(s.estimates||[]).find(x=>x.id===i.estimateId);if(!i.projectId){i.projectId=e?.projectId||`project-${i.id}`;changed=true;}});
+ return changed;
+}
 function load(){
- try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&x.estimates&&x.workOrders&&x.invoices&&x.payments)return x;}catch(e){}
- const s=clone(seed);save(s);return s;
+ try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&x.estimates&&x.workOrders&&x.invoices&&x.payments){if(migrate(x))save(x);return x;}}catch(e){}
+ const s=clone(seed);migrate(s);save(s);return s;
 }
 function save(s){localStorage.setItem(KEY,JSON.stringify(s));window.dispatchEvent(new CustomEvent('gtf-workflow-changed'));return s;}
 function reset(){localStorage.removeItem(KEY);const s=clone(seed);save(s);return s;}
@@ -66,15 +73,15 @@ function saveEstimate(input){
  save(s);return e;
 }
 function setEstimateStatus(id,status){const s=load(),e=s.estimates.find(x=>x.id===id);if(!e)return null;e.status=status;if(status==='Approved')e.approvedAt=today;save(s);return e;}
-function createWorkOrder(estId,extra={}){const s=load(),e=s.estimates.find(x=>x.id===estId);if(!e)throw new Error('Estimate not found');if(e.status!=='Approved')throw new Error('Estimate must be approved first');let w=s.workOrders.find(x=>x.estimateId===estId);if(w)return w;const primary=e.items[0]||{};w={id:uid('wo'),number:nextNumber('WO',s.workOrders),estimateId:e.id,customer:e.customer,company:e.company,address:e.address,status:'Draft',service:primary.description||'Project',area:primary.qty&&primary.unit?`${primary.qty} ${primary.unit}`:'Project',arrival:extra.arrival||'8:00–9:00 AM',manager:extra.manager||'To assign',crew:extra.crew||'To assign',stain:extra.stain||'To confirm onsite',finish:extra.finish||'To confirm',scope:e.items.map(i=>`${i.description} — ${i.qty} ${i.unit}`),materials:['To confirm before service'],notes:extra.notes||e.notes||''};s.workOrders.unshift(w);save(s);return w;}
+function createWorkOrder(estId,extra={}){const s=load(),e=s.estimates.find(x=>x.id===estId);if(!e)throw new Error('Estimate not found');if(e.status!=='Approved')throw new Error('Estimate must be approved first');let w=s.workOrders.find(x=>x.estimateId===estId);if(w)return w;const primary=e.items[0]||{};w={id:uid('wo'),projectId:e.projectId||extra.projectId||uid('project'),number:nextNumber('WO',s.workOrders),estimateId:e.id,customer:e.customer,company:e.company,address:e.address,status:'Draft',service:primary.description||'Project',area:primary.qty&&primary.unit?`${primary.qty} ${primary.unit}`:'Project',arrival:extra.arrival||'8:00–9:00 AM',scheduledDate:extra.scheduledDate||'',manager:extra.manager||'To assign',crew:extra.crew||'To assign',assignedCrewUsers:String(extra.crew||'To assign').split('+').map(x=>x.trim()).filter(Boolean),stain:extra.stain||'To confirm onsite',finish:extra.finish||'To confirm',scope:e.items.map(i=>`${i.description} — ${i.qty} ${i.unit}`),materials:['To confirm before service'],notes:extra.notes||e.notes||''};s.workOrders.unshift(w);save(s);return w;}
 function updateWorkOrder(id,patch){const s=load(),w=s.workOrders.find(x=>x.id===id);if(!w)return null;Object.assign(w,patch);save(s);return w;}
 function releaseWorkOrder(id){return updateWorkOrder(id,{status:'Released'});}
-function createInvoice(estId,extra={}){const s=load(),e=s.estimates.find(x=>x.id===estId);if(!e)throw new Error('Estimate not found');if(e.status!=='Approved')throw new Error('Estimate must be approved first');let inv=s.invoices.find(x=>x.estimateId===estId);if(inv)return inv;inv={id:uid('inv'),number:nextNumber('INV',s.invoices),estimateId:e.id,customer:e.company==='Direct Homeowner'?e.customer:e.company,projectCustomer:e.customer,company:e.company,customerType:e.customerType,address:e.address,status:'Open',issued:extra.issued||today,dueDate:extra.dueDate||today,paymentRule:extra.paymentRule||'70% initial / 30% final',customerVisible:e.customerType!=='contractor'&&e.customerVisible!==false,notes:extra.notes||'Generated from approved estimate.',items:clone(e.items),taxRate:e.taxRate||0,discount:e.discount||0};s.invoices.unshift(inv);save(s);return inv;}
+function createInvoice(estId,extra={}){const s=load(),e=s.estimates.find(x=>x.id===estId);if(!e)throw new Error('Estimate not found');if(e.status!=='Approved')throw new Error('Estimate must be approved first');let inv=s.invoices.find(x=>x.estimateId===estId);if(inv)return inv;inv={id:uid('inv'),projectId:e.projectId||uid('project'),number:nextNumber('INV',s.invoices),estimateId:e.id,customer:e.company==='Direct Homeowner'?e.customer:e.company,projectCustomer:e.customer,company:e.company,customerType:e.customerType,address:e.address,status:'Open',issued:extra.issued||today,dueDate:extra.dueDate||today,paymentRule:extra.paymentRule||'70% initial / 30% final',customerVisible:e.customerType!=='contractor'&&e.customerVisible!==false,notes:extra.notes||'Generated from approved estimate.',items:clone(e.items),taxRate:e.taxRate||0,discount:e.discount||0};s.invoices.unshift(inv);save(s);return inv;}
 function recordPayment(invoiceId,amount,method='Other',note=''){const s=load(),inv=s.invoices.find(x=>x.id===invoiceId);if(!inv)throw new Error('Invoice not found');const f=invoiceFinancials(s,inv);const amt=Math.max(0,Math.min(Number(amount||0),f.balance));if(!amt)return null;const p={id:uid('pay'),invoiceId:inv.id,invoiceNumber:inv.number,customer:inv.customer,date:today,amount:amt,method,note};s.payments.unshift(p);save(s);return p;}
 function approveCustomerEstimate(customerName){const s=load(),e=s.estimates.find(x=>x.customer===customerName&&x.customerVisible!==false);if(!e)return null;e.status='Approved';e.approvedAt=today;save(s);return e;}
 function getCustomerBundle(customerName){const s=load();const e=s.estimates.find(x=>x.customer===customerName);if(!e)return null;const w=s.workOrders.find(x=>x.estimateId===e.id)||null;const inv=s.invoices.find(x=>x.estimateId===e.id)||null;return {estimate:e,workOrder:w,invoice:inv,invoiceFinancials:inv?invoiceFinancials(s,inv):null};}
 function bundleForJob(job){const s=load();const e=s.estimates.find(x=>x.customer===job.customer)||null;return {estimate:e,workOrder:e?s.workOrders.find(x=>x.estimateId===e.id)||null:null,invoice:e?s.invoices.find(x=>x.estimateId===e.id)||null:null};}
-function ensureEstimateForJob(job){let e=getEstimateByCustomer(job.customer);if(e)return e;return saveEstimate({customer:job.customer,company:job.company,customerType:job.company==='Direct Homeowner'?'direct':'contractor',address:job.address,status:'Draft',issued:today,validUntil:'Oct 21, 2026',taxRate:0,discount:0,customerVisible:job.company==='Direct Homeowner',notes:job.notes||'',items:[{id:uid('li'),description:job.service,qty:parseFloat(String(job.sf||'1').replace(/,/g,''))||1,unit:String(job.sf||'').includes('SF')?'SF':'Project',unitPrice:0}]});}
+function ensureEstimateForJob(job){let e=getEstimateByCustomer(job.customer);if(e){if(job.projectId&&!e.projectId){e=saveEstimate({...e,projectId:job.projectId});}return e;}return saveEstimate({projectId:job.projectId||('project-'+job.id),customer:job.customer,company:job.company,customerType:job.company==='Direct Homeowner'?'direct':'contractor',address:job.address,status:'Draft',issued:today,validUntil:'Oct 21, 2026',taxRate:0,discount:0,customerVisible:job.company==='Direct Homeowner',notes:job.notes||'',items:[{id:uid('li'),description:job.service,qty:parseFloat(String(job.sf||'1').replace(/,/g,''))||1,unit:String(job.sf||'').includes('SF')?'SF':'Project',unitPrice:0}]});}
 
 // Compatibility layer for the previous demo buttons.
 const GTFDocs={

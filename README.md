@@ -1,55 +1,50 @@
-# Georgia Top Floors Hub — Presentation Demo v3
+# Georgia Top Floors Hub — Demo v4 / SaaS-ready prototype
 
-This static presentation prototype now demonstrates four views:
+This repository is still a **static presentation prototype**, but it now demonstrates the intended product architecture for a future multi-tenant web app.
 
-1. **Office / Admin** — `index.html`
-2. **People & Company Database** — `database.html`
-3. **Crew / Employee** — `crew.html`
-4. **Customer Portal** — `customer.html`
+## Start here
 
-## Database demo includes
+Open `login.html`.
 
-- Contacts / Customers
-- Contact classification:
-  - Past Customer
-  - Current Customer
-  - Lead
-  - Estimate Not Closed
-  - Builder
-  - Contractor
-  - Partner
-- Last service / last contact / lead source / status / notes
-- DO NOT CONTACT / Opted Out flag
-- Suggested segmented follow-up examples
-- Employee profiles and system access role examples
-- Subcontractor profiles
-- Skills, availability, jobs and internal notes
-- W-9 / COI / Workers' Comp / Subcontract Agreement examples
-- Expiring Soon / Expired document alerts
-- Vendors & Partners
-- Project Digital Folder categories
-- Search and category filters
-- Add Demo Contact using browser localStorage
+### Demo credentials
 
-## Publishing on GitHub Pages
+- Office: `office@georgiatopfloors.com` / `gtf2026`
+- Office: `ops@georgiatopfloors.com` / `gtf2026`
+- Crew: `carlos@georgiatopfloors.com` / `gtf2026`
+- Client: `emily@example.com` / `gtf2026`
 
-Upload all files to the root of the existing public repository:
+## Views
 
-`cindygatop/GeorgiaTopFloorsHub-Demo`
+- Office / Admin: `index.html`
+- Database: `database.html`
+- Compliance: `compliance.html`
+- Estimates & Billing: `documents.html`
+- Crew: `crew.html`
+- Client Portal: `customer.html`
 
-Expected pages:
+## New in this update
 
-- Office: `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/`
-- Database: `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/database.html`
-- Crew: `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/crew.html`
-- Customer: `https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/customer.html`
+- role-based demo login and redirects;
+- Office Smart Shortcuts by user behavior;
+- subtle urgency indicators;
+- project linkage across Estimate → Work Order → Invoice;
+- crew assignment and appointment notification queue;
+- Google Calendar sync queue / integration state;
+- Quo integration state and notification hooks;
+- Client Agreement → signature → Warranty unlock flow;
+- Before Your Job section;
+- Google Review feedback button;
+- Compliance document-type filter;
+- grouped COI view with General Liability / Workers Compensation inside;
+- W-9 annual internal review workflow;
+- more real working demo buttons: Maps, copy follow-up message, Work Order acknowledgment, Report Problem.
 
-## Production architecture
+## Important security limitation
 
-The production system should use one secure backend/database with role-based access:
-- Admin / Office
-- Manager
-- Crew
-- Customer
+Authentication and data in this version are simulated with browser `localStorage`. This is **not production security**. Keep this repository free of real customer data and secrets.
 
-The static GitHub Pages demo has no real authentication and therefore must contain sample/fictional data only.
+For the production plan, costs, integrations and multi-tenant design, read:
+
+- `DEPLOYMENT_AND_ARCHITECTURE.md`
+- `supabase-schema.sql`
+- `UPLOAD_THESE_FILES.txt`
