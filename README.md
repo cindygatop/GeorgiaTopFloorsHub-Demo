@@ -31,6 +31,8 @@ Click any profile on the login page to skip typing credentials. Role-based routi
 
 ## Production preparation
 
+The full functionality inventory, required accounts/documents and production activation order are in [docs/PRODUCTION_READINESS.md](docs/PRODUCTION_READINESS.md). This is a plan; external integrations remain unconnected.
+
 Read `DEPLOYMENT_AND_ARCHITECTURE.md`, `GOOGLE_CALENDAR_IMPLEMENTATION.md`, `supabase-schema.sql` and `google-calendar-service.example.mjs`. A future production site must use secure server authentication, role checks and isolated database records for each company. **Never put real client or company data, passwords, payment details or API tokens in this demo repository.**
 
 ## Validação e histórico
