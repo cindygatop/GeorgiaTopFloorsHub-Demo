@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
+from urllib.request import Request, urlopen
 
 import fitz
 from playwright.sync_api import sync_playwright
@@ -267,9 +268,12 @@ def demo_and_documents(browser, width):
     certificate = page.get_by_role("link", name="Certificate of Acceptance", exact=False)
     assert certificate.get_attribute("href") == "assets/documents/acceptance-clickable.pdf"
     assert "after the work is completed" in certificate.locator("..").inner_text()
-    pdf = context.request.get(BASE + "/assets/documents/acceptance-clickable.pdf")
-    assert pdf.status == 200 and pdf.body().startswith(b"%PDF-")
-    document = fitz.open(stream=pdf.body(), filetype="pdf")
+    # urllib honors the executor's HTTP(S)_PROXY and CA configuration; the
+    # Playwright API request client does not inherit those environment proxies.
+    with urlopen(Request(BASE + "/assets/documents/acceptance-clickable.pdf", headers={"User-Agent": "Emet-browser-QA"}), timeout=20) as pdf:
+        pdf_status, pdf_body = pdf.status, pdf.read()
+    assert pdf_status == 200 and pdf_body.startswith(b"%PDF-")
+    document = fitz.open(stream=pdf_body, filetype="pdf")
     links = [item["uri"] for sheet in document for item in sheet.get_links() if "uri" in item]
     assert sorted(links) == sorted([CARE_URL, INSTAGRAM_URL]), links
     text = " ".join(" ".join(sheet.get_text() for sheet in document).split())
@@ -289,7 +293,7 @@ def demo_and_documents(browser, width):
     layout(page, "crew-long-profile-name", width)
     assert not api.external and not api.errors, (api.external, api.errors)
     RESULTS.append({"check": "preserved demo, Office avatar→Settings, official Client URLs and local PDF", "width": width,
-                    "status": "passed", "pdfHTTP": pdf.status, "pdfLinks": links,
+                    "status": "passed", "pdfHTTP": pdf_status, "pdfLinks": links,
                     "longProfileNames": "Client and Crew layout and project/assignment retained", "pageErrors": api.errors})
     context.close()
 

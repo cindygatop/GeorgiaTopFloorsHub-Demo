@@ -39,4 +39,12 @@ Scripts versionados: `tests/*.test.js`, `tests/validate_static.py`, `tests/assis
 
 ## Publicação
 
-O código é destinado à main autorizada. GitHub Pages disponibiliza a interface estática; Vercel também recebe o push via integração GitHub. Publicar funções e SQL não configura serviços ou aplica migrações. Confirmar SHA, build e URL efetivamente observados no retorno à usuária.
+- Commit de implementação: [`16e0e6c44f29610e35e0416f11f067bdfb0ad3a3`](https://github.com/cindygatop/GeorgiaTopFloorsHub-Demo/commit/16e0e6c44f29610e35e0416f11f067bdfb0ad3a3), enviado à main junto à referência remota `backup/pre-emet-2026-10-15` no SHA anterior.
+- GitHub Pages: build `built` desse commit, concluído em 15/10/2026 às 15:08 (America/Sao_Paulo); [workflow com sucesso](https://github.com/cindygatop/GeorgiaTopFloorsHub-Demo/actions/runs/38783004212). [Entrada Emet](https://cindygatop.github.io/GeorgiaTopFloorsHub-Demo/emet.html).
+- Vercel: [deployment desse commit](https://vercel.com/gtf12/gtf-hub/GDLSpG8refM7zVyVAfcaZs3sFZ9H) reportado como `success` pela integração GitHub. A gestão administrativa continua sem acesso pela conexão disponível (403); o deployment observado usa proteção SSO. Os testes remotos abaixo foram feitos no GitHub Pages, sem contornar essa proteção.
+- Verificação HTTP/SHA256: os 17 arquivos principais publicados, incluindo interface Emet, Settings, importador, scripts compartilhados, CSS e PDF, responderam HTTP 200 com conteúdo idêntico ao local testado.
+- No site publicado passaram os smoke scripts Assistant/Workflow, Settings, Data Tools e Emet Entry (1440/390 px). Respostas de conta são mocks explícitos nos ramos de contrato; no ramo real estático a ausência do backend deixa o cadastro bloqueado. Não há prova de Supabase/Resend ativos.
+- Teste adicional do chat publicado: cumprimento PT, nome do perfil, conversa básica, agradecimento, contexto Gmail e abertura do guia; zero POST para provedores, zero erro JavaScript e sem overflow a 390 px.
+- A requisição do PDF no smoke Emet foi ajustada para respeitar o proxy HTTP(S) do ambiente via urllib. O teste remoto completo passou após a correção; o PDF publicado não foi alterado por ela.
+
+Publicar funções e SQL não configura serviços ou aplica migrações. O banco de negócio, login real e integrações continuam pendentes conforme a seção anterior.
