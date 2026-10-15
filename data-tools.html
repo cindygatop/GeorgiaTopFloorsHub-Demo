@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#332e20">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>GTF · Private Data Workspace</title>
+  <link rel="stylesheet" href="data-tools.css?v=1">
+  <script src="app-core.js?v=6" defer></script>
+  <script src="data-tools.js?v=1" defer></script>
+</head>
+<body data-page="data-tools">
+  <header class="workspace-header top"><a class="brand" href="index.html"><img src="assets/gtf-logo.png" alt="Georgia Top Floors"><span>Data workspace</span></a><nav class="actions" aria-label="Workspace navigation"><a href="database.html">Database</a><a href="index.html">Office</a></nav></header>
+  <main>
+    <div class="page-heading"><div><p class="eyebrow">IMPORT & EXPORT</p><h1>Your files, ready for review.</h1><p class="sub">Bring customers, products and customer price lists together before moving them into the Hub.</p></div><span class="session-badge">Private · temporary session</span></div>
+    <aside class="privacy-note" aria-label="Privacy and storage"><strong>Files stay in this browser tab.</strong> Nothing is uploaded or saved to the Hub. Closing or reloading this page clears this workspace. Download an export to keep your work. The current demo login does not provide secure account protection; use your own device.</aside>
+    <section class="card" aria-labelledby="source-heading">
+      <div class="section-heading"><div><span class="step-number">1</span><h2 id="source-heading">Choose a source</h2></div><button id="clearSource" class="button subtle" type="button">Clear source</button></div>
+      <div class="source-controls"><label class="file-label">CSV, XLSX or workspace JSON<input id="sourceFile" type="file" accept=".csv,.tsv,.xlsx,.json,text/csv,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label><p class="sub">Read locally. Excel formulas are never executed. Maximum file size: 20 MB.</p></div>
+      <p id="sourceSummary" class="sub" aria-live="polite">No file selected.</p>
+      <div id="sourceSetup" hidden>
+        <div class="control-grid"><label>Worksheet<select id="sheetSelect"></select></label><label>Header row<input id="headerRow" type="number" min="1" value="1"></label><label>Record type<select id="entitySelect"><option value="customers">Customers & contacts</option><option value="products">Products & services</option><option value="prices">Customer price list</option></select></label><label id="delimiterLabel">CSV separator<select id="delimiterSelect"><option value="auto">Detect automatically</option><option value=",">Comma</option><option value=";">Semicolon</option><option value="tab">Tab</option><option value="|">Pipe</option></select></label></div>
+        <div class="mapping-heading"><h3>Match your columns</h3><p class="sub">Unmapped columns are kept in the original source data. For each price column, choose “Price by customer type” and keep its customer type label.</p></div>
+        <div id="mappingGrid" class="mapping-grid"></div>
+        <div class="button-row"><button id="buildPreview" class="button primary" type="button">Review rows</button></div>
+      </div>
+    </section>
+    <section id="previewSection" class="card" aria-labelledby="preview-heading" hidden>
+      <div class="section-heading"><div><span class="step-number">2</span><h2 id="preview-heading">Review before adding</h2></div><span id="previewCount" class="count-badge"></span></div>
+      <p class="sub">Possible duplicates are flagged for your decision. They are never merged or deleted automatically. Edit a row, exclude it, or explicitly keep it as a separate record.</p>
+      <div id="previewIssues" class="review-note" hidden></div>
+      <div class="table-toolbar"><label class="check-label"><input id="selectPreview" type="checkbox">Select eligible rows</label><label>Show<select id="previewFilter"><option value="all">All rows</option><option value="review">Needs review</option><option value="selected">Selected</option></select></label></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Import preview"><table><thead><tr><th scope="col">Use</th><th scope="col">Source row</th><th scope="col">Record</th><th scope="col">Contact / item</th><th scope="col">Price types</th><th scope="col">Review</th><th scope="col">Action</th></tr></thead><tbody id="previewRows"></tbody></table></div>
+      <div class="pagination"><button id="previewPrev" class="button subtle" type="button">Previous</button><span id="previewPage" aria-live="polite"></span><button id="previewNext" class="button subtle" type="button">Next</button></div>
+      <div class="button-row"><button id="addToSession" class="button primary" type="button">Add selected to temporary session</button><span id="selectedSummary" class="sub"></span></div>
+    </section>
+    <section class="card" aria-labelledby="session-heading">
+      <div class="section-heading"><div><span class="step-number">3</span><h2 id="session-heading">Session & exports</h2></div><button id="clearSession" class="button danger" type="button">Clear session</button></div>
+      <p id="sessionSummary" class="sub" aria-live="polite">No records in this session yet.</p>
+      <div class="table-toolbar"><label>View<select id="sessionFilter"><option value="all">All records</option><option value="customers">Customers</option><option value="products">Products</option><option value="prices">Price lists</option></select></label><label class="check-label"><input id="selectSession" type="checkbox">Select visible type for export</label></div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Temporary session"><table><thead><tr><th scope="col">Export</th><th scope="col">Type</th><th scope="col">Record</th><th scope="col">Detail</th><th scope="col">Action</th></tr></thead><tbody id="sessionRows"></tbody></table></div>
+      <div class="pagination"><button id="sessionPrev" class="button subtle" type="button">Previous</button><span id="sessionPage" aria-live="polite"></span><button id="sessionNext" class="button subtle" type="button">Next</button></div>
+      <fieldset class="export-options"><legend>Include in export</legend><label class="check-label"><input id="exportCustomers" type="checkbox" checked>Customers</label><label class="check-label"><input id="exportProducts" type="checkbox" checked>Products</label><label class="check-label"><input id="exportPrices" type="checkbox" checked>Prices by customer type</label></fieldset>
+      <div class="button-row"><button id="exportJSON" class="button primary" type="button">Download JSON</button><button id="exportCSV" class="button" type="button">Download CSV</button><button id="exportSchema" class="button subtle" type="button">Download format guide</button></div>
+      <p class="sub export-help">Full JSON exports preserve source columns, customer price types and review decisions for reimport. Product-only exports omit original columns to exclude source prices. CSV exports normalized rows and makes formula-like cells safe for spreadsheets. Downloaded files may contain private data; store and share them carefully.</p>
+    </section>
+    <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+  </main>
+  <dialog id="editDialog" aria-labelledby="editTitle"><div class="dialog-heading"><h2 id="editTitle">Review record</h2><button id="closeEditor" class="button subtle" type="button">Close</button></div><p id="editSource" class="sub"></p><div id="editWarnings" class="review-note" hidden></div><div id="editFields" class="edit-grid"></div><details><summary>Original source columns</summary><dl id="editOriginal" class="original-columns"></dl></details><label id="duplicateDecision" class="check-label review-choice" hidden><input id="keepSeparate" type="checkbox">I reviewed these warnings. Keep this as a separate record; unresolved prices remain unavailable.</label><div class="button-row"><button id="saveEditor" class="button primary" type="button">Apply row changes</button></div></dialog>
+</body>
+</html>

@@ -163,8 +163,8 @@ tr:hover td{background:#FFFDF8}
 @media(max-width:760px){.doc-strip{grid-template-columns:1fr}}
 
 </style>
-<link rel="stylesheet" href="theme.css?v=5">
-<script src="app-core.js?v=5"></script>
+<link rel="stylesheet" href="theme.css?v=6">
+<script src="app-core.js?v=6"></script>
 <script>GTFAuth.requireRole("office");</script>
 </head>
 <body class="office-page">
@@ -172,7 +172,7 @@ tr:hover td{background:#FFFDF8}
   <aside class="sidebar">
     <div class="brand">
       <img class="brand-logo" src="assets/gtf-logo-gold.png?v=2" alt="Georgia Top Floors">
-      <small>Operations Hub</small>
+      <small>Operations Hub · by Emet</small>
       <span class="demo-pill">PRESENTATION DEMO</span>
     </div>
     <nav class="nav">
@@ -208,16 +208,16 @@ tr:hover td{background:#FFFDF8}
         <div class="assistant-statusbar" id="assistantStatusbar" aria-label="Priority overview"></div>
         <div class="assistant-main">
           <img src="assets/gtf-logo.png" class="assistant-logo" alt="Georgia Top Floors">
-          <p class="assistant-eyebrow">YOUR OFFICE ASSISTANT <span class="assistant-demo-badge">DEMO · LOCAL</span></p>
+          <p class="assistant-eyebrow">RUACH · YOUR OFFICE ASSISTANT <span class="assistant-demo-badge">DEMO · LOCAL</span></p>
           <h1 id="assistantGreeting">Good morning, Caritas.</h1>
           <p id="assistantPrompt" class="assistant-prompt">What would you like to take care of today?</p>
           <div id="assistantConversation" class="assistant-conversation" aria-live="polite"></div>
           <form class="assistant-compose" id="assistantForm" autocomplete="off">
             <label class="sr-only" for="assistantInput">Ask the assistant</label>
-            <textarea id="assistantInput" rows="2" placeholder="Try: Reschedule Emily Carter to tomorrow at 2 PM…"></textarea>
+            <textarea id="assistantInput" rows="2" placeholder="Ask Ruach a question, or plan your next task…"></textarea>
             <div class="assistant-compose-bottom"><span>Find jobs · Reschedule · Priorities · Draft a message</span><button class="assistant-send" type="submit" aria-label="Send message">↑</button></div>
           </form>
-          <div class="assistant-suggestions" id="assistantSuggestions"><button type="button" data-query="Show me what needs attention">What needs attention?</button><button type="button" data-query="Find Emily Carter">Find a customer</button><button type="button" data-query="Change Emily Carter's appointment to tomorrow at 2 PM">Reschedule a job</button></div>
+          <div class="assistant-suggestions" id="assistantSuggestions"><button type="button" data-query="What can you do?">Meet Ruach</button><button type="button" data-query="Show me what needs attention">What needs attention?</button><button type="button" data-query="Find Emily Carter">Find a customer</button><button type="button" data-query="Change Emily Carter's appointment to tomorrow at 2 PM">Reschedule a job</button></div>
           <div class="assistant-pending-note">Changes save to this browser in demo mode. Google Calendar and SMS require a secure backend connection.</div>
         </div>
         <div class="assistant-shortcuts"><span class="assistant-shortcuts-label">YOUR SHORTCUTS</span><div class="smart-actions" id="smartActions"></div></div>
@@ -326,7 +326,7 @@ tr:hover td{background:#FFFDF8}
 
 <script src="compliance.js?v=5"></script>
 <script src="project-docs.js?v=5"></script>
-<script src="assistant.js?v=5"></script>
+<script src="assistant.js?v=6"></script>
 <script>
 const baseJobs = [
  {id:1,customer:"John Miller",company:"Alpha",address:"2850 Windward Pkwy, Alpharetta, GA",service:"Hardwood Installation",date:"Today",window:"8:00–9:00 AM",manager:"André",crew:"Carlos + Edilson",status:"In Progress",sf:"1,240 SF",stain:"Natural",materials:"3¼\" white oak, shoe molding",notes:"Contractor-referred project. Homeowner portal must not show contractor pricing."},

@@ -1,4 +1,8 @@
-# Georgia Top Floors Hub — v5 (interactive prototype)
+# Emet · Georgia Top Floors Hub (interactive prototype)
+
+Open [emet.html](emet.html) for the platform entry, or [login.html](login.html) to explore the preserved GTF demo. Emet is the company access layer; Ruach is the assistant. [Settings](settings.html) includes profiles, avatar, invitations and guided integrations. [Data tools](data-tools.html) supports private in-memory CSV/XLSX review, editing and CSV/JSON export; imported data is not persisted to a production database.
+
+Secure account handlers and an isolated identity migration are prepared in `api/emet/`, `server/` and `supabase/migrations/`. They stay disabled without configured services. Read [account setup](docs/EMET_AUTH_SETUP.md), [services/database/budget](docs/EMET_SERVICES_AND_BUDGET.md) and [acceptance document](docs/ACCEPTANCE_DOCUMENT.md). No live integration is implied by the presence of its guide or handler. The business-data backend migration remains pending.
 
 **Open `login.html`.** This is a static demo. No real authentication, shared database, Google Calendar write, Quo SMS, payment processing or enforceable e-signature service is connected.
 

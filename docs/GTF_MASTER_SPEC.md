@@ -117,3 +117,18 @@ Até obter esses dados, usar demo/test data, registrar pendências e implementar
 **A usuária pediu commit direto, não só ZIP.** Para cada alteração de código: abrir o repositório conectado, conferir branch e estado, implementar sem apagar features existentes, rodar verificações pertinentes, criar commit(s) pequenos com mensagens claras e enviar à branch autorizada. O usuário prefere publicar direto na `main` para revisar no site, e solicita reversão se não gostar. Se houver branch protection, aprovação ou PR obrigatória, respeitar e dizer qual clique falta. Para alterações de alto risco, preservar backup/branch/tag antes. Não publicar secrets nem ativar pagamentos/SMS sem permissão e contas configuradas. Relatar **commit SHA/URL**, testes executados, se houve deploy e link de preview/produção comprovado, e pendências reais. Não alegar que deu certo sem confirmação. Usar português e instruções curtas nos retornos.
 
 A **primeira tarefa** após receber o material é subir a v5 que estava pronta e não foi publicada por falta de permissão da integração ChatGPT: comparar a versão da branch `main` com o diretório `CODIGO_V5` deste pacote, aplicar a diferença cuidadosamente, verificar HTML/CSS/JS em desktop e mobile, criar backup (tag/branch) do SHA pré-implantação se possível, commitar e fazer push. Preservar arquivos que existirem só no repo e não forem obsoletos, inclusive `assets/`. Consultar `docs/IMPLEMENTATION_STATUS.md` e `docs/QA_ACCEPTANCE.md` do pacote para evitar anunciar recursos simulados como verdadeiros.
+
+
+## 13. Decisões da plataforma Emet — 15/10/2026
+
+- A plataforma geral se chama **Emet**; cada empresa mantém seu próprio Hub e identidade. A assistente se chama **Ruach**.
+- A entrada de colaboradores exige código do gerente, vinculado à empresa, destinatário e papel. A senha definitiva é escolhida no cadastro. Verificação de email e aprovação autenticada do gerente são requisitos separados; a função não pode ser elevada por seleção livre na tela.
+- Client acessa projeto específico com convite e verificação por email, sem link público permanente que conceda acesso sozinho.
+- Perfil acessível pela foto: avatar, nome e, após ativação do backend, alterações seguras de email/senha. Dois perfis Office usarão aliases distintos de uma caixa compartilhada; isso não torna a recuperação independente. Endereços reais ficam fora do Git público.
+- Integrações ficam nas configurações e em seus contextos (Calendar, sugestões do Ruach). Explicar leitura/escrita e consentimentos; Gmail é opcional e separado de Calendar. Quo recebe guia interativo; nenhum segredo é guardado no navegador.
+- Certificate of Acceptance recebido: aceite após a conclusão, separado do contrato inicial, com QR substituído por links. Care Guide oficial: https://georgiatopfloors.com/care-maintenance/. A usuária confirmou o Google Review existente. Contrato inicial e termos oficiais da garantia continuam pendentes.
+- CSV de contatos e XLSX de produtos/preços foram recebidos como dados privados. Permitir importação, exportação, revisão de duplicatas e edição; não publicar anexos nem valores reais no repositório. Sem backend seguro, revisão somente em memória e exportação explícita.
+- Projeto Vercel informado: gtf12/gtf-hub. Publicação pelo GitHub comprovada; configuração administrativa ainda recusada pela conexão disponível (403). Aproveitar o projeto, sem criar outro por suposição.
+- Pedido adicional: Ruach deve responder a cumprimentos e conversa inicial PT/EN de modo útil. Respostas por regras não podem ser anunciadas como LLM ou aprendizado de máquina conectados. Preservar confirmação de alterações, contexto e IDs dos projetos.
+
+Detalhes e limites atuais: EMET_AUTH_SETUP.md, EMET_SERVICES_AND_BUDGET.md e ACCEPTANCE_DOCUMENT.md.

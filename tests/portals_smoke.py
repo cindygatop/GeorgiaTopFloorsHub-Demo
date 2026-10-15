@@ -100,7 +100,8 @@ async def client_checks(browser, width):
     assert await page.evaluate("localStorage.getItem('gtfClientAgreementV1:project-2')") is None
     await page.get_by_role("button", name="Open the Care & Maintenance Guide", exact=False).click()
     assert await page.locator("#careModal").is_visible()
-    assert "Temporary preview" in await page.locator("#careModal").inner_text()
+    assert "Official Georgia Top Floors guide" in await page.locator("#careModal").inner_text()
+    assert await page.locator("#careModal a").first.get_attribute("href") == "https://georgiatopfloors.com/care-maintenance/"
     await page.locator("#careModal").get_by_role("button", name="Close", exact=True).click()
     await page.locator("#signatureName").fill("Emily Carter")
     await page.locator("#signatureConsent").check()
@@ -110,7 +111,7 @@ async def client_checks(browser, width):
     assert await page.locator("#agreementStatus").inner_text() == "Signed — Demo"
     assert await page.locator("#warrantyState .unlocked-card").is_visible()
     await page.get_by_role("button", name="View Warranty", exact=True).click()
-    assert "placeholder" in await page.locator("#customerDocContent").inner_text()
+    assert "does not activate a legal warranty" in (await page.locator("#customerDocContent").inner_text()).lower()
     await page.locator("#customerDocModal").get_by_role("button", name="Close", exact=True).click()
     await page.reload()
     assert await page.locator("#agreementStatus").inner_text() == "Signed — Demo"

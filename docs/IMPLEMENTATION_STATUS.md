@@ -56,3 +56,7 @@ Depois da reinstalação do ChatGPT Codex Connector, o commit de implementação
 ## G. Escopo de operação real — 15/10/2026
 
 A usuária solicitou todas as funcionalidades funcionando e a lista de dependências. O inventário auditado, acessos/documentos necessários, ordem de implementação e critérios para confirmar operação real estão em [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md). Inclui também funções parcialmente demonstrativas: importação, disponibilidade, pastas/fotos, cadastros, traduções, chamadas, timeline, notificações e rastreamento/ETA. Esta etapa registra o levantamento e o plano; nenhuma nova integração foi ativada.
+
+## H. Incremento Emet / Ruach — 15/10/2026
+
+Após novos requisitos e anexos, foram implementadas entrada Emet, configurações, perfil/avatar, ferramentas de revisão/importação/exportação e fundação server-side de convites por empresa com verificação e aprovação. O certificado final recebeu links clicáveis, separado do contrato inicial. O backend não foi ativado: depende de Supabase, email, migração e homologação reais. A persistência de dados de negócio e integrações continuam pendentes. Escopo, testes e limites em [EMET_RELEASE_2026-10-15.md](EMET_RELEASE_2026-10-15.md); configuração em [EMET_AUTH_SETUP.md](EMET_AUTH_SETUP.md), custos/banco em [EMET_SERVICES_AND_BUDGET.md](EMET_SERVICES_AND_BUDGET.md).

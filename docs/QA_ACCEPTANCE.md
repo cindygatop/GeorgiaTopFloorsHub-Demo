@@ -39,7 +39,7 @@
 
 - [x] `Before Your Job` legível e natural em inglês.
 - [x] Warranty começa bloqueada; clique orienta Agreement; demo assinatura libera garantia e exibe verde. É DEMO, não doc legal.
-- [ ] Link do Care & Maintenance Guide; link de review da GTF verificado no Google Business Profile.
+- [x] Link oficial do Care & Maintenance Guide abre; a proprietária confirmou em 15/10/2026 que a URL Google Review existente é a correta. Não confundir essa confirmação com validação automatizada do Google Business Profile.
 - [x] Mobile/desktop legíveis; Cliente não navega para outros projetos no fluxo de demo.
 
 ## Google / deploy
@@ -54,4 +54,4 @@ Solicitar apenas dados de integrações realmente indispensáveis para a próxim
 
 ## Evidência do Codex (09/10/2026)
 
-Checks marcados refletem a validação da demo descrita em VALIDATION_V5.md: 24 testes unitários locais, validação estática e três scripts de navegador aprovados localmente e no site publicado. HTML passou validação básica e sintaxe de scripts, não W3C. Commit de implementação `e26c069d48d54068655d8af33853701e93b2ffda` publicado na `main` e GitHub Pages com build confirmado. Referência remota de rollback: `backup/pre-v5-2026-10-09`, no SHA anterior `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`. A recusa 403 foi resolvida pela reinstalação da integração. Care Guide abre na demo; a URL Google Review continua não validada por CAPTCHA/429. Integrações de produção continuam pendentes.
+Checks marcados refletem a validação da demo descrita em VALIDATION_V5.md: 24 testes unitários locais, validação estática e três scripts de navegador aprovados localmente e no site publicado. HTML passou validação básica e sintaxe de scripts, não W3C. Commit de implementação `e26c069d48d54068655d8af33853701e93b2ffda` publicado na `main` e GitHub Pages com build confirmado. Referência remota de rollback: `backup/pre-v5-2026-10-09`, no SHA anterior `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`. A recusa 403 foi resolvida pela reinstalação da integração. O Care Guide oficial foi conectado e o Google Review foi confirmado pela proprietária em 15/10/2026; a tentativa automatizada anterior recebeu CAPTCHA/429. Integrações de produção continuam pendentes.

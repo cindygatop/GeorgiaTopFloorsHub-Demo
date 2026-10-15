@@ -4,6 +4,8 @@
   const NOTIFICATION_KEY='gtfDemoNotificationsV1';
   const INTEGRATION_KEY='gtfIntegrationStateV1';
   const REVIEW_URL='https://search.google.com/local/writereview?placeid=ChIJvdGf-LAT9YgRl6baSSmrcSI';
+  const CARE_URL='https://georgiatopfloors.com/care-maintenance/';
+  const PROFILE_KEY='emetProfileV1';
 
   // DEMO ONLY: these local accounts are not secure authentication or isolation.
   const users=[
@@ -16,7 +18,10 @@
   ];
 
   function clone(v){return JSON.parse(JSON.stringify(v));}
-  function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null}}
+  function safeAvatar(value){return typeof value==='string'&&value.length<=350000&&/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value)?value:'';}
+  function demoProfiles(){try{const p=JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}');return p&&typeof p==='object'&&!Array.isArray(p)?p:{};}catch(e){return {};}}
+  function getSession(){try{const s=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');if(!s)return null;const p=demoProfiles()[s.id];return p?{...s,name:typeof p.name==='string'&&p.name.trim()?p.name.trim().slice(0,80):s.name,avatar:safeAvatar(p.avatar)}:s;}catch(e){return null}}
+  function updateDemoProfile(patch){const s=getSession();if(!s)throw new Error('Sign in to edit a profile.');const profiles=demoProfiles();const old=profiles[s.id]||{};const name=String(patch.name??old.name??s.name).replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,80);if(!name)throw new Error('Please enter your name.');const avatar=patch.avatar===undefined?safeAvatar(old.avatar):safeAvatar(patch.avatar);if(patch.avatar&&!avatar)throw new Error('Choose a small PNG, JPEG or WebP photo.');Object.defineProperty(profiles,s.id,{value:{name,avatar},enumerable:true,writable:true,configurable:true});localStorage.setItem(PROFILE_KEY,JSON.stringify(profiles));document.getElementById('gtfUserChip')?.remove();addUserChip();window.dispatchEvent(new CustomEvent('gtf-profile-changed'));return getSession();}
   function setSession(user){const session={...user,password:undefined,signedInAt:new Date().toISOString()};delete session.password;localStorage.setItem(SESSION_KEY,JSON.stringify(session));return session;}
   function login(email,password){const user=users.find(u=>u.email.toLowerCase()===String(email||'').trim().toLowerCase()&&u.password===password);if(!user)return null;return setSession(user)}
   function loginAs(id){const user=users.find(u=>u.id===id);return user?setSession(user):null}
@@ -30,9 +35,11 @@
     const target=document.querySelector('.topbar .actions, .top .actions, .top');
     if(!target||document.getElementById('gtfUserChip'))return;
     const wrap=document.createElement('div');wrap.id='gtfUserChip';wrap.className='gtf-user-chip';
-    wrap.innerHTML=`<span><strong>${escapeHtml(s.name)}</strong><small>${escapeHtml(s.label||s.role)}</small></span><button type="button" title="Sign out" aria-label="Sign out">↗</button>`;
+    const avatar=safeAvatar(s.avatar);wrap.innerHTML=`<a class="gtf-profile-avatar" href="settings.html?tab=profile" title="Your profile and settings" aria-label="Your profile and settings">${avatar?`<img src="${avatar}" alt="">`:escapeHtml(s.name?.slice(0,1)||'?')}</a><span><strong>${escapeHtml(s.name)}</strong><small>${escapeHtml(s.label||s.role)}</small></span><button type="button" title="Sign out" aria-label="Sign out">↗</button>`;
     wrap.querySelector('button').onclick=logout;target.appendChild(wrap);
   }
+
+  function addSettingsLink(){const s=getSession();const nav=document.querySelector('.sidebar .nav');if(!s||s.role!=='office'||!nav||nav.querySelector('[data-emet-settings]'))return;const b=document.createElement('button');b.type='button';b.dataset.emetSettings='true';b.textContent='⚙ Settings';b.addEventListener('click',()=>{location.href='settings.html';});nav.appendChild(b);}
 
   function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
 
@@ -62,10 +69,10 @@
 
   document.addEventListener('click',e=>{const el=e.target.closest('[data-track-action]');if(!el)return;trackAction(el.dataset.trackAction,el.dataset.trackLabel||el.textContent.trim(),el.dataset.trackHref||el.getAttribute('href')||'');});
   window.addEventListener('gtf-notifications-changed',updateNotificationCount);
-  document.addEventListener('DOMContentLoaded',()=>{addUserChip();renderNotificationButton();updateNotificationCount();});
+  document.addEventListener('DOMContentLoaded',()=>{addUserChip();addSettingsLink();renderNotificationButton();updateNotificationCount();});
 
-  window.GTF_CONFIG={REVIEW_URL};
-  window.GTFAuth={users:clone(users).map(u=>{delete u.password;return u}),login,loginAs,logout,getSession,currentUser,requireRole,roleHome};
+  window.GTF_CONFIG={REVIEW_URL,CARE_URL,PLATFORM_NAME:'Emet',ASSISTANT_NAME:'Ruach'};
+  window.GTFAuth={users:clone(users).map(u=>{delete u.password;return u}),login,loginAs,logout,getSession,currentUser,requireRole,roleHome,updateDemoProfile};
   window.GTFAdaptive={trackAction,smartActions,usageData};
   window.GTFIntegrations={integrationState,setIntegration,notifications,pushNotification,queueCrewSMS,queueCalendarSync,queueQuoAlert,markAllRead};
 })();

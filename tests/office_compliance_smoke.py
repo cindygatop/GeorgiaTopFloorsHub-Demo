@@ -42,6 +42,27 @@ with sync_playwright() as p:
     results.append('All three priority flags respond to clicks: PASS')
 
     page.goto(base + 'compliance.html', wait_until='domcontentloaded')
+    # Keep the coverage fixture meaningful as the real date advances. The sample
+    # company's WC expires on 2026-10-12, so its original status is time-dependent.
+    page.evaluate('''() => {
+        const data = GTFCompliance.load();
+        const day = (offset) => {
+            const date = new Date(GTFCompliance.TODAY + 'T12:00:00Z');
+            date.setUTCDate(date.getUTCDate() + offset);
+            return date.toISOString().slice(0, 10);
+        };
+        const expirationOffsets = {
+            'cmp-gl': 180, 'cmp-wc': 3,
+            'sub-lucas-coi': -5, 'sub-marcos-coi': -29, 'sub-marcos-wc': 180
+        };
+        for (const [id, offset] of Object.entries(expirationOffsets)) {
+            const record = data.records.find(item => item.id === id);
+            if (!record) throw new Error('Missing insurance test fixture: ' + id);
+            record.expirationDate = day(offset);
+            record.status = 'Current';
+        }
+        GTFCompliance.save(data);
+    }''')
     page.select_option('#typeFilter', label='Insurance / COI')
     rows = page.locator('#recordRows tr.compliance-group-row')
     assert rows.count() == 3
@@ -54,7 +75,17 @@ with sync_playwright() as p:
     assert "Workers' Compensation" in page.locator('#drawerContent').inner_text()
     page.get_by_role('button', name='Close', exact=True).click()
     page.select_option('#statusFilter', label='Expired')
-    assert page.locator('#recordRows tr.compliance-group-row').count() == 2
+    expired_rows = page.locator('#recordRows tr.compliance-group-row')
+    assert expired_rows.count() == 2
+    assert set(expired_rows.locator('td:first-child strong').all_text_contents()) == {
+        'Lucas Ferreira / LF Floors', 'Marcos Silva / MS Finish'
+    }
+    assert expired_rows.locator('td:nth-child(4) .badge').all_text_contents() == ['Expired', 'Expired']
+    page.select_option('#statusFilter', label='Expiring Soon')
+    expiring_rows = page.locator('#recordRows tr.compliance-group-row')
+    assert expiring_rows.count() == 1
+    assert expiring_rows.locator('td:first-child strong').inner_text() == 'Georgia Top Floors'
+    assert expiring_rows.locator('td:nth-child(4) .badge').inner_text() == 'Expiring Soon'
     page.select_option('#statusFilter', value='')
     assert page.locator('#attentionQueue .attention').filter(has_text='Marcos Silva').count() == 1
     assert 'Certificate of Insurance (COI)' in page.locator('#attentionQueue .attention').filter(has_text='Marcos Silva').inner_text()

@@ -46,8 +46,8 @@ button,input,select,textarea{font:inherit}
 @media(max-width:1000px){.stats{grid-template-columns:repeat(2,1fr)}.alert-grid{grid-template-columns:1fr}}
 @media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.side-foot{display:none}.nav{display:grid;grid-template-columns:repeat(2,1fr)}.main{padding:20px}.topbar{flex-direction:column;align-items:flex-start}.stats{grid-template-columns:1fr 1fr}.profile-grid,.folder-grid,.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.search{min-width:100%;flex-direction:column}}
 </style>
-<link rel="stylesheet" href="theme.css?v=5">
-<script src="app-core.js?v=5"></script>
+<link rel="stylesheet" href="theme.css?v=6">
+<script src="app-core.js?v=6"></script>
 <script>GTFAuth.requireRole("office");</script>
 </head>
 <body class="office-page">
@@ -68,7 +68,7 @@ button,input,select,textarea{font:inherit}
  <main class="main">
   <div class="topbar">
    <div><h2>People & Company Database</h2><p>One organized source for contacts, staff, subcontractors, vendors, documents and project history.</p></div>
-   <div class="actions"><button class="btn" onclick="toast('Future import: CSV / Excel cleanup and deduplication before saving to production.')">Import</button><button class="btn primary" onclick="openNewContact()">+ New Contact</button></div>
+   <div class="actions"><button class="btn" onclick="location.href='data-tools.html'">Import / Export & Review</button><button class="btn primary" onclick="openNewContact()">+ New Contact</button></div>
   </div>
 
   <div class="grid stats">
