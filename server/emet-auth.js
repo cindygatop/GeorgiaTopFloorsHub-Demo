@@ -13,7 +13,9 @@ async function authenticated(req, client) {
   const token = http.cookieValue(req, client.config, http.COOKIE.access);
   if (!token) throw new EmetError(401, 'authentication_required');
   const user = await client.auth('user', { token });
-  if (!user?.id || !user.email) throw new EmetError(401, 'authentication_required');
+  if (!user?.id || !user.email || !user.email_confirmed_at || Date.parse(user.banned_until || '') > Date.now()) {
+    throw new EmetError(401, 'authentication_required');
+  }
   return { user, token };
 }
 
@@ -28,7 +30,7 @@ async function account(client, auth) {
       if (result.signedURL?.startsWith('/object/sign/emet-avatars/')) avatarUrl = client.config.supabase + '/storage/v1' + result.signedURL;
     } catch { /* An unavailable avatar must not grant or block account access. */ }
   }
-  return { user: { id: auth.user.id, email: auth.user.email, displayName: state.profile?.display_name || '', avatarUrl },
+  return { user: { id: auth.user.id, email: auth.user.email, emailVerified: Boolean(auth.user.email_confirmed_at), displayName: state.profile?.display_name || '', avatarUrl },
     memberships: state.memberships || [] };
 }
 
@@ -130,7 +132,7 @@ function handler(route, options = {}) {
           await http.rateLimit(req, client, 'login-email', 8, 900, userEmail);
           session = await client.auth('token?grant_type=password', { method: 'POST', data: { email: userEmail, password: input.password }, allowedError: true });
         } else throw new EmetError(400, 'invalid_action');
-        if (session.error || !session.user?.email_confirmed_at) { http.clearSession(res, config); throw new EmetError(401, 'invalid_credentials_or_unverified_email'); }
+        if (session.error || !session.user?.email_confirmed_at || Date.parse(session.user.banned_until || '') > Date.now()) { http.clearSession(res, config); throw new EmetError(401, 'invalid_credentials_or_unverified_email'); }
         http.sessionCookies(res, config, session);
         return http.json(res, 200, { status: 'authenticated', csrfToken: http.csrf(req, res, config), ...await account(client, { user: session.user, token: session.access_token }) });
       }
@@ -200,7 +202,7 @@ function handler(route, options = {}) {
         if (input.type === 'recovery') http.password(input.newPassword);
         else if (input.newPassword !== undefined) throw new EmetError(400, 'unexpected_password');
         const session = await client.auth('verify', { method: 'POST', data: { token_hash: input.tokenHash, type: input.type }, allowedError: true });
-        if (session.error || !session.user?.email_confirmed_at) throw new EmetError(400, 'verification_invalid_or_expired');
+        if (session.error || !session.user?.email_confirmed_at || Date.parse(session.user.banned_until || '') > Date.now()) throw new EmetError(400, 'verification_invalid_or_expired');
         if (input.type === 'recovery') {
           await client.auth('user', { method: 'PUT', token: session.access_token, data: { password: input.newPassword } });
           await client.auth('logout?scope=others', { method: 'POST', token: session.access_token });

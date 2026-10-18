@@ -2,7 +2,7 @@
 
 Data: 15/10/2026. **Código preparado; serviço não provisionado nem ativado em produção.**
 
-O backend usa Supabase Auth para senhas e verificação de email, PostgreSQL/RLS para permissões e Resend para mensagens transacionais. Os handlers são CommonJS, Node.js 22, sem dependências npm. Existem **11 Vercel Functions** em `api/emet/`; os módulos internos ficam em `server/`.
+O backend usa Supabase Auth para senhas e verificação de email, PostgreSQL/RLS para permissões e Resend para mensagens transacionais. Os handlers usam Node.js 22; as dependências de IA estão declaradas no `package.json`. Existem **12 Vercel Functions** em `api/emet/`, incluindo o endpoint Ruach; os módulos internos ficam em `server/`.
 
 Sem configuração completa, `GET /api/emet/status` responde **503 / `provisioning_required`**. A interface deve bloquear as ações reais. GitHub Pages executa somente a demo estática; não executa estas funções. Nenhum código de convite inventado pelo navegador é aceito como conta real.
 
@@ -35,6 +35,17 @@ A sessão Emet não é a sessão `GTFAuth` da demo. Não copiar tokens, senhas, 
 
 Em desenvolvimento, HTTP local exige `EMET_ALLOW_LOCAL_HTTP=true` e `NODE_ENV` diferente de `production`; cookies locais perdem o prefixo `__Host-`. Produção exige HTTPS e cookies `__Host-`, `Secure`, `HttpOnly`, `SameSite=Strict` e `Path=/`.
 
+### Como liberar o acesso ao projeto Supabase
+
+O endereço `https://<PROJECT_REF>.supabase.co` identifica a API do projeto. Ele **não é uma autorização administrativa** e não substitui a conexão da conta ou as credenciais privadas do servidor.
+
+1. Entrar em [supabase.com/dashboard](https://supabase.com/dashboard) com a conta que administra o projeto. O painel de cada projeto fica em `https://supabase.com/dashboard/project/<PROJECT_REF>`.
+2. Quando houver uma conexão Supabase disponível no ambiente de desenvolvimento, conectar a própria conta pelo fluxo oficial e selecionar a organização/projeto correto. A conexão só está confirmada depois de uma consulta autorizada; abrir ou fornecer a URL não concede permissão.
+3. Se uma pessoa da equipe técnica precisar administrar o projeto, convidar a conta dela na seção de membros da organização, com o menor papel necessário. **Não existe email universal do Codex para convidar** e não se deve compartilhar o login da proprietária.
+4. Para o aplicativo acessar o Supabase, cadastrar as variáveis de `.env.example` no ambiente de servidor da Vercel, pelo painel ou por uma conexão autorizada. `SUPABASE_SERVICE_ROLE_KEY` é segredo administrativo: não enviar no chat, não colocar no repositório, em formulário do Hub ou em JavaScript público. Usar campos privados de configuração e manter `EMET_AUTH_ENABLED=false` durante a preparação.
+
+A URL da API não permite inferir se tabelas, Auth, RLS, email ou usuários já foram configurados. Confirmar o projeto e o acesso antes de aplicar uma migração; usar staging e preservar dados existentes. Uma conexão pessoal de Google/Gmail também não configura automaticamente o OAuth do aplicativo: as credenciais e os consentimentos por usuário pertencem à integração da Emet.
+
 ### Primeiro owner, fora do fluxo público
 
 Um operador autorizado cria o usuário pelo Supabase Auth Admin com `app_metadata: {"emet_bootstrap": true}` e nome em `user_metadata.display_name`. Esse atributo só permite criar o perfil inicial: **não cria empresa nem membership owner**. Não expor essa opção em nenhum formulário.
@@ -42,6 +53,17 @@ Um operador autorizado cria o usuário pelo Supabase Auth Admin com `app_metadat
 Verificar o email por um processo real; não marcar `email_confirm` como verdadeiro para contornar a posse da caixa. Depois, em transação SQL administrativa revisada, criar `emet_organizations` e inserir `emet_memberships` para o UUID desse usuário com `role='owner'`, `status='active'`, `approved_at=now()` e `approved_by` desse operador/owner. Confirmar que `auth.users.email_confirmed_at` existe antes da inserção. A autorização também verifica esse campo a cada consulta.
 
 O SQL administrativo depende dos UUIDs e dos nomes reais escolhidos na implantação. Não inclui senha padrão, owner universal ou chave de bootstrap reutilizável no repositório. Projetos reais de cliente devem ser criados com o `organization_id` correto por uma futura operação administrativa autorizada; esta fundação não importa os projetos fictícios do navegador.
+
+### Papéis iniciais autorizados para Georgia Top Floors
+
+Em 15/10/2026, a usuária definiu que **Cindy, Cristiano e Alicia administram a empresa**. O plano de implantação é Cindy como `owner` inicial, Cristiano e Alicia como `admin`, e Caritas como `office`. Os emails reais e o projeto informado ficam no plano privado de implantação, fora deste repositório público. **Definir o plano não criou usuários nem concedeu permissões.**
+
+- Primeiro, confirmar o UUID e a verificação real de email de Cindy; depois executar o bootstrap administrativo revisado do primeiro owner.
+- A owner emite os convites `admin` para Cristiano e Alicia. Cada um define sua própria senha e verifica o email; a owner aprova a solicitação específica. Ninguém é promovido por escolher “administrador” no formulário, pelo domínio do email ou por editar metadata.
+- Caritas segue o convite `office`, com verificação e aprovação por uma conta autorizada. Administradores podem convidar/aprovar `manager`, `office`, `crew` e `client`; a concessão de `admin` permanece exclusiva da owner neste fluxo.
+- Não reutilizar o bootstrap para promover usuários existentes, trocar a owner ou reativar acesso revogado. Essas alterações exigem um procedimento administrativo próprio, revisado e auditado; não estão disponíveis nos endpoints públicos desta fundação.
+
+O projeto informado não significa que a Emet já possui acesso a ele. A sequência continua sendo conexão administrativa autorizada → revisão/migração em staging → configuração e teste real de email/Auth → bootstrap → convites. Nenhuma dessas etapas deve ser declarada concluída somente porque os dados de cadastro foram recebidos.
 
 ### Alicia e Cristiano usando a mesma caixa
 
@@ -67,7 +89,7 @@ Esse `ready` indica configuração acessível e versão do schema reconhecida; n
 `GET /api/emet/session` autenticado retorna:
 
 ```json
-{"status":"authenticated","csrfToken":"...","user":{"id":"UUID","email":"person@example.com","displayName":"Person","avatarUrl":null},"memberships":[{"organizationId":"UUID","organizationName":"Example Floors","role":"office","status":"pending_approval"}]}
+{"status":"authenticated","csrfToken":"...","user":{"id":"UUID","email":"person@example.com","emailVerified":true,"displayName":"Person","avatarUrl":null},"memberships":[{"organizationId":"UUID","organizationName":"Example Floors","role":"office","status":"pending_approval"}]}
 ```
 
 Sem sessão válida, retorna 401. Tokens do Supabase nunca aparecem nesse JSON: ficam em cookies HttpOnly. Memberships podem ser `pending_approval`, `pending_email`, `active`, `rejected` ou `revoked`; não interpretar todas como ativas.

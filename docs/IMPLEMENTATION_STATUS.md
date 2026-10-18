@@ -60,3 +60,7 @@ A usuária solicitou todas as funcionalidades funcionando e a lista de dependên
 ## H. Incremento Emet / Ruach — 15/10/2026
 
 Após novos requisitos e anexos, foram implementadas entrada Emet, configurações, perfil/avatar, ferramentas de revisão/importação/exportação e fundação server-side de convites por empresa com verificação e aprovação. O certificado final recebeu links clicáveis, separado do contrato inicial. O backend não foi ativado: depende de Supabase, email, migração e homologação reais. A persistência de dados de negócio e integrações continuam pendentes. Escopo, testes e limites em [EMET_RELEASE_2026-10-15.md](EMET_RELEASE_2026-10-15.md); configuração em [EMET_AUTH_SETUP.md](EMET_AUTH_SETUP.md), custos/banco em [EMET_SERVICES_AND_BUDGET.md](EMET_SERVICES_AND_BUDGET.md).
+
+## I. Ruach operacional e conexão de modelo — 15/10/2026
+
+Incremento de rascunhos de invoice no chat local, acesso administrativo conforme a empresa selecionada e conversa de conta através de AI Gateway. O endpoint de IA é separado da demo, exige acesso Office verificado e consentimento, e retorna conversa/propostas sem executar operações. Supabase e emails de implantação foram recebidos em área privada; acesso administrativo e serviços de produção não foram ativados. Detalhes, validação e limites em [RUACH_INVOICES_2026-10-15.md](RUACH_INVOICES_2026-10-15.md).

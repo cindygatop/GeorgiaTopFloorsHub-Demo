@@ -59,7 +59,7 @@ with sync_playwright() as p:
  # Contract fixtures below exercise real-account UI; no real backend or provider is claimed.
  ctx=b.new_context(viewport={'width':1440,'height':1000});page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
  uid='11111111-1111-4111-8111-111111111111';org='22222222-2222-4222-8222-222222222222'
- account={'id':uid,'email':'manager@example.test','displayName':'Verified Manager','avatarUrl':None}
+ account={'id':uid,'email':'manager@example.test','displayName':'Verified Manager','avatarUrl':None,'emailVerified':True}
  session={'user':account,'memberships':[{'organizationId':org,'organizationName':'QA Company','role':'manager','status':'active'}],'csrfToken':'test-csrf-only'}
  page.route('**/api/emet/status',lambda r:r.fulfill(content_type='application/json',body=json.dumps({'status':'ready','capabilities':{'authentication':True,'invitations':True,'profile':True,'googleCalendar':False,'gmail':False}})))
  page.route('**/api/emet/session',lambda r:r.fulfill(content_type='application/json',body=json.dumps(session)))
@@ -132,6 +132,63 @@ with sync_playwright() as p:
  assert page.input_value('#emailCurrentPassword')=='' and page.input_value('#newAccountEmail')==''
  assert page.input_value('#accountEmail')=='manager@example.test'
  results.append('Mock API contract: unavailable secure email change is explained without success and sensitive fields are cleared: PASS')
+ # Role controls reflect the exact selected tenant. Server-side authorization remains authoritative.
+ ctx.close();ctx=b.new_context(viewport={'width':1440,'height':1000});page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
+ other_org='33333333-3333-4333-8333-333333333333';invitation_posts=[]
+ role_session={'user':account,'memberships':[{'organizationId':org,'organizationName':'Owner Company','role':'owner','status':'active'},{'organizationId':other_org,'organizationName':'Manager Company','role':'manager','status':'active'}],'csrfToken':'test-csrf-only'}
+ page.route('**/api/emet/status',lambda r:r.fulfill(content_type='application/json',body=json.dumps({'status':'ready','capabilities':{'authentication':True,'invitations':True,'profile':True}})))
+ page.route('**/api/emet/session',lambda r:r.fulfill(content_type='application/json',body=json.dumps(role_session)))
+ def create_role_invitation(route):
+  invitation_posts.append(route.request.post_data_json)
+  route.fulfill(status=201,content_type='application/json',body=json.dumps({'status':'invitation_created','invitation':{'id':'role-server-fixture'},'code':'emt_role_fixture_only','delivery':{'status':'not_sent'}}))
+ page.route('**/api/emet/invitations',create_role_invitation)
+ page.goto(base+'settings.html?mode=account&tab=team')
+ page.wait_for_selector('#inviteOrganization')
+ assert page.locator('#inviteRole option').evaluate_all('(nodes)=>nodes.map(n=>n.value)')==['admin','manager','office','crew','client']
+ page.fill('#inviteEmail','admin-recipient@example.test');page.select_option('#inviteRole','admin')
+ page.get_by_role('button',name='Review invitation',exact=True).click()
+ assert page.get_by_role('button',name='Confirm invitation',exact=True).is_enabled()
+ page.get_by_role('button',name='Confirm invitation',exact=True).click()
+ page.wait_for_function("document.getElementById('inviteMessage').textContent.includes('Invitation created by the server')")
+ assert invitation_posts==[{'action':'create','organizationId':org,'email':'admin-recipient@example.test','role':'admin'}]
+ results.append('Mock role contract: verified owner can review and create an admin invitation for the selected company only: PASS')
+ page.get_by_role('button',name='Review invitation',exact=True).click()
+ page.evaluate("()=>{window.staleInviteConfirmation=document.getElementById('confirmInvite').onclick}")
+ page.select_option('#inviteOrganization',other_org)
+ assert page.locator('#invitePreview').is_hidden()
+ assert page.locator('#inviteRole option').evaluate_all('(nodes)=>nodes.map(n=>n.value)')==['office','crew','client']
+ page.evaluate('window.staleInviteConfirmation()')
+ assert len(invitation_posts)==1
+ # A programmatic switch without a change event must also fail the confirmation snapshot.
+ page.select_option('#inviteOrganization',org);page.select_option('#inviteRole','admin')
+ page.get_by_role('button',name='Review invitation',exact=True).click()
+ page.evaluate("org=>{document.getElementById('inviteOrganization').value=org;document.getElementById('confirmInvite').onclick()}",other_org)
+ assert page.locator('#invitePreview').is_hidden() and len(invitation_posts)==1
+ assert 'Review the invitation again' in page.locator('#invitationService').inner_text()
+ results.append('Mock role contract: switching tenant invalidates the privileged preview; stale callbacks and silent DOM switches cannot send it to another tenant: PASS')
+ role_session['memberships']=[{'organizationId':org,'organizationName':'Admin Company','role':'admin','status':'active'}]
+ page.goto(base+'settings.html?mode=account&tab=team');page.wait_for_selector('#inviteOrganization')
+ assert page.locator('#inviteRole option').evaluate_all('(nodes)=>nodes.map(n=>n.value)')==['manager','office','crew','client']
+ page.fill('#inviteEmail','forbidden-admin@example.test')
+ page.evaluate("()=>{const s=document.getElementById('inviteRole');s.add(new Option('Injected admin','admin'));s.value='admin'}")
+ page.get_by_role('button',name='Review invitation',exact=True).click()
+ assert page.locator('#invitePreview').is_hidden() and len(invitation_posts)==1
+ assert 'permitted by your current company access' in page.locator('#invitationService').inner_text()
+ results.append('Mock role contract: admin can invite manager/office/crew/client; injected admin role is rejected before a request: PASS')
+ role_session['memberships']=[{'organizationId':org,'organizationName':'Manager Company','role':'manager','status':'active'}]
+ page.goto(base+'settings.html?mode=account&tab=team');page.wait_for_selector('#inviteOrganization')
+ assert page.locator('#inviteRole option').evaluate_all('(nodes)=>nodes.map(n=>n.value)')==['office','crew','client']
+ page.fill('#inviteEmail','office-recipient@example.test');page.get_by_role('button',name='Review invitation',exact=True).click()
+ page.select_option('#inviteRole','crew')
+ assert page.locator('#invitePreview').is_hidden() and len(invitation_posts)==1
+ page.evaluate("()=>{const s=document.getElementById('inviteRole');s.add(new Option('Injected manager','manager'));s.value='manager'}")
+ page.get_by_role('button',name='Review invitation',exact=True).click()
+ assert page.locator('#invitePreview').is_hidden() and len(invitation_posts)==1
+ results.append('Mock role contract: manager is limited to office/crew/client, role changes invalidate review and injected manager is rejected: PASS')
+ role_session['user']={**account,'emailVerified':False}
+ page.goto(base+'settings.html?mode=account&tab=team');page.wait_for_url('**/emet.html#account')
+ assert len(invitation_posts)==1
+ results.append('Mock role contract: an unverified account cannot enter secure Settings or create invitations: PASS')
  b.close()
 report={'results':results,'pageErrors':errors,'overflow':overflow}
 (artifacts/'results.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2))

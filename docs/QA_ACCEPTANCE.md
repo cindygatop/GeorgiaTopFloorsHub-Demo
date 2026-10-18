@@ -55,3 +55,15 @@ Solicitar apenas dados de integrações realmente indispensáveis para a próxim
 ## Evidência do Codex (09/10/2026)
 
 Checks marcados refletem a validação da demo descrita em VALIDATION_V5.md: 24 testes unitários locais, validação estática e três scripts de navegador aprovados localmente e no site publicado. HTML passou validação básica e sintaxe de scripts, não W3C. Commit de implementação `e26c069d48d54068655d8af33853701e93b2ffda` publicado na `main` e GitHub Pages com build confirmado. Referência remota de rollback: `backup/pre-v5-2026-10-09`, no SHA anterior `4d9e0fba967a8a44a1d9cc8ec329300a2af36488`. A recusa 403 foi resolvida pela reinstalação da integração. O Care Guide oficial foi conectado e o Google Review foi confirmado pela proprietária em 15/10/2026; a tentativa automatizada anterior recebeu CAPTCHA/429. Integrações de produção continuam pendentes.
+
+## Incremento Ruach e invoices
+
+- [x] Linguagem informal/erros de invoice, escolha de projeto/appointment, dados faltantes, prévia e confirmação sem gravação antecipada.
+- [x] Editar somente Draft, preservar documentos emitidos/pagos, rejeitar valores/moedas incompatíveis e prévias antigas.
+- [x] Emissão local com estimate aprovado, seleção explícita quando necessário, confirmação e preservação de visibilidade; pagamentos demonstrativos só após emitir.
+- [x] Convites conforme owner/admin/manager e empresa selecionada; troca de empresa ou destinatário invalida prévia.
+- [x] Chat de conta exige email verificado e Office ativo, consentimento explícito, histórico limitado em memória e respostas tratadas como propostas sem execução.
+- [x] 136 testes Node 22, nove scripts de navegador desktop/mobile, verificação estática e auditoria de dependências aprovados.
+- [ ] Homologar Supabase/Auth/email e modelo com serviços reais; os testes de contrato usam respostas controladas.
+
+Detalhes e limites em [RUACH_INVOICES_2026-10-15.md](RUACH_INVOICES_2026-10-15.md).

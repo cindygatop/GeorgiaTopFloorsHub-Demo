@@ -325,8 +325,8 @@ tr:hover td{background:#FFFDF8}
 <div class="toast" id="toast"></div>
 
 <script src="compliance.js?v=5"></script>
-<script src="project-docs.js?v=5"></script>
-<script src="assistant.js?v=6"></script>
+<script src="project-docs.js?v=7"></script>
+<script src="assistant.js?v=7"></script>
 <script>
 const baseJobs = [
  {id:1,customer:"John Miller",company:"Alpha",address:"2850 Windward Pkwy, Alpharetta, GA",service:"Hardwood Installation",date:"Today",window:"8:00–9:00 AM",manager:"André",crew:"Carlos + Edilson",status:"In Progress",sf:"1,240 SF",stain:"Natural",materials:"3¼\" white oak, shoe molding",notes:"Contractor-referred project. Homeowner portal must not show contractor pricing."},
@@ -538,8 +538,8 @@ function openProjectDocument(jobId,type){
   content.innerHTML=`<div class="doc-sheet">
    <div class="doc-sheet-head"><div><strong>${esc(j.customer)}</strong><div class="sub">${esc(j.address)}</div><div class="sub">Issued: ${esc(i.issued)} · Due: ${esc(i.dueDate)}</div></div><span class="doc-status ${docStatusClass(i.status)}">${esc(i.status)}</span></div>
    <div class="detail-grid" style="margin-top:12px"><div class="detail"><span>Total</span><strong>${GTFDocs.money(i.total)}</strong></div><div class="detail"><span>Paid</span><strong>${GTFDocs.money(i.paid)}</strong></div><div class="detail"><span>Balance</span><strong>${GTFDocs.money(i.balance)}</strong></div><div class="detail"><span>Payment Rule</span><strong>${esc(i.paymentRule)}</strong></div></div>
-   <div class="note">${esc(i.notes)}</div>
-   <div class="modal-actions"><button class="btn" onclick="window.open('customer.html?preview=1','_blank')">Open Customer View</button>${i.balance>0?`<button class="btn primary" onclick="recordPaymentDemo('${key}',${jobId})">Record Final Payment</button>`:""}</div>
+   <div class="note">${i.status==='Draft'?'Draft — Office only. This local draft has not been issued or sent and cannot receive payments. ':''}${esc(i.notes)}</div>
+   <div class="modal-actions">${i.status==='Draft'?'<button class="btn primary" onclick="location.href=\'documents.html\'">Review Draft in Estimates &amp; Billing</button>':i.status!=='Not created'?'<button class="btn" onclick="window.open(\'customer.html?preview=1\',\'_blank\')">Open Customer View</button>':''}${i.id&&i.status!=='Draft'&&i.balance>0?`<button class="btn primary" onclick="recordPaymentDemo('${key}',${jobId})">Record Final Payment</button>`:""}</div>
   </div>`;
  }else{
   const w=d.workOrder;
@@ -557,7 +557,7 @@ function openProjectDocument(jobId,type){
 }
 function closeProjectDocument(){document.getElementById("documentModal").classList.remove("show");}
 function approveEstimateDemo(key,jobId){GTFDocs.approveEstimate(key);openProjectDocument(jobId,"estimate");openDetail(jobId);toast("Estimate approved. Customer can see the updated status.");}
-function recordPaymentDemo(key,jobId){GTFDocs.recordFinalPayment(key);openProjectDocument(jobId,"invoice");openDetail(jobId);toast("Final payment recorded. Customer invoice now shows Paid.");}
+function recordPaymentDemo(key,jobId){try{const payment=GTFDocs.recordFinalPayment(key);if(!payment){toast("No payment was recorded. This invoice may already be paid or has not been created.");return;}openProjectDocument(jobId,"invoice");openDetail(jobId);toast("Final demo payment recorded locally. No money was charged.");}catch(error){toast(error.message);}}
 function releaseWorkOrderDemo(key,jobId){GTFDocs.releaseWorkOrder(key);openProjectDocument(jobId,"workorder");openDetail(jobId);toast("Work Order released to the crew view.");}
 function markJobAgreementSigned(jobId){const j=jobs.find(x=>x.id===jobId);if(!j||!window.GTFCompliance)return;GTFCompliance.markJobAgreementSigned(j);openDetail(jobId);toast("Customer agreement marked signed. Compliance alert updated.");}
 function closeDetail(){document.getElementById("detailDrawer").classList.remove("show");}

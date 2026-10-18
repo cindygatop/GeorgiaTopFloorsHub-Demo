@@ -4,6 +4,8 @@ Open [emet.html](emet.html) for the platform entry, or [login.html](login.html) 
 
 Secure account handlers and an isolated identity migration are prepared in `api/emet/`, `server/` and `supabase/migrations/`. They stay disabled without configured services. Read [account setup](docs/EMET_AUTH_SETUP.md), [services/database/budget](docs/EMET_SERVICES_AND_BUDGET.md) and [acceptance document](docs/ACCEPTANCE_DOCUMENT.md). No live integration is implied by the presence of its guide or handler. The business-data backend migration remains pending.
 
+Ruach can prepare local invoice drafts with project selection, review and confirmation. A separate authenticated account chat has a server-side AI Gateway integration, disabled until services, credentials and budgets are configured; its proposals do not execute business operations. See [Ruach/invoice release details](docs/RUACH_INVOICES_2026-10-15.md).
+
 **Open `login.html`.** This is a static demo. No real authentication, shared database, Google Calendar write, Quo SMS, payment processing or enforceable e-signature service is connected.
 
 ## Demo profiles (all use password `gtf2026`)

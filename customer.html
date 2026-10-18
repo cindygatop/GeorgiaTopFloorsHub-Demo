@@ -82,7 +82,7 @@
 <div class="modalBg" id="modal" onclick="if(event.target===this)closeUnavailable()"><div class="modal"><h3>I won't be home</h3><div class="sub">Let the office know before the crew starts the trip.</div><div class="field"><label>Reason</label><select id="reason"><option>I will be away</option><option>I need to reschedule</option><option>No one can provide access</option><option>Other</option></select></div><div class="field"><label>Note</label><textarea placeholder="Optional details..."></textarea></div><div class="actions"><button class="btn" onclick="closeUnavailable()">Cancel</button><button class="btn primary" onclick="saveUnavailable()">Save Demo Notice</button></div></div></div>
 <div class="toast" id="toast"></div>
 <script src="compliance.js?v=5"></script>
-<script src="project-docs.js?v=5"></script>
+<script src="project-docs.js?v=7"></script>
 <script>
 const steps=[["Inspection","done"],["Estimate approved","done"],["Furniture / prep","done"],["Sanding","current"],["Stain samples",""],["Stain",""],["Finish coats",""],["Final inspection",""]];
 document.getElementById("steps").innerHTML=steps.map(([n,s],i)=>`<div class="step ${s}"><div class="circle">${s==="done"?"✓":i+1}</div><div><strong>${n}</strong><div class="sub">${s==="done"?"Completed":s==="current"?"In progress":"Upcoming"}</div></div><div>${s==="current"?"Today":""}</div></div>`).join("");

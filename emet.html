@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172e3c"><meta name="referrer" content="no-referrer"><title>Emet · Your company, connected</title><link rel="icon" href="assets/emet-mark.svg" type="image/svg+xml"><link rel="stylesheet" href="emet.css?v=6"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#172e3c"><meta name="referrer" content="no-referrer"><title>Emet · Your company, connected</title><link rel="icon" href="assets/emet-mark.svg" type="image/svg+xml"><link rel="stylesheet" href="emet.css?v=7"></head>
 <body>
 <header class="emet-top"><a class="emet-brand" href="emet.html"><img src="assets/emet-mark.svg" width="42" height="42" alt=""><span>emet<span class="brand-dot">.</span></span></a><a class="quiet-link" href="login.html">Explore Georgia Top Floors demo ↗</a></header>
 <main class="emet-layout">
@@ -14,11 +14,23 @@
    <section data-panel="client" hidden><div class="ruach-tip"><strong>Your project stays private.</strong><p>Use the invitation from your flooring company. Emet sends a verification link to your email, so a forwarded project URL alone never grants access.</p></div><form id="clientForm"><label>Project invitation code<input name="code" type="text" required maxlength="160" autocomplete="off"></label><label>Your email<input name="email" type="email" required maxlength="254" autocomplete="email"></label><button class="emet-button primary" type="submit" data-secure>Request verified project access →</button></form></section>
    <section data-panel="verify" hidden><h3 id="verifyTitle">Verify your email</h3><p class="muted">Verification happens securely through your account provider.</p><form id="resetForm" hidden><label>New password<input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required data-secure></label><label>Confirm password<input name="confirm" type="password" autocomplete="new-password" minlength="12" maxlength="128" required data-secure></label><button class="emet-button primary" type="submit" data-secure>Set new password</button></form></section>
    <section data-panel="approval" hidden><h3>Review an access request</h3><p class="muted">Sign in with your manager account to review. Opening this page does not approve anyone.</p><div id="approvalList"></div></section>
-   <section data-panel="workspace" hidden><p class="eyebrow">YOUR ACCOUNT</p><h3 id="accountName"></h3><p class="muted" id="accountEmail"></p><div id="memberships" class="memberships"></div><a class="emet-button secondary" href="settings.html?mode=account&tab=profile">Account settings</a><button class="text-button" id="secureLogout" type="button">Sign out</button></section>
+   <section data-panel="workspace" hidden><p class="eyebrow">YOUR ACCOUNT</p><h3 id="accountName"></h3><p class="muted" id="accountEmail"></p><div id="memberships" class="memberships"></div>
+    <section id="ruachAccount" class="ruach-account" aria-labelledby="ruachHeading" hidden>
+     <div class="ruach-heading"><div><p class="eyebrow">YOUR ASSISTANT</p><h3 id="ruachHeading">Talk with Ruach</h3></div><span class="ruach-scope">Account workspace</span></div>
+     <p class="muted">Write naturally in Portuguese or English. Ruach can help explain, write and prepare proposals. Creating or changing invoices in the shared business database is not available yet.</p>
+     <label id="ruachCompanyLabel">Company<select id="ruachCompany" aria-label="Ruach company"></select></label>
+     <p id="ruachStatus" class="ruach-status" role="status">Checking Ruach configuration…</p>
+     <label class="ruach-consent"><input id="ruachConsent" type="checkbox"><span>I allow this conversation's messages and recent replies to be sent to the configured external AI provider. No demo customer list is sent. Do not include passwords, payment details or private documents.</span></label>
+     <div id="ruachConversation" class="ruach-conversation" role="log" aria-label="Ruach conversation" aria-live="polite" aria-relevant="additions text"><p class="ruach-empty">Your conversation stays in this page's memory. Clear it or sign out to remove it.</p></div>
+     <form id="ruachForm"><label for="ruachInput">Your message<textarea id="ruachInput" rows="3" maxlength="4096" placeholder="Ex.: Ruach, me ajuda a montar uma invoice?" disabled></textarea></label><div class="ruach-form-foot"><small id="ruachLength">0 / 4096</small><button id="ruachSend" class="emet-button primary" type="submit" disabled>Send to Ruach →</button></div></form>
+     <div class="ruach-actions"><button id="ruachStop" class="text-button" type="button" hidden>Stop waiting</button><button id="ruachClear" class="text-button" type="button">Clear conversation</button></div>
+     <p id="ruachProvider" class="fine-print">AI responses may contain mistakes. A proposal does not save, send or charge anything.</p>
+    </section>
+    <a class="emet-button secondary" href="settings.html?mode=account&tab=profile">Account settings</a><button class="text-button" id="secureLogout" type="button">Sign out</button></section>
    <div id="formMessage" role="status" class="form-message" hidden></div>
    <div class="entry-footer"><img src="assets/emet-mark.svg" alt="" width="22" height="22"><span>Guided by <strong>Ruach</strong> · Access follows your invitation.</span></div>
   </div>
   <a class="demo-company" href="login.html"><img src="assets/gtf-logo.png" alt="" width="66"><span><strong>Georgia Top Floors</strong><small>Explore the existing demo · sample data</small></span><span aria-hidden="true">↗</span></a>
  </section>
-</main><footer class="emet-footer">Emet is the platform. Your company keeps its own identity.</footer><script src="emet.js?v=6"></script>
+</main><footer class="emet-footer">Emet is the platform. Your company keeps its own identity.</footer><script src="emet.js?v=7"></script>
 </body></html>

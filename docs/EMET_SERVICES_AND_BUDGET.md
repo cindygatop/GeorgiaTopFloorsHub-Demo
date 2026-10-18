@@ -8,7 +8,7 @@ Para começar a operar, a combinação recomendada é **Vercel Pro + Supabase Pr
 
 Os quatro usuários Office, toda a Crew e os clientes são usuários do aplicativo. **Não precisamos de quatro assentos Vercel:** um assento de publicação está incluído no Pro. Empresas atendidas pela EMET também não exigem, automaticamente, um banco ou projeto Supabase separado para cada uma.
 
-A usuária confirmou o projeto Vercel `gtf12/gtf-hub`. O GitHub registrou deployment Production bem-sucedido do HEAD anterior; o vínculo de publicação existe. A conexão administrativa disponível recebeu HTTP 403 ao acessar a equipe `gtf12`; é preciso acesso a essa equipe para configurar variáveis e serviços. Não criar outro projeto por suposição. **Supabase ainda precisa ser criado/conectado.** Senhas, chaves de API e dados bancários devem ser configurados nos painéis dos serviços, nunca publicados no GitHub ou enviados em conversa.
+A usuária confirmou o projeto Vercel `gtf12/gtf-hub`. O GitHub registrou deployment Production bem-sucedido do HEAD anterior; o vínculo de publicação existe. A primeira consulta administrativa recebeu HTTP 403; na retomada, o acesso à equipe `gtf12` foi confirmado e as configurações iniciais não secretas foram cadastradas. As credenciais dos serviços e os testes reais continuam pendentes. Não criar outro projeto por suposição. **O projeto Supabase já foi informado; conexão administrativa, configuração e testes reais continuam pendentes.** Senhas, chaves de API e dados bancários devem ser configurados nos painéis dos serviços, nunca publicados no GitHub ou enviados em conversa.
 
 ## Como será nosso banco de dados
 
@@ -219,8 +219,8 @@ O **Mínimo é desenvolvimento/teste**, com limites Free e sem backup automátic
 
 ## Contas e cliques necessários
 
-1. **Vercel:** entrar na conta existente, selecionar equipe correta, conferir plano e faturamento; autorizar o repositório GitHub e criar/importar o projeto EMET. Configurar variáveis nos ambientes apropriados e limites de gasto. Se a conexão não mostrar a equipe/projeto, corrigir a autorização; não criar duplicatas por suposição.
-2. **Supabase:** criar conta/organização de propriedade da empresa e um projeto em região apropriada para os EUA; começar Free para implementação ou Pro quando o piloto estiver pronto. Configurar Auth/URLs, Storage privado, SMTP, migrações e permissões. Uma organização do painel Supabase não precisa representar cada empresa cliente do produto.
+1. **Vercel:** entrar na conta existente, selecionar equipe correta, conferir plano e faturamento e acessar o projeto existente `gtf12/gtf-hub`, já ligado ao repositório GitHub. Configurar variáveis nos ambientes apropriados e limites de gasto. Se a conexão não mostrar a equipe/projeto, corrigir a autorização; não criar duplicatas por suposição.
+2. **Supabase:** conectar o projeto já informado, sob a conta da empresa; conferir região apropriada para os EUA e preservar eventuais dados existentes. Começar Free para implementação ou Pro quando o piloto estiver pronto. Configurar Auth/URLs, Storage privado, SMTP, migrações e permissões. Uma organização do painel Supabase não precisa representar cada empresa cliente do produto.
 3. **Domínio e email:** usar domínio existente ou escolher nome disponível; acesso ao DNS para Vercel e verificação do remetente. Criar/conectar Resend ou outro SMTP; registrar o remetente no painel. Não enviar senha/chave no chat.
 4. **Google:** escolher proprietária e calendário(s) autorizados; criar/configurar Google Cloud e OAuth; conectar pelo fluxo Google. Adicionar Gmail/Drive somente se desejados e com consentimentos separados.
 5. **Quo:** administrador confere plano atual, número, API e registro de SMS. Configurar chave/webhooks no backend e contatos/consentimentos da equipe; executar teste autorizado de ponta a ponta antes de ativar regras automáticas.

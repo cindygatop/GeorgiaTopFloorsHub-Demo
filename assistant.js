@@ -1,5 +1,6 @@
-/* Georgia Top Floors · deterministic local office assistant (demo, not an LLM).
-   All changes require a verified job + an explicit confirmation. */
+/* Georgia Top Floors · local Office assistant for demo data.
+   Every write requires exact project/appointment identifiers and confirmation.
+   Free-form model conversations use the separate, authenticated Emet workspace. */
 (function(){
   'use strict';
   const el=id=>document.getElementById(id);
@@ -11,6 +12,7 @@
   const renderDate=v=>({Today:'Today',Tomorrow:'Tomorrow'}[v]||v);
   const shortDate=j=>`${renderDate(j.date)} · ${j.window}`;
   const state={mode:'idle',job:null,options:[],request:null,after:null,preview:null,sequence:0};
+  const billing={mode:'idle',intent:null,job:null,options:[],draft:null,sourceId:null,invoiceId:null,patch:{},preview:null,last:null,waiting:null};
   const projectId=j=>j.projectId||`project-${j.id}`;
   const appointmentId=j=>j.appointmentId||`appointment-${j.id}`;
   const sameAppointment=(a,b)=>projectId(a)===projectId(b)&&appointmentId(a)===appointmentId(b);
@@ -19,7 +21,7 @@
   const messages=[];
   // Conversation context stores only a topic/language and variation counters.
   // It is never written to browser storage or sent to a model/provider.
-  const chat={language:'en',topic:null,variants:Object.create(null)};
+  const chat={language:'en',topic:null,variants:Object.create(null),turn:0};
   function say(text,actions=[],kind='assistant'){
     if(!el('assistantConversation'))return;
     messages.push({text,actions,kind});if(messages.length>10)messages.shift();
@@ -29,13 +31,18 @@
   function button(label,value){return {label,value};}
   function georgiaHour(){return Number(new Intl.DateTimeFormat('en-US',{timeZone:TIMEZONE,hour:'2-digit',hourCycle:'h23'}).format(new Date()));}
   function greeting(){const u=window.GTFAuth?.currentUser(),hour=georgiaHour();const part=hour<12?'Good morning':hour<18?'Good afternoon':'Good evening';el('assistantGreeting').textContent=`${part}, ${u?.name||'team'}.`;const phrases=["I'm Ruach. What would you like to take care of today?","I'm Ruach. We can start with a question or a task.",'Ready to make today run smoothly? Ask me where to start.','A question, a project, or a plan — where should we start?'];el('assistantPrompt').textContent=phrases[(Number(gaToday().slice(-2))+((u?.name||'').length))%phrases.length];}
-  function languageFor(n){if(/\b(bom dia|boa tarde|boa noite|oi|ola|obrigad[oa]|valeu|tchau|ate logo|como|voce|quem|qual|quais|preciso|quero|posso|minha|meu|ajuda|conta|convite|conectar|dados|precos|banco|enviar|envie|envia|mande|mensagem|senha|tudo bem|nao entendi|pode|por favor)\b/.test(n))return 'pt';if(/\b(hello|hi|hey|good morning|good afternoon|good evening|thanks|thank you|bye|goodbye|how|what|who|help|connect|account|invite|import|prices|send|your|you)\b/.test(n))return 'en';return chat.language;}
+  function languageFor(n){if(/\b(bom dia|boa tarde|boa noite|oi|ola|obrigad[oa]|valeu|tchau|ate logo|como|voce|quem|qual|quais|preciso|quero|posso|minha|meu|ajuda|conta|convite|conectar|dados|precos|banco|enviar|envie|envia|mande|mensagem|senha|tudo bem|nao entendi|pode|por favor|cria|crie|criar|gera|gerar|faz|faca|fazer|monta|muda|altera|alterar|edita|editar|fatura|cobranca|orcamento|pra|uai|vencimento|quantidade|valor)\b/.test(n))return 'pt';if(/\b(hello|hi|hey|good morning|good afternoon|good evening|thanks|thank you|bye|goodbye|how|what|who|help|connect|account|invite|import|prices|send|your|you|create|edit|change|invoice|due|quantity|price)\b/.test(n))return 'en';return chat.language;}
   function varied(key,pt,en){const options=chat.language==='pt'?pt:en,id=chat.language+':'+key,count=chat.variants[id]||0;chat.variants[id]=count+1;return options[count%options.length];}
   function chatReply(text,actions=[]){
     const pt=chat.language==='pt';
     if(state.mode==='confirm'&&state.preview){text+='\n\n'+(pt?'Seu reagendamento continua na prévia; nada foi salvo. Confirme ou cancele quando quiser.':'Your reschedule is still a preview; nothing has been saved. Confirm or cancel when you are ready.');actions=[...actions,button(pt?'Confirmar alteração':'Confirm change',`confirm:${state.preview.token}`),button(pt?'Cancelar':'Cancel','cancel')];}
     else if(state.mode==='choose'){text+='\n\n'+(pt?'A escolha do projeto continua pendente. Para retomar, diga o número da opção ou o appointment ID.':'Your project selection is still pending. To continue, give the option number or appointment ID.');}
     else if(state.mode==='await-name'||state.mode==='missing-date')text+='\n\n'+(pt?'Quando quiser retomar o agendamento, informe o cliente ou a data e o horário que faltam.':'When you want to resume scheduling, provide the missing customer or appointment date and time.');
+    if(billing.mode!=='idle'){
+      text+='\n\n'+(pt?'A invoice continua em preparação; nada foi salvo. Você pode continuar ou cancelar.':'Your invoice is still being prepared; nothing has been saved. You can continue or cancel.');
+      if(billing.mode==='confirm'&&billing.preview)actions=[...actions,button(pt?'Salvar rascunho':'Save draft',`invoice-confirm:${billing.preview.token}`)];
+      actions=[...actions,button(pt?'Cancelar invoice':'Cancel invoice','invoice-cancel')];
+    }
     say(text,actions);
   }
   function faq(topic){
@@ -118,11 +125,11 @@
       text=pt?'O orçamento depende das contas e do uso. A referência de infraestrutura do piloto é Vercel Pro US$20/mês e Supabase Pro US$25/mês, antes de domínio, email, SMS, assinatura, IA e taxas de pagamento. Não consigo verificar sua fatura aqui, e nenhuma contratação é feita por esta conversa. Os cenários e condições estão no documento de serviços e orçamento.':'Costs depend on the accounts and usage. The pilot infrastructure reference is Vercel Pro at US$20/month and Supabase Pro at US$25/month, before domain, email, SMS, signatures, AI and payment fees. I cannot verify your bill here, and this conversation purchases nothing. The service budget document lists scenarios and conditions.';actions=[button(pt?'Ver serviços e orçamento':'View services & budget','open-budget')];
     }else{
       text=varied('help',[
-        'Podemos começar com uma pergunta ou uma tarefa. Posso orientar contas e convites, arquivos e preços, perfil e integrações. Na demo também encontro jobs, mostro prioridades, preparo um reagendamento para você confirmar e escrevo rascunhos. O que você quer resolver primeiro?',
-        'Claro. Você pode me perguntar “como importar meus clientes?”, “como conectar o Calendar?” ou pedir para localizar um job. Para reagendar, preciso do projeto, data e horário; mostro a prévia antes de salvar. Qual desses caminhos faz sentido agora?'
+        'Podemos começar com uma pergunta ou uma tarefa. Posso orientar contas e convites, arquivos e preços, perfil e integrações. Na demo também encontro jobs, mostro prioridades, preparo reagendamentos e crio ou edito invoices em Draft com confirmação. O que você quer resolver primeiro?',
+        'Claro. Você pode perguntar “como importar meus clientes?”, “como conectar o Calendar?” ou pedir “cria uma invoice para Emily”. Para salvar, preciso identificar o projeto e os dados; mostro a prévia antes de confirmar. Qual desses caminhos faz sentido agora?'
       ],[
-        'We can start with a question or a task. I can explain accounts and invitations, files and prices, profile settings and integrations. In the demo I also find jobs, show priorities, preview reschedules for confirmation and prepare message drafts. What would you like to handle first?',
-        'Of course. Ask “how do I import customers?” or “how do I connect Calendar?”, or ask me to find a job. To reschedule, I need the project, date and time, and I show a preview before saving. Where would you like to start?'
+        'We can start with a question or a task. I can explain accounts and invitations, files and prices, profile settings and integrations. In the demo I also find jobs, show priorities, preview reschedules and create or edit Draft invoices with confirmation. What would you like to handle first?',
+        'Of course. Ask “how do I import customers?” or “how do I connect Calendar?”, or say “create an invoice for Emily”. I need the exact project and fields, and show a preview before you confirm a save. Where would you like to start?'
       ]);actions=[settings('integrations',pt?'Configurações e guias':'Settings & guides'),button(pt?'Revisar prioridades':'Review priorities','show-priorities')];
     }
     chatReply(text,actions);
@@ -174,6 +181,208 @@
     'Would you like an explanation or help preparing an action? Tell me which part of the Hub and the result you want.',
     'I haven’t understood the request confidently yet. Could you give an example? I can help with accounts, files, integrations or jobs.'
   ]),[button(pt?'O que posso fazer':'What can you help with?','chat-help')]);}
+  // Billing proposals stay in memory until a fresh preview is explicitly confirmed.
+  // Invoices are local Drafts: they never issue a bill, send it or record payment.
+  const invoiceWord=n=>n.split(' ').some(t=>['invoice','invoices','fatura','faturas','cobranca','cobrancas'].includes(t)||t.length>=6&&t.length<=8&&distance(t,'invoice')<=2);
+  const editWords=n=>/\b(altera\w*|muda\w*|troca\w*|edita\w*|corrig\w*|ajusta\w*|atualiza\w*|edit|change|update|modify|fix)\b/.test(n);
+  const createWords=n=>/\b(cria\w*|gera\w*|faz|faca|fazer|monta\w*|emiti\w*|emite|quero|preciso|create|make|new|draft|prepare)\b/.test(n);
+  const refWords=n=>/\b(isso|isto|essa|esse|ela|dela|that|this|it)\b/.test(n);
+  const billText=(pt,en)=>chat.language==='pt'?pt:en;
+  const copy=value=>JSON.parse(JSON.stringify(value));
+  function resetBilling(){Object.assign(billing,{mode:'idle',intent:null,job:null,options:[],draft:null,sourceId:null,invoiceId:null,patch:{},preview:null,waiting:null});}
+  function billingData(){const w=window.GTFWorkflow;if(!w||typeof w.load!=='function'||typeof w.createInvoiceDraft!=='function'||typeof w.updateInvoiceDraft!=='function')throw new Error('draft_tools_unavailable');const s=w.load();if(!s||!Array.isArray(s.invoices)||!Array.isArray(s.estimates)||!Array.isArray(s.payments))throw new Error('invalid_workflow');return s;}
+  function validISO(value){if(!/^20\d{2}-\d{2}-\d{2}$/.test(value||''))return false;const d=new Date(value+'T12:00:00Z');return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===value;}
+  function invoiceNumber(raw,{quantity=false}={}){
+    let value=String(raw||'').trim();
+    if(!/^-?\d+(?:[.,]\d+)*$/.test(value))return null;
+    if(value.includes('.')&&value.includes(',')){
+      const decimal=value.lastIndexOf('.')>value.lastIndexOf(',')?'.':',',thousands=decimal==='.'?',':'.';
+      const pieces=value.split(decimal);if(pieces.length!==2||pieces[1].length>2||!/^\d{1,3}(?:[.,]\d{3})+$/.test(pieces[0]))return null;
+      value=pieces[0].split(thousands).join('')+'.'+pieces[1];
+    }else if(/[.,]/.test(value)){
+      const pieces=value.split(/[.,]/);if(pieces.length!==2||pieces[1].length>(quantity?3:2))return null;
+      // A single three-digit suffix is ambiguous between a decimal and thousands.
+      if(pieces[1].length===3)return null;value=pieces.join('.');
+    }
+    const number=Number(value);return Number.isFinite(number)&&number>=0&&number<=1000000?number:null;
+  }
+  function invoiceFields(text,waiting){
+    const raw=String(text).normalize('NFD').replace(/[\u0300-\u036f]/g,''),n=clean(raw),patch={};let error=null;
+    if(/R\$|\b(?:BRL|reais|EUR|euros?|GBP|libras?)\b|[€£]/i.test(raw))return {patch:{},error:billText('Este fluxo usa USD. Informe o valor em dólares; não vou converter outra moeda automaticamente.','This flow uses USD. Enter the dollar amount; I will not convert another currency automatically.')};
+    const label=(expr)=>raw.match(new RegExp('\\b(?:'+expr+')\\s*(?:(?:para|pra|to|de|of|e|is)\\s*)?[:=]?\\s*(?:US\\$|USD|\\$)?\\s*(-?\\d[\\d.,]*)(?![\\w.,])','i'));
+    const quantity=label('quantidade|qtd|qty|quantity'),price=label('preco(?:\\s+unitario)?|valor\\s+unitario|unit\\s+price|rate|price'),total=label('valor\\s+total|total|lump\\s+sum|valor(?!\\s+unitario)');
+    if(quantity){patch.qty=invoiceNumber(quantity[1],{quantity:true});if(patch.qty===null||patch.qty<=0)error=billText('Informe uma quantidade positiva, sem separador de milhares.','Enter a positive quantity without a thousands separator.');}
+    if(price){patch.unitPrice=invoiceNumber(price[1]);if(patch.unitPrice===null)error=billText('Informe o preço em USD com até duas casas decimais, por exemplo 1250.50.','Enter the USD unit price with up to two decimals, for example 1250.50.');}
+    if(total&&!price){patch.total=invoiceNumber(total[1]);if(patch.total===null)error=billText('O valor está ambíguo ou inválido. Use por exemplo 1250.50, sem separador de milhares.','The amount is ambiguous or invalid. Use e.g. 1250.50 without a thousands separator.');}
+    const item=raw.match(/\b(?:item|linha|line)\s*#?\s*(\d+)\b/i);if(item)patch.itemIndex=Number(item[1])-1;
+    const description=raw.match(/\b(?:descricao|servico|description|service)\s*[:=]\s*([^;\n]+)/i);
+    if(description)patch.description=description[1].trim();
+    const notes=raw.match(/\b(?:nota|notas|observacao|observacoes|notes?)\s*[:=]\s*([^;\n]+)/i);if(notes)patch.notes=notes[1].trim();
+    const due=raw.match(/\b(?:vencimento|vence|vencer|due(?:\s+date)?)\s*[:=]?\s*(?:em|on|para|pra)?\s*([^;\n]+)/i);
+    if(due){patch.dueDate=appointment(due[1]).date;if(!patch.dueDate||!validISO(patch.dueDate))error=billText('Qual a data de vencimento? Use YYYY-MM-DD ou “amanhã”.','What is the due date? Use YYYY-MM-DD or “tomorrow”.');}
+    if(!Object.keys(patch).length&&waiting){
+      if(waiting==='dueDate'){const date=appointment(raw).date;if(date)patch.dueDate=date;}
+      if(['qty','unitPrice'].includes(waiting)&&/^\s*(?:US\$|USD|\$)?\s*-?\d[\d.,]*\s*$/i.test(raw)){
+        patch[waiting]=invoiceNumber(raw.replace(/US\$|USD|\$/ig,'').trim(),{quantity:waiting==='qty'});
+        if(patch[waiting]===null||waiting==='qty'&&patch[waiting]<=0)error=billText('Esse número precisa de revisão. Use 980 para quantidade ou 4.50 para preço.','That number needs review. Use 980 for quantity or 4.50 for price.');
+      }
+      if(waiting==='description'&&raw.trim().length<=240&&!invoiceWord(n)&&!editWords(n)&&!createWords(n)&&! /\b(como|voce|what|how)\b/.test(n))patch.description=String(text).trim();
+    }
+    return {patch,error};
+  }
+  function draftError(draft){
+    if(!draft||!Array.isArray(draft.items)||!draft.items.length||draft.items.length>100)return 'items';
+    for(const item of draft.items){if(!String(item.description||'').trim()||String(item.description).length>240)return 'description';if(!Number.isFinite(item.qty)||item.qty<=0||item.qty>1000000)return 'qty';if(!Number.isFinite(item.unitPrice)||item.unitPrice<0||item.unitPrice>1000000)return 'unitPrice';}
+    if(!validISO(draft.dueDate))return 'dueDate';
+    if(!Number.isFinite(Number(draft.taxRate))||Number(draft.taxRate)<0||Number(draft.taxRate)>100||!Number.isFinite(Number(draft.discount))||Number(draft.discount)<0)return 'totals';
+    const subtotal=draft.items.reduce((sum,i)=>sum+i.qty*i.unitPrice,0),total=subtotal*(1+Number(draft.taxRate)/100)-Number(draft.discount);
+    if(!Number.isFinite(total)||total<=0||total>100000000)return 'totals';return null;
+  }
+  function needInvoiceField(){
+    const error=draftError(billing.draft);billing.waiting=error;billing.preview=null;billing.mode='fields';
+    const examples={description:billText('Qual é a descrição do serviço? Exemplo: descrição: Sand & Finish.','What is the service description? Example: description: Sand & Finish.'),qty:billText('Qual é a quantidade? Exemplo: quantidade 980. Para preço fechado, diga “valor total 500”.','What is the quantity? Example: quantity 980. For a lump sum, say “total 500”.'),unitPrice:billText('Qual é o preço unitário em USD? Exemplo: preço unitário 4.50.','What is the USD unit price? Example: unit price 4.50.'),dueDate:billText('Qual é a data de vencimento? Pode dizer “vencimento amanhã” ou “vencimento 2026-10-30”.','What is the due date? Say “due tomorrow” or “due 2026-10-30”.'),totals:billText('Os valores precisam de revisão: o total deve ser positivo, com imposto e desconto válidos. Abra Billing para conferir.','The amounts need review: use a positive total with valid tax and discount. Open Billing to check.'),items:billText('Preciso de pelo menos um serviço com descrição, quantidade e preço.','I need at least one service with a description, quantity and price.')};
+    say((examples[error]||billText('O que você quer alterar no rascunho? Diga o campo e o novo valor, por exemplo “vencimento amanhã” ou “item 1 preço 4.50”.','What should change in this draft? Give the field and new value, e.g. “due tomorrow” or “item 1 price 4.50”.'))+'\n'+billText('Rascunho local de demonstração; nada foi salvo ou enviado.','Local demo draft; nothing has been saved or sent.'),[button(billText('Abrir Billing','Open Billing'),'open-billing'),button(billText('Cancelar','Cancel'),'invoice-cancel')]);
+  }
+  function billingSnapshot(s,job){return JSON.stringify({job,source:billing.sourceId?s.estimates.filter(e=>e.id===billing.sourceId):[],invoices:s.invoices.filter(i=>i.projectId===projectId(job)),payments:s.payments.filter(p=>s.invoices.some(i=>i.projectId===projectId(job)&&i.id===p.invoiceId))});}
+  function previewInvoice(){
+    if(draftError(billing.draft)){needInvoiceField();return;}
+    const s=billingData(),job=billing.job,source=billing.sourceId?s.estimates.find(e=>e.id===billing.sourceId):null,draft=billing.draft;
+    billing.mode='confirm';billing.waiting=null;billing.preview={token:++state.sequence,signature:billingSnapshot(s,job),draft:copy(draft)};
+    const money=n=>window.GTFWorkflow.money(n),totals=window.GTFWorkflow.totals(draft),pt=chat.language==='pt';
+    let text=billText('Confira o rascunho da invoice:','Review the invoice draft:')+`\n${job.customer} · ${job.address}\n${billText('Cobrar de','Bill to')}: ${draft.customer}${draft.company&&draft.company!==draft.customer?' · '+draft.company:''}\nProject: ${projectId(job)} · Appointment: ${appointmentId(job)}\n`+(source?`${source.number} · ${source.status}\n`:'')+draft.items.map((item,i)=>`${i+1}. ${item.description} · ${item.qty} ${item.unit||'Project'} × ${money(item.unitPrice)} = ${money(item.qty*item.unitPrice)}`).join('\n')+`\n${billText('Imposto','Tax')}: ${draft.taxRate}% · ${billText('Desconto','Discount')}: ${money(draft.discount)}\nTotal: ${money(totals.total)} USD\n${billText('Vencimento','Due')}: ${draft.dueDate}\nStatus: Draft · ${billText('oculto no portal do cliente','hidden from the client portal')}`;
+    if(draft.notes)text+=`\n${billText('Notas','Notes')}: ${draft.notes}`;
+    if(source&&source.status!=='Approved')text+='\n'+billText('O orçamento de origem ainda não foi aprovado; esta ação não o aprova nem emite a invoice.','The source estimate is not approved; this action does not approve it or issue the invoice.');
+    text+='\n\n'+billText('Salvar este rascunho somente neste navegador? Não haverá envio, cobrança ou pagamento.','Save this draft only in this browser? This does not send an invoice, charge or record a payment.');
+    say(text,[button(pt?'Salvar rascunho':'Save draft',`invoice-confirm:${billing.preview.token}`),button(pt?'Cancelar':'Cancel','invoice-cancel')]);
+  }
+  function applyInvoicePatch(patch){
+    billing.preview=null;billing.mode='fields';const draft=copy(billing.draft),lineKeys=['description','qty','unitPrice','total'];
+    if(lineKeys.some(key=>Object.hasOwn(patch,key))){
+      let index=patch.itemIndex;
+      if(index===undefined&&draft.items.length===1)index=0;
+      if(index===undefined){billing.mode='choose-item';billing.patch=patch;billing.options=draft.items.map((item,i)=>({itemIndex:i,label:`${i+1}. ${item.description}`}));say(billText('Qual item da invoice você quer alterar? O total não será substituído automaticamente.','Which invoice line should change? I will not replace the total automatically.'),billing.options.map(o=>button(o.label,`invoice-item:${o.itemIndex}`)));return;}
+      if(!Number.isInteger(index)||index<0||index>=draft.items.length){say(billText('Esse item não existe. Informe o número de uma linha da invoice.','That item does not exist. Give the number of an invoice line.'));return;}
+      if(Object.hasOwn(patch,'total')){
+        if(draft.items.length!==1){say(billText('Para preservar as outras linhas, informe o preço unitário do item escolhido. Não vou transformar um total em preço sem essa informação.','To preserve the other lines, give the selected line’s unit price. I will not infer it from a total.'));return;}
+        Object.assign(draft.items[index],{qty:1,unit:'Project',unitPrice:patch.total});
+      }
+      for(const key of ['description','qty','unitPrice'])if(Object.hasOwn(patch,key))draft.items[index][key]=patch[key];
+    }
+    if(Object.hasOwn(patch,'dueDate'))draft.dueDate=patch.dueDate;
+    if(Object.hasOwn(patch,'notes'))draft.notes=patch.notes;
+    billing.draft=draft;billing.patch={};previewInvoice();
+  }
+  function sourceInvoiceDraft(source,s){
+    billing.sourceId=source?.id||null;const job=billing.job;
+    billing.draft={projectId:projectId(job),appointmentId:appointmentId(job),estimateId:source?.id||null,customer:source?(source.company==='Direct Homeowner'?source.customer:source.company||source.customer):job.company&&job.company!=='Direct Homeowner'?job.company:job.customer,projectCustomer:job.customer,company:source?.company||job.company||'Direct Homeowner',customerType:source?.customerType||(job.company&&job.company!=='Direct Homeowner'?'contractor':'direct'),address:job.address,status:'Draft',customerVisible:false,issued:gaToday(),dueDate:'',paymentRule:'To review before issuing',notes:'',items:source?copy(source.items):[{description:job.service||'',qty:null,unit:'Project',unitPrice:null}],taxRate:Number(source?.taxRate||0),discount:Number(source?.discount||0)};
+    const patch=billing.patch;billing.patch={};if(Object.keys(patch).length)applyInvoicePatch(patch);else needInvoiceField();
+  }
+  function selectInvoiceDocument(invoice){
+    const s=billingData();if(invoice.status!=='Draft'||s.payments.some(p=>p.invoiceId===invoice.id)){
+      resetBilling();say(billText('Essa invoice já foi emitida ou tem pagamentos. Não vou alterar seus valores pelo chat. Abra Billing para revisar os registros e o procedimento correto.','That invoice is issued or has payments. I will not change its amounts in chat. Open Billing to review its records and the appropriate correction.'),[button('Open Billing','open-billing')]);return;}
+    if(invoice.projectId!==projectId(billing.job)||invoice.appointmentId&&invoice.appointmentId!==appointmentId(billing.job)){resetBilling();say(billText('O vínculo entre invoice, projeto e appointment não confere. Nada foi alterado.','The invoice, project and appointment links disagree. Nothing was changed.'));return;}
+    billing.invoiceId=invoice.id;billing.sourceId=invoice.estimateId||null;billing.draft=copy(invoice);billing.mode='fields';
+    billing.last={projectId:invoice.projectId,appointmentId:appointmentId(billing.job),invoiceId:invoice.id,turn:chat.turn};
+    const patch=billing.patch;billing.patch={};if(Object.keys(patch).length)applyInvoicePatch(patch);else needInvoiceField();
+  }
+  function selectBillingJob(job){
+    billing.job=job;const s=billingData(),invoices=s.invoices.filter(i=>i.projectId===projectId(job)&&(!i.appointmentId||i.appointmentId===appointmentId(job)));
+    if(billing.intent==='edit'){
+      const explicit=billing.invoiceId?invoices.filter(i=>i.id===billing.invoiceId):invoices;
+      if(!explicit.length){resetBilling();say(billText('Não encontrei uma invoice desse projeto e appointment. Posso preparar uma nova; diga “cria uma invoice” e o projeto.','I could not find an invoice for that project and appointment. To prepare one, say “create an invoice” and the project.'));return;}
+      if(explicit.length===1){selectInvoiceDocument(explicit[0]);return;}
+      billing.mode='choose-invoice';billing.options=explicit;say(billText('Qual invoice desse projeto?','Which invoice in this project?'),explicit.map((i,n)=>button(`${n+1}. ${i.number} · ${i.status}`,`invoice-document:${encodeURIComponent(i.id)}`)));return;
+    }
+    if(invoices.length){billing.intent='edit';billing.mode='choose-invoice';billing.options=invoices;say(billText('Esse projeto já tem invoice. Para evitar duplicação, escolha o rascunho que quer editar; invoices emitidas ou pagas serão preservadas.','This project already has an invoice. To avoid a duplicate, choose the draft to edit; issued or paid invoices will be preserved.'),invoices.map((i,n)=>button(`${n+1}. ${i.number} · ${i.status}`,`invoice-document:${encodeURIComponent(i.id)}`)));return;}
+    const sources=s.estimates.filter(e=>e.projectId===projectId(job));
+    if(sources.length>1){billing.mode='choose-source';billing.options=sources;say(billText('Qual orçamento será a base do rascunho?','Which estimate should be the source of the draft?'),sources.map((e,n)=>button(`${n+1}. ${e.number} · ${e.status}`,`invoice-source:${encodeURIComponent(e.id)}`)));return;}
+    sourceInvoiceDraft(sources[0]||null,s);
+  }
+  function chooseBillingJobs(text){
+    const candidates=matches(text);
+    offerBillingJobs(candidates);
+  }
+  function offerBillingJobs(candidates){
+    if(!candidates.length){billing.mode='await-project';say(billText('Para qual cliente e projeto? Diga o nome, endereço ou project/appointment ID. Vou preparar só um rascunho local.','Which customer and project? Give a name, address or project/appointment ID. I will prepare a local draft only.'),[button(billText('Ver Jobs','View Jobs'),'open-jobs'),button(billText('Cancelar','Cancel'),'invoice-cancel')]);return;}
+    if(candidates.length===1){selectBillingJob(candidates[0]);return;}
+    billing.mode='choose-project';billing.options=candidates;say(billText('Encontrei mais de um projeto ou appointment. Qual deles é para esta invoice?','I found more than one project or appointment. Which one is for this invoice?'),candidates.map((j,n)=>button(`${n+1}. ${jobLabel(j)}`,`invoice-job:${encodeURIComponent(projectId(j))}:${encodeURIComponent(appointmentId(j))}`)));
+  }
+  function confirmInvoice(){
+    if(billing.mode!=='confirm'||!billing.preview)return;
+    if(!canEdit()){resetBilling();say(billText('Somente um perfil Office da demonstração pode salvar esse rascunho.','Only an Office demo profile can save this draft.'));return;}
+    try{
+      const s=billingData(),job=billing.job,found=(window.GTFJobs?.()||[]).filter(j=>projectId(j)===projectId(job)&&appointmentId(j)===appointmentId(job));
+      if(found.length!==1||billingSnapshot(s,found[0])!==billing.preview.signature||draftError(billing.preview.draft)){
+        resetBilling();say(billText('O projeto, orçamento ou invoice mudou desde a prévia. Peça uma nova prévia; nada foi salvo.','The project, estimate or invoice changed since the preview. Request a new preview; nothing was saved.'));return;
+      }
+      const draft=copy(billing.preview.draft),actor=window.GTFAuth.currentUser().name||'Office';let saved;
+      if(billing.invoiceId){const current=s.invoices.find(i=>i.id===billing.invoiceId);saved=window.GTFWorkflow.updateInvoiceDraft(billing.invoiceId,{items:draft.items,taxRate:draft.taxRate,discount:draft.discount,dueDate:draft.dueDate,notes:draft.notes||'',paymentRule:draft.paymentRule,actor},window.GTFWorkflow.invoiceDraftSignature?{expectedSignature:window.GTFWorkflow.invoiceDraftSignature(current)}:{});}
+      else saved=window.GTFWorkflow.createInvoiceDraft({...draft,actor});
+      if(!saved||saved.status!=='Draft'||saved.customerVisible!==false||saved.projectId!==projectId(job))throw new Error('unverified_draft');
+      const last={projectId:saved.projectId,appointmentId:appointmentId(job),invoiceId:saved.id,turn:chat.turn};resetBilling();billing.last=last;chat.topic='invoice';
+      say(billText(`Rascunho ${saved.number} salvo neste navegador para ${job.customer}.`,`Draft ${saved.number} saved in this browser for ${job.customer}.`)+`\nProject: ${saved.projectId} · Appointment: ${appointmentId(job)}\n`+billText('Status Draft; oculto no portal do cliente. Nada foi enviado, emitido, cobrado ou pago. Você pode pedir “altera essa invoice” e dizer o campo.','Status Draft; hidden from the client portal. Nothing was sent, issued, charged or paid. You can ask “edit this invoice” and specify the field.'),[button(billText('Abrir Billing','Open Billing'),'open-billing')]);
+      if(typeof window.renderAll==='function')window.renderAll();
+    }catch(_){billing.preview=null;billing.mode='fields';say(billText('Não consegui confirmar a gravação do rascunho. Nenhum envio ou pagamento foi feito. Confira Billing e peça uma nova prévia antes de tentar novamente.','I could not confirm the draft was saved. Nothing was sent or paid. Check Billing and request a fresh preview before trying again.'),[button('Open Billing','open-billing')]);}
+  }
+  function invoiceConversation(text,n){
+    const noun=invoiceWord(n)||/\binv[ -]\d/.test(n),editing=editWords(n),creating=createWords(n),reference=refWords(n),pending=billing.mode!=='idle';
+    if(pending&&!noun&&editing&&/\b(job|appointment|agendamento|horario|reagendar|reagenda|remarcar|reschedule)\b/.test(n))return false;
+    if(pending&&/^(?:sim|yes|confirm|confirmar|ok|pode|pode salvar|salva|salvar|save|save draft|salvar rascunho|pode sim|manda ver|bora|fechou)$/.test(n)){
+      if(billing.mode==='confirm')confirmInvoice();else needInvoiceField();return true;
+    }
+    if(pending&&/^(?:nao|no|cancel|cancelar|cancela|deixa pra la|esquece)$/.test(n)){resetBilling();say(billText('Cancelei a preparação da invoice. Nada foi salvo.','Invoice preparation canceled. Nothing was saved.'));return true;}
+    if((noun||pending||reference&&billing.last)&&/\b(paga\w*|paid|dar baixa|marca\w* pago|charge|delete|apaga\w*|exclu\w*)\b/.test(n)){
+      chatReply(billText('Não registrei pagamento, cobrança ou exclusão. Este fluxo só prepara rascunhos; pagamentos reais precisam do provedor e da confirmação do servidor.','No payment, charge or deletion was recorded. This flow prepares drafts only; real payments need the provider and server confirmation.'),[button('Open Billing','open-billing')]);return true;
+    }
+    if(/\b(enviar|envie|envia|mande|mandar|send)\b/.test(n))return false;
+    if(!noun&&/\b(orcamento|estimate|quote)\b/.test(n)&&creating&&!/^como\b|^how\b/.test(n)){
+      chatReply(billText('Orçamento é Estimate; invoice é a fatura. Posso preparar uma invoice pelo chat ou abrir o editor de Estimate para montar o orçamento. Qual deles você quer?','An estimate is a quote; an invoice is billing. I can prepare an invoice in chat or open the Estimate editor. Which document do you want?'),[button(billText('Abrir Estimates & Billing','Open Estimates & Billing'),'open-billing')]);return true;
+    }
+    const fieldInput=pending?invoiceFields(text,billing.waiting):{patch:{},error:null};
+    if(pending&&fieldInput.error){billing.preview=null;billing.mode='fields';say(fieldInput.error+' '+billText('Nada foi salvo.','Nothing was saved.'));return true;}
+    if(pending&&['choose-project','await-project','choose-source','choose-invoice','choose-item'].includes(billing.mode)){
+      if(/^\d+$/.test(n)){
+        const option=billing.options[Number(n)-1];if(option){if(billing.mode==='choose-project')selectBillingJob(option);else if(billing.mode==='choose-source')sourceInvoiceDraft(option,billingData());else if(billing.mode==='choose-invoice')selectInvoiceDocument(option);else if(billing.mode==='choose-item')applyInvoicePatch({...billing.patch,itemIndex:option.itemIndex});return true;}
+      }
+      if(['choose-project','await-project'].includes(billing.mode)&&!noun&&!editing&&!creating&&(matches(text).length||/\b(project|appointment|cliente|client)\b/.test(n))){chooseBillingJobs(text);return true;}
+    }
+    if(pending&&['fields','confirm'].includes(billing.mode)&&Object.keys(fieldInput.patch).length){
+      if(fieldInput.error){billing.preview=null;billing.mode='fields';say(fieldInput.error+' '+billText('Nada foi salvo.','Nothing was saved.'));return true;}
+      applyInvoicePatch(fieldInput.patch);return true;
+    }
+    if(noun&&/^(?:como|how)\b/.test(n)){
+      chatReply(billText('Diga “cria uma invoice para Emily” para começar. Vou confirmar projeto, valores e vencimento, mostrar a prévia e pedir aprovação para salvar um Draft local. Para editar, diga a invoice e o campo; documentos emitidos ou pagos ficam preservados.','Say “create an invoice for Emily” to start. I will confirm the project, amounts and due date, show a preview and ask before saving a local Draft. To edit, name the invoice and field; issued or paid invoices are preserved.'),[button('Open Billing','open-billing')]);return true;
+    }
+    const newRequest=noun&&(creating||editing)||editing&&reference;
+    if(!newRequest){
+      if(noun){chatReply(billText('Você quer criar uma invoice ou editar um rascunho? Diga também o cliente/projeto; para editar, informe o campo e o novo valor.','Would you like to create an invoice or edit a draft? Include the customer/project; to edit, specify the field and new value.'),[button('Open Billing','open-billing')]);return true;}
+      if(pending&&editing){chatReply(billText('Qual campo da invoice quer alterar? Pode dizer “item 1 preço 4.50” ou “vencimento amanhã”.','Which invoice field should change? Say “item 1 price 4.50” or “due tomorrow”.'));return true;}
+      return false;
+    }
+    if(!canEdit()){say(billText('Somente um perfil Office da demonstração pode preparar invoices.','Only an Office demo profile can prepare invoices.'));return true;}
+    if(state.mode!=='idle'&&state.mode!=='after'){
+      chatReply(billText('Há um reagendamento pendente. Confirme ou cancele essa prévia antes de preparar outra alteração.','A reschedule is pending. Confirm or cancel that preview before preparing another change.'));return true;
+    }
+    if(pending&&editing&&reference){
+      if(fieldInput.error){billing.preview=null;billing.mode='fields';say(fieldInput.error);return true;}
+      if(Object.keys(fieldInput.patch).length)applyInvoicePatch(fieldInput.patch);else{billing.mode='fields';billing.preview=null;billing.waiting=null;needInvoiceField();}return true;
+    }
+    if(pending){chatReply(billText('Uma invoice já está em preparação. Continue esse rascunho ou cancele antes de escolher outro projeto.','An invoice is already being prepared. Continue this draft or cancel before choosing another project.'));return true;}
+    const parsed=invoiceFields(text,null);if(parsed.error){say(parsed.error);return true;}
+    const last=billing.last,lastValid=last&&chat.topic==='invoice'&&chat.turn-last.turn<=8;
+    if(editing&&reference&&!lastValid){say(billText('O que você quer alterar: invoice, agendamento ou outro registro? Diga o projeto e o campo para eu não adivinhar.','What should change: an invoice, appointment or another record? Give the project and field so I do not guess.'));return true;}
+    try{
+      const s=billingData();resetBilling();billing.last=null;billing.intent=editing?'edit':'create';billing.patch=parsed.patch;chat.topic='invoice';
+      if(editing&&reference&&lastValid){billing.invoiceId=last.invoiceId;const jobs=(window.GTFJobs?.()||[]).filter(j=>projectId(j)===last.projectId&&appointmentId(j)===last.appointmentId);if(jobs.length===1)selectBillingJob(jobs[0]);else chooseBillingJobs('');}
+      else {
+        const mentions=value=>value&&(' '+n+' ').includes(' '+clean(value)+' '),explicit=s.invoices.filter(i=>mentions(i.id)||mentions(i.number));
+        if(editing&&explicit.length===1){billing.invoiceId=explicit[0].id;offerBillingJobs((window.GTFJobs?.()||[]).filter(j=>projectId(j)===explicit[0].projectId&&(!explicit[0].appointmentId||appointmentId(j)===explicit[0].appointmentId)));}
+        else if(editing&&explicit.length>1){resetBilling();say(billText('Você citou mais de uma invoice. Informe só o número ou ID do documento que quer editar.','You mentioned more than one invoice. Give only the number or ID of the document to edit.'));}
+        else chooseBillingJobs(text);
+      }
+    }catch(_){resetBilling();say(billText('As ferramentas de rascunho de invoice não estão disponíveis nesta página. Abra Estimates & Billing para revisar os documentos; nenhuma alteração foi feita.','Invoice draft tools are not available on this page. Open Estimates & Billing to review documents; nothing was changed.'),[button('Open Billing','open-billing')]);}
+    return true;
+  }
   function priorities(){const result=[];const compliance=window.GTFCompliance?.issues?.()||[];
     compliance.forEach(r=>{const st=GTFCompliance.derivedStatus(r);result.push({level:st==='Expired'||st==='Missing'?'red':'yellow',label:r.documentType,detail:`${r.entity} · ${st}`,href:'compliance.html'});});
     (window.GTFJobs?.()||[]).forEach(j=>{if(j.status==='Problem')result.push({level:'red',label:`Problem · ${j.customer}`,detail:j.service,jobId:j.id});else if(j.status==='Waiting for Material')result.push({level:'yellow',label:`Materials · ${j.customer}`,detail:j.service,jobId:j.id});else if(['Completed','Arrived'].includes(j.status))result.push({level:'green',label:`${j.status} · ${j.customer}`,detail:j.service,jobId:j.id});});
@@ -261,18 +470,27 @@
     const qp=new URLSearchParams({action:'TEMPLATE',text:`Georgia Top Floors · ${job.customer} · ${job.service}`,dates:`${compact(d,hour,minute)}/${compact(endDate,Math.floor(endMin/60)%24,endMin%60)}`,ctz:TIMEZONE,details:`GTF project ${projectId(job)} · appointment ${appointmentId(job)}. Manual NEW event draft, not a sync. Verify time before saving.`,location:job.address||''});
     return 'https://calendar.google.com/calendar/render?'+qp.toString();
   }
-  function handleAction(a){if(a.startsWith('confirm:')){if(state.mode==='confirm'&&Number(a.slice(8))===state.preview?.token)confirm();return;}if(a==='cancel'){state.mode='idle';state.job=null;state.request=null;state.preview=null;state.options=[];say('Okay, no further changes.');return;}if(a.startsWith('choose:')){if(state.mode!=='choose')return;const [,project,appointment]=a.split(':');const selected=state.options.find(j=>encodeURIComponent(projectId(j))===project&&encodeURIComponent(appointmentId(j))===appointment);if(selected)selectJob(selected);return;}
+  function handleAction(a){
+    if(a.startsWith('invoice-confirm:')){if(billing.mode==='confirm'&&Number(a.slice(16))===billing.preview?.token)confirmInvoice();return;}
+    if(a==='invoice-cancel'){if(billing.mode!=='idle'){resetBilling();say(billText('Cancelei a preparação da invoice. Nada foi salvo.','Invoice preparation canceled. Nothing was saved.'));}return;}
+    if(a==='open-billing'){location.href='documents.html';return;}
+    if(a.startsWith('invoice-job:')&&billing.mode==='choose-project'){const [,project,appointment]=a.split(':');const selected=billing.options.find(j=>encodeURIComponent(projectId(j))===project&&encodeURIComponent(appointmentId(j))===appointment);if(selected)selectBillingJob(selected);return;}
+    if(a.startsWith('invoice-source:')&&billing.mode==='choose-source'){const selected=billing.options.find(e=>encodeURIComponent(e.id)===a.slice(15));if(selected)sourceInvoiceDraft(selected,billingData());return;}
+    if(a.startsWith('invoice-document:')&&billing.mode==='choose-invoice'){const selected=billing.options.find(i=>encodeURIComponent(i.id)===a.slice(17));if(selected)selectInvoiceDocument(selected);return;}
+    if(a.startsWith('invoice-item:')&&billing.mode==='choose-item'){const index=Number(a.slice(13));if(billing.options.some(o=>o.itemIndex===index))applyInvoicePatch({...billing.patch,itemIndex:index});return;}
+    if(a.startsWith('confirm:')){if(state.mode==='confirm'&&Number(a.slice(8))===state.preview?.token)confirm();return;}if(a==='cancel'){state.mode='idle';state.job=null;state.request=null;state.preview=null;state.options=[];say('Okay, no further changes.');return;}if(a.startsWith('choose:')){if(state.mode!=='choose')return;const [,project,appointment]=a.split(':');const selected=state.options.find(j=>encodeURIComponent(projectId(j))===project&&encodeURIComponent(appointmentId(j))===appointment);if(selected)selectJob(selected);return;}
     if(a==='chat-help'){faq('help');return;}
     if(a==='open-data-tools'){location.href='data-tools.html';return;}
     if(a==='open-budget'){location.href='docs/EMET_SERVICES_AND_BUDGET.md';return;}
     if(a.startsWith('settings-tab:')){const tab=a.slice(13);if(['profile','team','integrations','company','data'].includes(tab))location.href='settings.html?tab='+encodeURIComponent(tab);return;}
     if(a.startsWith('settings:')){const service=a.slice(9);if(['google','gmail','quo','signature','payments','ai'].includes(service))location.href='settings.html?integration='+encodeURIComponent(service);return;}
     if(a==='show-priorities'){priorityClick();return;}if(a==='open-compliance'){location.href='compliance.html';return;}if(a==='open-jobs'){window.goPage?.('jobs');return;}if(a==='draft'){draftMessage();return;}if(a==='calendar-draft'){eventDraft();return;}if(a==='copy-draft'){const last=messages.slice().reverse().find(m=>m.text.includes('Hello '));if(last)navigator.clipboard?.writeText(last.text.split('\n\n').slice(1).join('\n\n')).then(()=>say('Message copied. Please review it before sending.'),()=>say('Copy unavailable in this browser; select the message text manually.'));return;}if(a==='open-job'){const j=state.after||state.job;if(j){window.goPage?.('jobs');window.openDetail?.(j.id);}return;}}
-  function process(raw){const input=String(raw||'');if(input.length>4096){chat.language=languageFor(clean(input.slice(0,256)));chatReply(chat.language==='pt'?'Esse texto é muito longo para este chat local. Resuma seu pedido em até 4.096 caracteres. Para planilhas CSV ou XLSX, use o Data workspace em vez de colar as linhas aqui. Nada foi alterado.':'That text is too long for this local chat. Summarize your request in 4,096 characters or fewer. For CSV or XLSX spreadsheets, use Data workspace instead of pasting rows here. Nothing was changed.',[button(chat.language==='pt'?'Abrir Data workspace':'Open Data workspace','open-data-tools')]);return;}const text=input.trim();if(!text)return;say(text,[],'user');const n=clean(text);
+  function process(raw){const input=String(raw||'');if(input.length>4096){chat.language=languageFor(clean(input.slice(0,256)));chatReply(chat.language==='pt'?'Esse texto é muito longo para este chat local. Resuma seu pedido em até 4.096 caracteres. Para planilhas CSV ou XLSX, use o Data workspace em vez de colar as linhas aqui. Nada foi alterado.':'That text is too long for this local chat. Summarize your request in 4,096 characters or fewer. For CSV or XLSX spreadsheets, use Data workspace instead of pasting rows here. Nothing was changed.',[button(chat.language==='pt'?'Abrir Data workspace':'Open Data workspace','open-data-tools')]);return;}const text=input.trim();if(!text)return;say(text,[],'user');const n=clean(text);chat.turn++;chat.language=languageFor(n);
+    if(invoiceConversation(text,n))return;
     if(state.mode==='confirm'){if(/^(sim|yes|confirm|confirmar|ok|pode|pode salvar)$/.test(n)){confirm();return;}if(/^(nao|não|no|cancel|cancelar)$/.test(n)){handleAction('cancel');return;}}
     if(/^(nao|no|cancel|cancelar)$/.test(n)&&['choose','await-name','missing-date'].includes(state.mode)){handleAction('cancel');return;}
     if(conversation(text,n))return;
-    if(/(altera|alterar|muda|mudar|troca|trocar|reagenda|reagendar|remarca|remarcar|resched|change|move|shift|adiar|antecipar|novo horario|new time)/.test(n)){if(!canEdit()){say('Only an Office demo profile can reschedule appointments.');return;}state.mode='idle';state.job=null;state.preview=null;state.after=null;suggestMatches(text,appointment(text));return;}
+    if(/(altera|alterar|muda|mudar|troca|trocar|reagenda|reagendar|remarca|remarcar|resched|change|move|shift|adiar|antecipar|novo horario|new time)/.test(n)){if(billing.mode!=='idle'){chatReply(billText('Há uma invoice em preparação. Continue ou cancele esse rascunho antes de reagendar.','An invoice is being prepared. Continue or cancel that draft before rescheduling.'));return;}if(!canEdit()){say('Only an Office demo profile can reschedule appointments.');return;}chat.topic='schedule';billing.last=null;state.mode='idle';state.job=null;state.preview=null;state.after=null;suggestMatches(text,appointment(text));return;}
     if(state.mode==='choose'||state.mode==='await-name'){const a=appointment(text);state.request={...state.request,...(a.date?{date:a.date}:{}),...(a.time?{time:a.time}:{}),...(a.error?{error:a.error}:{})};if(state.mode==='choose'&&/^\d+$/.test(n)){const i=Number(n);if(i>=1&&i<=state.options.length){selectJob(state.options[i-1]);return;}}const candidates=matches(text);if(candidates.length===1){selectJob(candidates[0]);return;}if(candidates.length>1){state.options=candidates;state.mode='choose';say('Please choose a specific customer, property and appointment.',candidates.map((j,i)=>button(`${i+1}. ${jobLabel(j)}`,`choose:${encodeURIComponent(projectId(j))}:${encodeURIComponent(appointmentId(j))}`)));return;}say('I still need a more specific name, address or appointment ID.');return;}
     if(state.mode==='missing-date'||state.mode==='confirm'){const a=appointment(text);if(!a.date&&!a.time&&!a.error){say('Please include a date or time, for example “tomorrow at 2 PM”, or confirm/cancel the current preview.');return;}const request={...state.request,...(a.date?{date:a.date}:{}),...(a.time?{time:a.time}:{}),error:a.error||null};startReschedule(state.job,request);return;}
     if(/(atencao|attention|urgente|priority|prioridade|pendenc|overdue|atrasad)/.test(n)){priorityClick();return;}

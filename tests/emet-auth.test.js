@@ -210,6 +210,31 @@ test('login verifies provider email and stores tokens only in Secure HttpOnly sa
   assert.ok(unverified.headers['Set-Cookie'].every(value => value.includes('Max-Age=0')));
 });
 
+test('authenticated account exposes verified state and rejects unverified or currently banned users', async () => {
+  const verified = await invoke('session', { method: 'GET', authenticated: true });
+  assert.equal(verified.status, 200);
+  assert.equal(verified.body.user.emailVerified, true);
+  for (const change of [{ email_confirmed_at: null }, { banned_until: '2099-01-01T00:00:00Z' }]) {
+    const denied = await invoke('profile', { method: 'GET', authenticated: true,
+      override: call => call.path === '/auth/v1/user' ? response(200, { ...user, ...change }) : undefined });
+    assert.equal(denied.status, 401);
+    assert.ok(!denied.calls.some(call => call.path.endsWith('emet_account_state')));
+  }
+});
+
+test('login and verification reject a currently banned identity without issuing session cookies', async () => {
+  for (const route of ['session', 'verify']) {
+    const result = await invoke(route, { input: route === 'session'
+      ? { action: 'login', email: user.email, password: 'a-long-test-password' }
+      : { tokenHash: 'd'.repeat(64), type: 'magiclink' },
+      override: call => call.path.startsWith('/auth/v1/token?') || call.path === '/auth/v1/verify'
+        ? response(200, { ...session, user: { ...user, banned_until: '2099-01-01T00:00:00Z' } }) : undefined });
+    assert.equal(result.status, route === 'session' ? 401 : 400);
+    assert.ok(!JSON.stringify(result.headers).includes(session.access_token));
+    assert.ok(!result.calls.some(call => call.path.endsWith('emet_account_state')));
+  }
+});
+
 test('client link requests are restricted to the invited project and return no bearer session', async () => {
   const result = await invoke('client-access', { input: { code: CODE, email: user.email } });
   assert.equal(result.status, 202);

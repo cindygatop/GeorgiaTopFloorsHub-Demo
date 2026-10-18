@@ -13,7 +13,7 @@
       if (available.ok && available.data.status==='ready') {
         state.status=available.data;
         const session=await requestJSON('/api/emet/session');
-        if (session.ok && session.data.user) {state.account=true;state.session=session.data;user={...session.data.user,name:session.data.user.displayName||session.data.user.email,role:'account'};}
+        if (session.ok && session.data.user && session.data.user.emailVerified===true) {state.account=true;state.session=session.data;user={...session.data.user,name:session.data.user.displayName||session.data.user.email,role:'account'};}
       }
     } catch (_) {}
     if (!state.account && (!demoUser || params.get('mode')==='account')) {location.replace('emet.html#account');return;}
@@ -165,9 +165,28 @@
   }
   function capability(name) {return state.status && state.status.status==='ready' && state.status.capabilities && state.status.capabilities[name]===true;}
   function managerMembership() {
-    if(!state.account)return null;
+    if(!state.account || !state.session || !state.session.user || state.session.user.emailVerified!==true)return null;
     const selected=$('inviteOrganization').value;
-    return state.session && Array.isArray(state.session.memberships) && state.session.memberships.find(m=>['owner','admin','manager'].includes(m.role)&&m.status==='active'&&m.organizationId&&(!selected||m.organizationId===selected));
+    return selected && Array.isArray(state.session.memberships) && state.session.memberships.find(m=>['owner','admin','manager'].includes(m.role)&&m.status==='active'&&m.organizationId===selected);
+  }
+  function invitationRoles(membership) {
+    const base=['office','crew','client'];
+    if(!state.account)return base;
+    return membership?membership.role==='owner'?['admin','manager',...base]:membership.role==='admin'?['manager',...base]:membership.role==='manager'?base:[]:[];
+  }
+  function invalidateInvitation(message) {
+    state.invite=null;$('invitePreview').hidden=true;$('invitePreview').replaceChildren();
+    if(message)$('invitationService').textContent=message;
+  }
+  function updateInvitationRoles() {
+    const previous=$('inviteRole').value,roles=invitationRoles(managerMembership());
+    $('inviteRole').innerHTML=roles.length?roles.map(role=>`<option value="${role}">${role.charAt(0).toUpperCase()+role.slice(1)}</option>`).join(''):'<option value="">No invitation access</option>';
+    $('inviteRole').value=roles.includes(previous)?previous:roles[0]||'';
+    $('inviteRole').disabled=!roles.length;
+    const client=$('inviteRole').value==='client';$('inviteProjectField').hidden=!client;$('inviteProject').required=client;$('inviteProject').setCustomValidity('');
+  }
+  function invitationContext(session) {
+    return JSON.stringify(session?{userId:session.user&&session.user.id,verified:session.user&&session.user.emailVerified,memberships:session.memberships}:null);
   }
   function connection(id) {
     const integration=catalog[id],connections=state.status&&state.status.integrations;
@@ -195,49 +214,57 @@
       if (request!==state.request) return;
       state.status=response.data&&typeof response.data==='object'?response.data:null;
       let nextSession=null;
-      if (response.ok&&capability('authentication')) {try {const session=await requestJSON('/api/emet/session');if(session.ok && session.data.user) nextSession=session.data;} catch (_) {}}
-      if(request===state.request)state.session=nextSession;
-    } catch (_) {if(request===state.request){state.status=null;state.session=null;}}
+      if (response.ok&&capability('authentication')) {try {const session=await requestJSON('/api/emet/session');if(session.ok && session.data.user && session.data.user.emailVerified===true) nextSession=session.data;} catch (_) {}}
+      if(request===state.request){if(invitationContext(state.session)!==invitationContext(nextSession))invalidateInvitation();state.session=nextSession;}
+    } catch (_) {if(request===state.request){invalidateInvitation();state.status=null;state.session=null;}}
     finally {
-      if(request===state.request){renderConnections();document.querySelectorAll('[data-check-service]').forEach(button=>button.disabled=false);if(state.guide) renderGuide();}
+      if(request===state.request){renderTeam();renderConnections();document.querySelectorAll('[data-check-service]').forEach(button=>button.disabled=false);if(state.guide) renderGuide();}
     }
   }
   function renderTeam() {
     if(state.account) {
-      $('teamList').innerHTML=(state.session.memberships||[]).map(m=>`<div class="team-member"><div class="team-person"><div><strong>${esc(m.organizationName||m.organizationId)}</strong><small>${esc(m.status)}</small></div></div><span>${esc(m.role)}</span></div>`).join('')||'<p class="muted">No company membership has been returned for this account.</p>';
-      const companies=(state.session.memberships||[]).filter(m=>['owner','admin','manager'].includes(m.role)&&m.status==='active');
+      const memberships=state.session&&Array.isArray(state.session.memberships)?state.session.memberships:[],selected=$('inviteOrganization').value;
+      $('teamList').innerHTML=memberships.map(m=>`<div class="team-member"><div class="team-person"><div><strong>${esc(m.organizationName||m.organizationId)}</strong><small>${esc(m.status)}</small></div></div><span>${esc(m.role)}</span></div>`).join('')||'<p class="muted">No company membership has been returned for this account.</p>';
+      const companies=state.session&&state.session.user&&state.session.user.emailVerified===true?memberships.filter(m=>['owner','admin','manager'].includes(m.role)&&m.status==='active'&&m.organizationId):[];
       $('inviteOrganizationField').hidden=!companies.length;
       $('inviteOrganization').innerHTML=companies.map(m=>`<option value="${esc(m.organizationId)}">${esc(m.organizationName||m.organizationId)}</option>`).join('');
+      if(companies.some(m=>m.organizationId===selected))$('inviteOrganization').value=selected;
+      updateInvitationRoles();
       return;
     }
     const profiles=Array.isArray(GTFAuth.users)?GTFAuth.users:[];
     $('teamList').innerHTML=profiles.map(member=>`<div class="team-member"><div class="team-person"><span class="avatar avatar-small" aria-hidden="true">${esc(member.name.split(/\s+/).slice(0,2).map(n=>n[0]).join(''))}</span><div><strong>${esc(member.name)}</strong><small>${esc(member.email)}</small></div></div><span>${esc(member.label||member.role)}</span></div>`).join('');
+    updateInvitationRoles();
   }
   function reviewInvitation(event) {
     event.preventDefault();const email=$('inviteEmail').value.trim(),role=$('inviteRole').value;
-    if (!email || !['office','crew','client'].includes(role)) return;
+    invalidateInvitation();
+    const membership=managerMembership();
+    if (!email || !invitationRoles(membership).includes(role)) {$('invitationService').textContent='Choose a role permitted by your current company access.';return;}
     const projectId=$('inviteProject').value.trim();
     if(role==='client'&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(projectId)) {$('inviteProject').setCustomValidity('Enter the real project UUID assigned to this client.');$('inviteProject').reportValidity();return;}
     $('inviteProject').setCustomValidity('');
-    state.invite={email,role,...(role==='client'?{projectId}:{})};const membership=managerMembership(),canSend=state.account&&capability('invitations')&&membership&&state.session.csrfToken;
+    state.invite={email,role,...(role==='client'?{projectId}:{}),organizationId:membership?membership.organizationId:null,actorRole:membership?membership.role:null,actorId:state.session&&state.session.user?state.session.user.id:null};const canSend=state.account&&capability('invitations')&&membership&&state.session.csrfToken;
     $('invitePreview').hidden=false;
     $('invitePreview').innerHTML=`<p><strong>Review invitation</strong></p><p>${esc(email)} · ${esc(role.charAt(0).toUpperCase()+role.slice(1))}${membership?' · '+esc(membership.organizationName||membership.organizationId):''}</p><p class="muted">${canSend?'The server will validate your company membership and permissions before creating an invitation.':'No invitation has been created or sent. A verified manager and the secure invitation service are required.'}</p><div class="button-row"><button class="button primary" id="confirmInvite" type="button" ${canSend?'':'disabled'}>Confirm invitation</button><button class="text-button" type="button" id="cancelInvite">Cancel</button></div><p class="inline-message" id="inviteMessage" role="status"></p>`;
-    $('cancelInvite').onclick=()=>{state.invite=null;$('invitePreview').hidden=true;};
+    $('cancelInvite').onclick=()=>invalidateInvitation();
     $('confirmInvite').onclick=sendInvitation;
   }
   async function sendInvitation() {
-    const membership=managerMembership();
-    if (!capability('invitations') || !membership || !state.session.csrfToken || !state.invite) return;
-    const button=$('confirmInvite');button.disabled=true;
+    const membership=managerMembership(),invitation=state.invite;
+    if (!capability('invitations') || !membership || !state.session.csrfToken || !invitation) return;
+    if(membership.organizationId!==invitation.organizationId || membership.role!==invitation.actorRole || state.session.user.id!==invitation.actorId || !invitationRoles(membership).includes(invitation.role) || $('inviteRole').value!==invitation.role || $('inviteEmail').value.trim()!==invitation.email || (invitation.role==='client'&&$('inviteProject').value.trim()!==invitation.projectId)) {invalidateInvitation('Invitation details or company access changed. Review the invitation again.');return;}
+    const button=$('confirmInvite'),controls=[...$('inviteForm').querySelectorAll('input,select,button')].map(node=>({node,disabled:node.disabled}));controls.forEach(({node})=>node.disabled=true);
     try {
-      const result=await requestJSON('/api/emet/invitations',{method:'POST',headers:{'Content-Type':'application/json','X-Emet-CSRF':state.session.csrfToken},body:JSON.stringify({action:'create',organizationId:membership.organizationId,...state.invite})});
+      const result=await requestJSON('/api/emet/invitations',{method:'POST',headers:{'Content-Type':'application/json','X-Emet-CSRF':state.session.csrfToken},body:JSON.stringify({action:'create',organizationId:invitation.organizationId,email:invitation.email,role:invitation.role,...(invitation.role==='client'?{projectId:invitation.projectId}:{})})});
       const message=$('inviteMessage');
+      if(state.invite!==invitation || !message){$('invitationService').textContent='A request completed for the previously reviewed company. Check its team records before creating another invitation.';return;}
       if (!result.ok || result.data.status!=='invitation_created' || !result.data.invitation || !result.data.invitation.id || typeof result.data.code!=='string') {message.textContent='The server could not confirm this invitation. Check your manager access and company records before trying again.';message.classList.add('error');return;}
       message.textContent='Invitation created by the server. No email has been sent. Share the one-time invitation code securely with this recipient; this code is not a password or a signed-in session.';
       const code=document.createElement('code');code.textContent=result.data.code;code.className='invitation-code';message.after(code);
       state.invite=null;
-    } catch (_) {$('inviteMessage').textContent='The invitation service could not confirm a result. Check the team records before trying again.';$('inviteMessage').classList.add('error');}
-    finally {if(state.invite) button.disabled=false;}
+    } catch (_) {const message=$('inviteMessage');if(message){message.textContent='The invitation service could not confirm a result. Check the team records before trying again.';message.classList.add('error');}else $('invitationService').textContent='The invitation service could not confirm a result. Check the previously reviewed company’s team records before trying again.';}
+    finally {controls.forEach(({node,disabled})=>node.disabled=disabled);button.disabled=!state.invite;}
   }
   function openGuide(id,updateURL=true) {
     if (!office || !catalog[id]) return;
@@ -272,9 +299,10 @@
   $('removeAvatar').onclick=()=>{state.avatarTask++;state.avatar=null;state.avatarChanged=true;renderAvatar($('profileAvatar'),$('displayName').value,null);profileMessage(state.account?'Photo removed from the preview. Save your profile to keep this change.':'Photo removed from the preview. Save your local profile to keep this change.');};
   $('displayName').addEventListener('input',()=>{if(!state.avatar)renderAvatar($('profileAvatar'),$('displayName').value,null);});
   $('inviteForm').addEventListener('submit',reviewInvitation);
-  $('inviteOrganization').addEventListener('change',()=>{state.invite=null;$('invitePreview').hidden=true;});
-  $('inviteRole').addEventListener('change',()=>{const client=$('inviteRole').value==='client';$('inviteProjectField').hidden=!client;$('inviteProject').required=client;$('inviteProject').setCustomValidity('');});
-  $('inviteProject').addEventListener('input',()=>$('inviteProject').setCustomValidity(''));
+  $('inviteOrganization').addEventListener('change',()=>{invalidateInvitation();updateInvitationRoles();renderConnections();});
+  $('inviteRole').addEventListener('change',()=>{invalidateInvitation();const client=$('inviteRole').value==='client';$('inviteProjectField').hidden=!client;$('inviteProject').required=client;$('inviteProject').setCustomValidity('');});
+  $('inviteEmail').addEventListener('input',()=>invalidateInvitation());
+  $('inviteProject').addEventListener('input',()=>{invalidateInvitation();$('inviteProject').setCustomValidity('');});
   $('integrationGrid').addEventListener('click',event=>{const button=event.target.closest('[data-guide]');if(button)openGuide(button.dataset.guide);});
   $('closeGuide').onclick=closeGuide;
   $('integrationDialog').addEventListener('cancel',event=>{event.preventDefault();closeGuide();});
